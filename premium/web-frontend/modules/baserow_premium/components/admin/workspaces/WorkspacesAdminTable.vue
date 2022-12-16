@@ -54,7 +54,11 @@ export default {
         'application_count',
         () => this.$t('workspacesAdminTable.applications'),
         SimpleField,
-        true
+        true,
+        false,
+        false,
+        {},
+        10
       ),
       new CrudTableColumn(
         'free_users',
@@ -98,9 +102,13 @@ export default {
         'created_on',
         () => this.$t('workspacesAdminTable.created'),
         LocalDateField,
-        true
+        true,
+        false,
+        false,
+        {},
+        10
       ),
-      new CrudTableColumn('more', '', MoreField, false, false, true),
+      new CrudTableColumn('more', '', MoreField, false, false, true, {}, 10),
     ]
     this.service = WorkspacesAdminService(this.$client)
     return {

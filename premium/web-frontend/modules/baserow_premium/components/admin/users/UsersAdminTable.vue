@@ -45,18 +45,34 @@ export default {
         () => this.$t('usersAdminTable.username'),
         UsernameField,
         true,
-        true
+        true,
+        false,
+        {},
+        20
       ),
       new CrudTableColumn(
         'name',
         () => this.$t('usersAdminTable.name'),
         SimpleField,
-        true
+        true,
+        false,
+        false,
+        {},
+        20
       ),
       new CrudTableColumn(
         'workspaces',
         () => this.$t('usersAdminTable.workspaces'),
+<<<<<<< HEAD
         UserWorkspacesField
+=======
+        UserGroupsField,
+        false,
+        false,
+        false,
+        {},
+        20
+>>>>>>> f8e4ab89b (Tidying CrudTableColumns in various tables, making use of the new widthPerc parameter to control their widths.)
       ),
       new CrudTableColumn(
         'last_login',
@@ -76,7 +92,7 @@ export default {
         ActiveField,
         true
       ),
-      new CrudTableColumn('more', '', MoreField, false, false, true),
+      new CrudTableColumn('more', '', MoreField, false, false, true, {}, 10),
     ]
     this.service = UserAdminService(this.$client)
     return {
