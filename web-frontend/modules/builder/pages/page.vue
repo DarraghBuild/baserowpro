@@ -26,7 +26,7 @@ export default {
       })
       await store.dispatch('group/selectById', builder.group.id)
       data.builder = builder
-      data.page = Page
+      data.page = page
     } catch (e) {
       // In case of a network error we want to fail hard.
       if (e.response === undefined && !(e instanceof StoreItemLookupError)) {
