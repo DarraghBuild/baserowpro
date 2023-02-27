@@ -28,7 +28,7 @@ export class ElementType extends Registerable {
   }
 }
 
-export class HeaderElementType extends Registerable {
+export class HeaderElementType extends ElementType {
   getType() {
     return 'header'
   }
@@ -46,7 +46,7 @@ export class HeaderElementType extends Registerable {
   }
 }
 
-export class ParagraphElementType extends Registerable {
+export class ParagraphElementType extends ElementType {
   getType() {
     return 'paragraph'
   }
