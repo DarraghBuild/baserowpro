@@ -620,7 +620,7 @@ export class BaserowLessThanOrEqual extends BaserowFunctionDefinition {
 
 export class BaserowNow extends BaserowFunctionDefinition {
   static getType() {
-    return 'now'
+    return 'now_utc'
   }
 
   getDescription() {
@@ -629,11 +629,11 @@ export class BaserowNow extends BaserowFunctionDefinition {
   }
 
   getSyntaxUsage() {
-    return ['now() > todate("2021-12-12", "YYYY-MM-DD")']
+    return ['now_utc() > todate("2021-12-12", "YYYY-MM-DD")']
   }
 
   getExamples() {
-    return ['now() > todate("2021-12-12", "YYYY-MM-DD")']
+    return ['now_utc() > todate("2021-12-12", "YYYY-MM-DD")']
   }
 
   getFormulaType() {

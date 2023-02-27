@@ -1,6 +1,5 @@
 import abc
 import typing
-from datetime import datetime
 from decimal import Decimal
 from typing import Generic, List, Optional, Tuple, Type, TypeVar
 
@@ -297,13 +296,8 @@ class BaserowExpressionContext:
         self.model_instance = model_instance
         self.group = model.get_root()
 
-    def get_or_update_utc_now(self):
-        utc_now = self.group.last_formula_periodic_update_at
-        if utc_now is None:
-            self.group.last_formula_periodic_update_at = utc_now = datetime.utcnow()
-            self.group.save()
-            # trigger the update task to update all other formulas
-        return utc_now
+    def get_utc_now(self):
+        return self.group.now
 
 
 class BaserowFunctionCall(BaserowExpression[A]):

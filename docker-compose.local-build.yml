@@ -8,8 +8,9 @@ version: "3.4"
 
 # See https://baserow.io/docs/installation%2Fconfiguration for more details on these
 # backend environment variables, their defaults if left blank etc.
-x-backend-variables: &backend-variables
+x-backend-variables:
   # Most users should only need to set these first four variables.
+  &backend-variables
   SECRET_KEY: ${SECRET_KEY:?}
   DATABASE_PASSWORD: ${DATABASE_PASSWORD:?}
   REDIS_PASSWORD: ${REDIS_PASSWORD:?}
@@ -108,6 +109,8 @@ x-backend-variables: &backend-variables
   BASEROW_WEBHOOKS_REQUEST_TIMEOUT_SECONDS:
   BASEROW_ENTERPRISE_AUDIT_LOG_CLEANUP_INTERVAL_MINUTES:
   BASEROW_ENTERPRISE_AUDIT_LOG_RETENTION_DAYS:
+  PERIODIC_FIELD_UPDATE_INTERVAL_MINUTES:
+  BASEROW_PERIODIC_FIELD_UPDATE_QUEUE_NAME:
 
 services:
   # A caddy reverse proxy sitting in-front of all the services. Responsible for routing
@@ -132,6 +135,7 @@ services:
     networks:
       local:
 
+
   backend:
     image: baserow_backend:latest
     build:
@@ -147,6 +151,7 @@ services:
       - media:/baserow/media
     networks:
       local:
+
 
   web-frontend:
     image: baserow_web-frontend:latest
@@ -174,6 +179,7 @@ services:
     networks:
       local:
 
+
   celery:
     image: baserow_backend:latest
     build:
@@ -186,13 +192,18 @@ services:
     # The backend image's baked in healthcheck defaults to the django healthcheck
     # override it to the celery one here.
     healthcheck:
-      test: [ "CMD-SHELL", "/baserow/backend/docker/docker-entrypoint.sh celery-worker-healthcheck" ]
+      test:
+        [
+          "CMD-SHELL",
+          "/baserow/backend/docker/docker-entrypoint.sh celery-worker-healthcheck"
+        ]
     depends_on:
       - backend
     volumes:
       - media:/baserow/media
     networks:
       local:
+
 
   celery-export-worker:
     image: baserow_backend:latest
@@ -206,13 +217,18 @@ services:
     # The backend image's baked in healthcheck defaults to the django healthcheck
     # override it to the celery one here.
     healthcheck:
-      test: [ "CMD-SHELL", "/baserow/backend/docker/docker-entrypoint.sh celery-exportworker-healthcheck" ]
+      test:
+        [
+          "CMD-SHELL",
+          "/baserow/backend/docker/docker-entrypoint.sh celery-exportworker-healthcheck"
+        ]
     depends_on:
       - backend
     volumes:
       - media:/baserow/media
     networks:
       local:
+
 
   celery-beat-worker:
     image: baserow_backend:latest
@@ -232,6 +248,7 @@ services:
     networks:
       local:
 
+
   db:
     image: postgres:11
     restart: unless-stopped
@@ -240,7 +257,11 @@ services:
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD:?}
       - POSTGRES_DB=${DATABASE_NAME:-baserow}
     healthcheck:
-      test: [ "CMD-SHELL", "su postgres -c \"pg_isready -U ${DATABASE_USER:-baserow}\"" ]
+      test:
+        [
+          "CMD-SHELL",
+          "su postgres -c \"pg_isready -U ${DATABASE_USER:-baserow}\""
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -257,8 +278,8 @@ services:
     networks:
       local:
 
-  # By default, the media volume will be owned by root on startup. Ensure it is owned by
-  # the same user that django is running as, so it can write user files.
+        # By default, the media volume will be owned by root on startup. Ensure it is owned by
+        # the same user that django is running as, so it can write user files.
   volume-permissions-fixer:
     image: bash:4.4
     command: chown 9999:9999 -R /baserow/media
@@ -267,11 +288,13 @@ services:
     networks:
       local:
 
+
 volumes:
   pgdata:
   media:
   caddy_data:
   caddy_config:
+
 
 networks:
   local:

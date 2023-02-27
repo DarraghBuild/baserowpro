@@ -1167,7 +1167,7 @@ class BaserowLessThanOrEqual(BaseLimitComparableFunction):
 
 
 class BaserowNow(ZeroArgumentBaserowFunction):
-    type = "now"
+    type = "now_utc"
     needs_periodic_update = True
 
     def type_function(
@@ -1189,7 +1189,7 @@ class BaserowNow(ZeroArgumentBaserowFunction):
     ) -> "WrappedExpressionWithMetadata":
 
         return WrappedExpressionWithMetadata(
-            Value(context.get_or_update_utc_now(), output_field=fields.DateTimeField()),
+            Value(context.get_utc_now(), output_field=fields.DateTimeField()),
         )
 
 

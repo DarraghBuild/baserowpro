@@ -127,7 +127,7 @@ class Group(HierarchicalModelMixin, TrashableModelMixin, CreatedAndUpdatedOnMixi
     users = models.ManyToManyField(User, through="GroupUser")
     storage_usage = models.IntegerField(null=True)
     storage_usage_updated_at = models.DateTimeField(null=True)
-    last_formula_periodic_update_at = models.DateTimeField(null=True)
+    now = models.DateTimeField(auto_now_add=True)
 
     def get_parent(self):
         return None

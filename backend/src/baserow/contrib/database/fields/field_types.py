@@ -16,7 +16,7 @@ from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.core.files.storage import Storage, default_storage
 from django.db import OperationalError, models
-from django.db.models import CharField, F, Func, Q, Value
+from django.db.models import CharField, Count, F, Func, Q, QuerySet, Value
 from django.db.models.functions import Coalesce
 from django.utils.timezone import make_aware
 
@@ -3237,6 +3237,52 @@ class FormulaFieldType(ReadOnlyFieldType):
             return True
         else:
             return False
+
+    def get_fields_needing_periodic_update(self) -> QuerySet:
+
+        return (
+            FormulaField.objects.filter(needs_periodic_update=True)
+            .annotate(num_dependencies=Count("field_dependencies"))
+            .filter(num_dependencies=0)
+        )
+
+    def run_periodic_update(
+        self,
+        field: Field,
+        update_collector: "Optional[FieldUpdateCollector]" = None,
+        field_cache: "Optional[FieldCache]" = None,
+        via_path_to_starting_table: Optional[List[LinkRowField]] = None,
+    ):
+        from baserow.contrib.database.fields.dependencies.update_collector import (
+            FieldUpdateCollector,
+        )
+
+        trigger = False
+        if update_collector is None:
+            trigger = True
+            update_collector = FieldUpdateCollector(field.table)
+        if field_cache is None:
+            field_cache = FieldCache()
+        if via_path_to_starting_table is None:
+            via_path_to_starting_table = []
+
+        self._refresh_row_values(
+            field, update_collector, field_cache, via_path_to_starting_table
+        )
+
+        for (
+            dependant_field,
+            dependant_field_type,
+            path_to_starting_table,
+        ) in field.dependant_fields_with_types(field_cache, via_path_to_starting_table):
+            dependant_field_type.run_periodic_update(
+                dependant_field,
+                update_collector,
+                field_cache,
+                path_to_starting_table,
+            )
+        if trigger:
+            update_collector.apply_updates_and_get_updated_fields(field_cache)
 
     def row_of_dependency_updated(
         self,

@@ -86,7 +86,68 @@ class FormulaHandler:
     """
 
     @classmethod
-    def refresh_formulas_need_periodic_update_for_group(cls, group: Group):
+    def update_formula_field_values(
+        cls,
+        field: "FormulaField",
+        field_cache: FieldCache,
+        updated_fields: Dict[int, "FormulaField"],
+    ):
+        """
+        Updates all the values in the provided formula field. This is done by
+        executing the formula on all the rows in the table.
+
+        :param field: The formula field to update the values for.
+        :param field_cache: The field cache to use to get the values of the fields
+            referenced in the formula.
+        :param updated_fields: A dictionary of fields that have already been updated
+            and their id as the key. This is used to prevent infinite recursion.
+        """
+
+        from baserow.contrib.database.fields.field_types import FormulaFieldType
+        from baserow.contrib.database.fields.registries import field_type_registry
+
+        # update all the fields that this field depends on first
+        for field_dependency in cls.get_field_dependencies(field, field_cache):
+            dependency = field_dependency.dependency
+            dependency_field_type = field_type_registry.get_by_model(dependency)
+            if (
+                dependency_field_type.type != FormulaFieldType.type
+                or dependency.id in updated_fields
+            ):
+                continue
+
+            cls.update_formula_field_values(dependency, field_cache, updated_fields)
+
+        # now update this field
+        if field.id not in updated_fields:
+
+            table = field.table
+            table_model = field_cache.get_model(table)
+
+            expr = cls.baserow_expression_to_update_django_expression(
+                field.cached_typed_internal_expression, table_model
+            )
+            table_model.objects_and_trash.all().update(**{f"{field.db_column}": expr})
+            updated_fields[field.id] = field
+
+        via_path_to_starting_table = []
+
+        # now update all the fields that depend on this field
+        for (
+            dependant_field,
+            dependant_field_type,
+            _,
+        ) in field.dependant_fields_with_types(field_cache, via_path_to_starting_table):
+
+            if dependant_field_type.type == FormulaFieldType.type:
+                cls.update_formula_field_values(
+                    dependant_field.specific, field_cache, updated_fields
+                )
+
+    @classmethod
+    def refresh_all_formulas_need_periodic_update_for_group(
+        cls, group: Group, send_signals: bool = True
+    ):
         """
         Refreshes the last_formula_periodic_update_at field for all the groups
         formulas. This is used to determine if a periodic update is required.
@@ -95,14 +156,14 @@ class FormulaHandler:
         """
 
         from baserow.contrib.database.fields.models import FormulaField
-        from baserow.contrib.database.fields.field_types import FormulaFieldType
+        from baserow.contrib.database.table.signals import table_updated
 
         field_cache = FieldCache()
 
         group.last_formula_periodic_update_at = timezone.now()
         group.save()
 
-        via_path_to_starting_table = []
+        updated_formula_fields: Dict[int, FormulaField] = {}
 
         qs = FormulaField.objects.annotate(num_dependencies=Count("field_dependencies"))
         for formula_field in qs.filter(
@@ -111,32 +172,21 @@ class FormulaHandler:
             num_dependencies=0,
         ):
 
-            table = formula_field.table
-            table_model = table.get_model()
-            field_cache.cache_model_fields(table_model)
-            expr = cls.baserow_expression_to_update_django_expression(
-                formula_field.cached_typed_internal_expression, table_model
-            )
-            table_model.objects_and_trash.all().update(
-                **{f"{formula_field.db_column}": expr}
+            cls.update_formula_field_values(
+                formula_field, field_cache, updated_formula_fields
             )
 
-            # update all the dependant fields accordingly
-            for (
-                dependant_field,
-                dependant_field_type,
-                _,
-            ) in formula_field.dependant_fields_with_types(
-                field_cache, via_path_to_starting_table
-            ):
-                if dependant_field_type.type != FormulaFieldType.type:
+        # refresh all updated tables
+        table_set = set()
+        if send_signals:
+            for formula_field in updated_formula_fields.values():
+                if formula_field.table_id in table_set:
                     continue
-                expr = cls.baserow_expression_to_update_django_expression(
-                    dependant_field.cached_typed_internal_expression, table_model
+
+                table_updated.send(
+                    cls, table=formula_field.table, user=None, force_table_refresh=True
                 )
-                table_model.objects_and_trash.all().update(
-                    **{f"{dependant_field.db_column}": expr}
-                )
+                table_set.add(formula_field.table_id)
 
     @classmethod
     def baserow_expression_to_update_django_expression(

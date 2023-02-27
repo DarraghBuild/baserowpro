@@ -1,79 +1,76 @@
-from datetime import timedelta
-from typing import Any, Dict
-
 from django.conf import settings
+from django.db import transaction
+from django.db.models import QuerySet
 from django.utils import timezone
 
 from celery import group
+from celery.schedules import crontab
 
 from baserow.config.celery import app
+from baserow.contrib.database.fields.registries import field_type_registry
 from baserow.core.models import Group
 
 
-def get_query_filter_for_periodic_update(immediate: bool = False) -> Dict[str, Any]:
+def filter_distinct_group_ids_per_fields(queryset: QuerySet) -> QuerySet:
     """
-    Returns the query filter that can be used to filter on the groups that need
-    to be updated periodically.
+    Filters the provided queryset to only return the distinct group ids.
 
-    :param immediate: If set to true then the groups that need to be updated
-    :return: The query filter that can be used to filter on the groups that need
-        to be updated periodically.
+    :param queryset: The queryset that should be filtered.
     """
 
-    query_filters = {"last_formula_periodic_update_at__isnull": False}
-    if not immediate:
-        query_filters[
-            "last_formula_periodic_update_at__lt"
-        ] = timezone.now() - timedelta(
-            seconds=settings.FORMULA_NOW_MIN_TIME_BETWEEN_UPDATES_SECONDS
-        )
-    return query_filters
+    return Group.objects.filter(application__database__table__field__in=queryset)
 
 
-@app.task(bind=True, queue="export")
-def refresh_formulas_need_periodic_update(self, immediate: bool = False):
+@app.task(bind=True, queue=settings.PERIODIC_FIELD_UPDATE_QUEUE_NAME)
+def run_periodic_fields_updates(self):
     """
-    Refreshes the formulas that need to be updated periodically for all groups.
-
-    :param immediate: If set to true then all the groups will be refreshed
+    Refreshes all the fields that need to be updated periodically for all
+    groups.
     """
 
-    query_filters = get_query_filter_for_periodic_update(immediate)
-    groups = Group.objects.filter(**query_filters)
-    group_ids = [group.id for group in groups]
-    group_tasks = [
-        refresh_formulas_need_periodic_update_for_group.s(group_id)
-        for group_id in group_ids
-    ]
-    group(group_tasks).apply_async()
+    for field_type_instance in field_type_registry.get_all():
+        field_qs = field_type_instance.get_fields_needing_periodic_update()
+        if field_qs is None:
+            continue
+
+        group_qs = filter_distinct_group_ids_per_fields(field_qs)
+
+        field_type = field_type_instance.type
+        update_tasks = [
+            run_periodic_field_type_update_per_group.s(field_type, group_id)
+            for group_id in group_qs.values_list("id", flat=True)
+        ]
+
+        group(update_tasks).apply_async()
 
 
-@app.task(bind=True, queue="export")
-def refresh_formulas_need_periodic_update_for_group(
-    self, group_id: int, immediate: bool = False
-):
+@app.task(bind=True, queue=settings.PERIODIC_FIELD_UPDATE_QUEUE_NAME)
+def run_periodic_field_type_update_per_group(self, field_type: str, group_id: int):
     """
     Refreshes the formulas that need to be updated periodically for the provided
     group.
 
+    :param field_type: The type of the field that needs to be refreshed.
     :param group_id: The id of the group for which the formulas must be refreshed.
-    :param immediate: If set to true then the group will be refreshed
     """
 
-    from baserow.contrib.database.formula.handler import FormulaHandler
-
-    query_filters = {"id": group_id, **get_query_filter_for_periodic_update(immediate)}
-    try:
-        group = Group.objects.get(**query_filters)
-    except Group.DoesNotExist:
+    field_type_instance = field_type_registry.get(field_type)
+    qs = field_type_instance.get_fields_needing_periodic_update()
+    if qs is None:
         return
-    FormulaHandler.refresh_formulas_need_periodic_update_for_group(group)
+
+    updated_groups = Group.objects.filter(id=group_id).update(now=timezone.now())
+    if updated_groups == 0:
+        return
+
+    for field in qs.filter(table__database__group_id=group_id):
+        with transaction.atomic():
+            field_type_instance.run_periodic_update(field)
 
 
-# noinspection PyUnusedLocal
 @app.on_after_finalize.connect
 def setup_periodic_tasks(sender, **kwargs):
+    update_interval = settings.PERIODIC_FIELD_UPDATE_INTERVAL_MINUTES
     sender.add_periodic_task(
-        timedelta(minutes=settings.FORMULA_NOW_PERIODIC_TASK_INTERVAL_MINUTES),
-        refresh_formulas_need_periodic_update.s(),
+        crontab(minute=f"*/{update_interval}"), run_periodic_fields_updates.s()
     )
