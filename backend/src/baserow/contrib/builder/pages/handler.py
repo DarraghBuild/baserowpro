@@ -46,7 +46,7 @@ class PageHandler:
         """
         Deletes the page provided
 
-        :param page: The page that's supposed to be deleted
+        :param page: The page that must be deleted
         """
 
         page.delete()
