@@ -75,7 +75,7 @@ class PageService:
         Deletes the page provided
 
         :param user: The user trying to delete the page
-        :param page: The page that's supposed to be deleted
+        :param page: The page that must be deleted
         """
 
         CoreHandler().check_permissions(
