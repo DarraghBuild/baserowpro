@@ -6,17 +6,22 @@
       simple
       @input="search = $event.target.value"
     />
-    <ElementsList class="context__menu" :elements="elements" />
+    <ElementsList
+      class="context__menu elements-context__elements-list"
+      :elements="elements"
+    />
+    <AddElementButton />
   </Context>
 </template>
 
 <script>
 import context from '@baserow/modules/core/mixins/context'
 import ElementsList from '@baserow/modules/builder/components/elements/ElementsList'
+import AddElementButton from '@baserow/modules/builder/components/elements/AddElementButton'
 
 export default {
   name: 'ElementsContext',
-  components: { ElementsList },
+  components: { AddElementButton, ElementsList },
   mixins: [context],
   data() {
     return {

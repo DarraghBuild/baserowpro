@@ -31,5 +31,8 @@
     "elementType": {
         "header": "Header",
         "paragraph": "Paragraph"
+    },
+    "addElementButton": {
+        "label": "Element"
     }
 }

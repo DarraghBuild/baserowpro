@@ -1,0 +1,13 @@
+.add-element-button {
+  display: flex;
+  justify-content: space-between;
+  color: $color-neutral-500;
+  padding: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+
+  &:hover {
+    background-color: $color-neutral-100;
+    text-decoration: none;
+  }
+}
