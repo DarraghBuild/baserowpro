@@ -1,16 +1,22 @@
 <template>
   <div>
     <PageHeader />
+    <div class="layout__col-2-2 content">
+      <div class="page__wrapper">
+        <PagePreview />
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import { StoreItemLookupError } from '@baserow/modules/core/errors'
 import PageHeader from '@baserow/modules/builder/components/page/PageHeader'
+import PagePreview from '@baserow/modules/builder/components/page/components/PagePreview'
 
 export default {
   name: 'Page',
-  components: { PageHeader },
+  components: { PagePreview, PageHeader },
   layout: 'app',
 
   async asyncData({ store, params, error }) {
