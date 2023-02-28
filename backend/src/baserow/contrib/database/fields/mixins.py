@@ -24,6 +24,12 @@ def get_date_time_format(options, format_type):
 
 
 class BaseDateMixin(models.Model):
+    def __init__(self, *args, **kwargs) -> None:
+        # Add retro-compatibility for the old timezone field.
+        if (old_timezone := kwargs.pop("timezone", None)) is not None:
+            kwargs["date_force_timezone"] = old_timezone
+        super().__init__(*args, **kwargs)
+
     date_format = models.CharField(
         choices=DATE_FORMAT_CHOICES,
         default=DATE_FORMAT_CHOICES[0][0],
