@@ -6,6 +6,10 @@ export class ElementType extends Registerable {
     return null
   }
 
+  get description() {
+    return null
+  }
+
   get iconClass() {
     return null
   }
@@ -24,6 +28,10 @@ export class HeaderElementType extends ElementType {
     return this.app.i18n.t('elementType.header')
   }
 
+  get description() {
+    return this.app.i18n.t('elementType.headerDescription')
+  }
+
   get iconClass() {
     return 'heading'
   }
@@ -40,6 +48,10 @@ export class ParagraphElementType extends ElementType {
 
   get name() {
     return this.app.i18n.t('elementType.paragraph')
+  }
+
+  get description() {
+    return this.app.i18n.t('elementType.paragraphDescription')
   }
 
   get iconClass() {

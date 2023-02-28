@@ -1,16 +1,18 @@
 <template>
   <Context class="elements-context">
-    <Search
-      :placeholder="$t('elementsContext.searchPlaceholder')"
-      class="elements-context__search"
-      simple
-      @input="search = $event.target.value"
-    />
+    <div class="elements-context__search">
+      <Search
+        :placeholder="$t('elementsContext.searchPlaceholder')"
+        simple
+        @input="search = $event.target.value"
+      />
+    </div>
     <ElementsList
       class="context__menu elements-context__elements-list"
       :elements="elements"
     />
-    <AddElementButton />
+    <AddElementButton @click="$refs.addElementModal.show()" />
+    <AddElementModal ref="addElementModal" />
   </Context>
 </template>
 
@@ -18,10 +20,11 @@
 import context from '@baserow/modules/core/mixins/context'
 import ElementsList from '@baserow/modules/builder/components/elements/ElementsList'
 import AddElementButton from '@baserow/modules/builder/components/elements/AddElementButton'
+import AddElementModal from '@baserow/modules/builder/components/elements/AddElementModal'
 
 export default {
   name: 'ElementsContext',
-  components: { AddElementButton, ElementsList },
+  components: { AddElementModal, AddElementButton, ElementsList },
   mixins: [context],
   data() {
     return {

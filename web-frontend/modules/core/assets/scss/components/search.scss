@@ -1,3 +1,17 @@
-.search-input--simple {
+.search {
+  display: flex;
+  align-items: center;
+  border: solid $color-neutral-300 1px;
+  border-radius: 5px;
+  padding: 5px 10px 5px 10px;
+
+  &--simple {
+    border: none;
+    padding: unset;
+  }
+}
+
+.search-input {
   border: none;
+  width: 100%;
 }

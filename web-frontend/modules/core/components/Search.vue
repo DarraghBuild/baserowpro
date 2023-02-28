@@ -1,9 +1,9 @@
 <template>
-  <div>
+  <div class="search" :class="{ 'search--simple': simple }">
     <i class="fas fa-sm fa-search"></i>
     <input
       type="text"
-      class="margin-left-1"
+      class="margin-left-1 search-input"
       :placeholder="placeholder"
       :class="{ 'search-input--simple': simple }"
       v-bind="$attrs"

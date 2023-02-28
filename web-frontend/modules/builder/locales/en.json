@@ -30,9 +30,15 @@
     },
     "elementType": {
         "header": "Header",
-        "paragraph": "Paragraph"
+        "headerDescription": "Page heading title",
+        "paragraph": "Paragraph",
+        "paragraphDescription": "Single line text"
     },
     "addElementButton": {
         "label": "Element"
+    },
+    "addElementModal": {
+        "title": "Add new element",
+        "searchPlaceholder": "Search elements"
     }
 }
