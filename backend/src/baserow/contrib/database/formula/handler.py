@@ -45,6 +45,13 @@ if typing.TYPE_CHECKING:
     from baserow.contrib.database.fields.models import FormulaField
 
 
+def _needs_periodic_update(expression: BaserowExpression):
+    functions_used: Set[BaserowFunctionDefinition] = expression.accept(
+        FunctionsUsedVisitor()
+    )
+    return any(getattr(f, "needs_periodic_update", False) for f in functions_used)
+
+
 def _expression_requires_refresh_after_insert(expression: BaserowExpression):
     """
     WARNING: This function is directly used by migration code. Please ensure

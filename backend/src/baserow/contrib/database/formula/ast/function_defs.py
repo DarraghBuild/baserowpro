@@ -173,6 +173,7 @@ def register_formula_functions(registry):
     registry.register(BaserowBcToNull())
     if "now_formula" in settings.FEATURE_FLAGS:
         registry.register(BaserowNow())
+        registry.register(BaserowToday())
     # Date interval functions
     registry.register(BaserowDateInterval())
     # Special functions
@@ -1175,7 +1176,7 @@ class BaserowNow(ZeroArgumentBaserowFunction):
     ) -> BaserowExpression[BaserowFormulaType]:
         return func_call.with_valid_type(
             BaserowFormulaDateType(
-                date_format="ISO", date_include_time=False, date_time_format="24"
+                date_format="ISO", date_include_time=True, date_time_format="24"
             )
         )
 
@@ -1191,6 +1192,54 @@ class BaserowNow(ZeroArgumentBaserowFunction):
         return WrappedExpressionWithMetadata(
             Value(context.get_utc_now(), output_field=fields.DateTimeField()),
         )
+
+
+class BaserowToday(ZeroArgumentBaserowFunction):
+    type = "today_utc"
+    needs_periodic_update = True
+
+    def type_function(
+        self, func_call: BaserowFunctionCall[UnTyped]
+    ) -> BaserowExpression[BaserowFormulaType]:
+        return func_call.with_valid_type(
+            BaserowFormulaDateType(
+                date_format="ISO", date_include_time=False, date_time_format="24"
+            )
+        )
+
+    def to_django_expression(self) -> Expression:
+        pass
+
+    def to_django_expression_given_args(
+        self,
+        args: List["WrappedExpressionWithMetadata"],
+        context: BaserowExpressionContext,
+    ) -> "WrappedExpressionWithMetadata":
+
+        return WrappedExpressionWithMetadata(
+            Value(context.get_utc_now(), output_field=fields.DateField()),
+        )
+
+
+class BaserowSetTimezone(TwoArgumentBaserowFunction):
+    type = "set_timezone"
+    arg1_type = [BaserowFormulaDateType]
+    arg2_type = [BaserowFormulaTextType]
+
+    def type_function(
+        self,
+        func_call: BaserowFunctionCall[UnTyped],
+        arg1: BaserowExpression[BaserowFormulaValidType],
+        arg2: BaserowExpression[BaserowFormulaValidType],
+    ) -> BaserowExpression[BaserowFormulaType]:
+        return func_call.with_valid_type(
+            BaserowFormulaDateType(
+                date_format="ISO", date_include_time=True, date_time_format="24"
+            )
+        )
+
+    def to_django_expression(self, arg1: Expression, arg2: Expression) -> Expression:
+        return Value(None, output_field=fields.DateTimeField())
 
 
 class BaserowToDate(TwoArgumentBaserowFunction):

@@ -618,7 +618,7 @@ export class BaserowLessThanOrEqual extends BaserowFunctionDefinition {
   }
 }
 
-export class BaserowNow extends BaserowFunctionDefinition {
+export class BaserowNowUtc extends BaserowFunctionDefinition {
   static getType() {
     return 'now_utc'
   }
@@ -629,11 +629,38 @@ export class BaserowNow extends BaserowFunctionDefinition {
   }
 
   getSyntaxUsage() {
-    return ['now_utc() > todate("2021-12-12", "YYYY-MM-DD")']
+    return [
+      'now_utc() > todate("2021-12-12 13:00:00", "YYYY-MM-DD HH24:MI:SS")',
+    ]
   }
 
   getExamples() {
-    return ['now_utc() > todate("2021-12-12", "YYYY-MM-DD")']
+    return [
+      'now_utc() > todate("2021-12-12 13:00:00", "YYYY-MM-DD HH24:MI:SS")',
+    ]
+  }
+
+  getFormulaType() {
+    return 'date'
+  }
+}
+
+export class BaserowTodayUtc extends BaserowFunctionDefinition {
+  static getType() {
+    return 'today_utc'
+  }
+
+  getDescription() {
+    const { i18n } = this.app
+    return i18n.t('formulaFunctions.nowDescription')
+  }
+
+  getSyntaxUsage() {
+    return ['today_utc() > todate("2021-12-12", "YYYY-MM-DD")']
+  }
+
+  getExamples() {
+    return ['today_utc() > todate("2021-12-12", "YYYY-MM-DD")']
   }
 
   getFormulaType() {
