@@ -755,16 +755,16 @@ class DateFieldType(FieldType):
         utcOffset accordingly.
         """
 
-        date_force_timezone_offset = to_field_kwargs.get(
+        timezone_offset_to_add_to_replace_tz = to_field_kwargs.get(
             "date_force_timezone_offset", None
         )
-        if not date_force_timezone_offset:
+        if timezone_offset_to_add_to_replace_tz is None:
             return
 
         to_model.objects.filter(**{f"{to_field.db_column}__isnull": False}).update(
             **{
                 to_field.db_column: models.F(to_field.db_column)
-                + timedelta(minutes=date_force_timezone_offset)
+                + timedelta(minutes=timezone_offset_to_add_to_replace_tz)
             }
         )
 
