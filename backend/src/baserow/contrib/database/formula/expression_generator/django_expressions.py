@@ -1,5 +1,12 @@
 from django.contrib.postgres.aggregates.mixins import OrderableAggMixin
-from django.db.models import Aggregate, Expression, F, Field, Transform, Value
+from django.db.models import (
+    Aggregate,
+    Expression,
+    F,
+    Field,
+    Transform,
+    Value,
+)
 
 
 # noinspection PyAbstractClass
@@ -49,6 +56,10 @@ class AndExpr(BinaryOpExpr):
 # noinspection PyAbstractClass
 class OrExpr(BinaryOpExpr):
     arg_joiner = " OR "
+
+
+class TimezoneExpr(BinaryOpExpr):
+    arg_joiner = " at time zone "
 
 
 # noinspection PyAbstractClass

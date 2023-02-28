@@ -429,6 +429,7 @@ class FormulaField(Field):
         max_length=255,
         null=True,
         help_text="Force a timezone for the field overriding user profile settings.",
+    )
     needs_periodic_update = models.BooleanField(
         default=False,
         help_text="Indicates if the field needs to be periodically updated.",

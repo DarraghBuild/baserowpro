@@ -75,7 +75,7 @@
         </template>
       </template>
       <div v-if="field.date_show_tzinfo" class="grid-field-date__tzinfo">
-        {{ getCellTimezoneAbbr(field, value) }}
+        {{ getCellTimezoneAbbr(field, value, editing) }}
       </div>
     </div>
   </div>

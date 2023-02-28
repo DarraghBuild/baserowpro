@@ -63,17 +63,9 @@ def run_periodic_field_type_update_per_group(self, field_type: str, group_id: in
     if updated_groups == 0:
         return
 
-    table_set = {}
     for field in qs.filter(table__database__group_id=group_id):
         with transaction.atomic():
             field_type_instance.run_periodic_update(field)
-        table_set[field.table_id] = field.table
-
-    # TEMP: This is a temporary solution to update the table data in the frontend.
-    from baserow.contrib.database.table.signals import table_updated
-
-    for table in table_set.values():
-        table_updated.send(self, table=table, user=None, force_table_refresh=True)
 
 
 @app.on_after_finalize.connect

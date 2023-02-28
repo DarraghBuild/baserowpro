@@ -49,7 +49,7 @@ from django.db.models.functions import (
     StrIndex,
     Upper,
 )
-
+import pytz
 from baserow.contrib.database.fields.models import NUMBER_MAX_DECIMAL_PLACES
 from baserow.contrib.database.formula.ast.function import (
     BaserowFunctionDefinition,
@@ -78,6 +78,7 @@ from baserow.contrib.database.formula.expression_generator.django_expressions im
     NotEqualsExpr,
     NotExpr,
     OrExpr,
+    TimezoneExpr,
 )
 from baserow.contrib.database.formula.expression_generator.exceptions import (
     BaserowToDjangoExpressionGenerationError,
@@ -174,6 +175,7 @@ def register_formula_functions(registry):
     if "now_formula" in settings.FEATURE_FLAGS:
         registry.register(BaserowNow())
         registry.register(BaserowToday())
+        registry.register(BaserowSetTimezone())
     # Date interval functions
     registry.register(BaserowDateInterval())
     # Special functions
@@ -1168,7 +1170,7 @@ class BaserowLessThanOrEqual(BaseLimitComparableFunction):
 
 
 class BaserowNow(ZeroArgumentBaserowFunction):
-    type = "now_utc"
+    type = "now"
     needs_periodic_update = True
 
     def type_function(
@@ -1195,7 +1197,7 @@ class BaserowNow(ZeroArgumentBaserowFunction):
 
 
 class BaserowToday(ZeroArgumentBaserowFunction):
-    type = "today_utc"
+    type = "today"
     needs_periodic_update = True
 
     def type_function(
@@ -1203,7 +1205,10 @@ class BaserowToday(ZeroArgumentBaserowFunction):
     ) -> BaserowExpression[BaserowFormulaType]:
         return func_call.with_valid_type(
             BaserowFormulaDateType(
-                date_format="ISO", date_include_time=False, date_time_format="24"
+                date_format="ISO",
+                date_include_time=False,
+                date_time_format="24",
+                date_force_timezone="UTC",
             )
         )
 
@@ -1232,14 +1237,21 @@ class BaserowSetTimezone(TwoArgumentBaserowFunction):
         arg1: BaserowExpression[BaserowFormulaValidType],
         arg2: BaserowExpression[BaserowFormulaValidType],
     ) -> BaserowExpression[BaserowFormulaType]:
+        force_timezone = None
+        if arg2.literal in pytz.all_timezones:
+            force_timezone = arg2.literal
         return func_call.with_valid_type(
             BaserowFormulaDateType(
-                date_format="ISO", date_include_time=True, date_time_format="24"
+                date_format="ISO",
+                date_include_time=True,
+                date_time_format="24",
+                date_show_tzinfo=True,
+                date_force_timezone=force_timezone,
             )
         )
 
     def to_django_expression(self, arg1: Expression, arg2: Expression) -> Expression:
-        return Value(None, output_field=fields.DateTimeField())
+        return TimezoneExpr(arg1, arg2, output_field=fields.DateTimeField())
 
 
 class BaserowToDate(TwoArgumentBaserowFunction):

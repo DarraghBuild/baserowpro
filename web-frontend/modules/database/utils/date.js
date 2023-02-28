@@ -59,9 +59,13 @@ export const getFieldTimezone = (field) => {
   return field.date_force_timezone || moment.tz.guess()
 }
 
-export const getCellTimezoneAbbr = (field, value) => {
-  if (value === null || value === undefined) return ''
-  return moment(value).tz(getFieldTimezone(field)).format('z')
+export const getCellTimezoneAbbr = (field, value, force = false) => {
+  if (!force && (value === null || value === undefined)) {
+    return ''
+  }
+  return moment(value || undefined)
+    .tz(getFieldTimezone(field))
+    .format('z')
 }
 
 export const localizeMoment = (

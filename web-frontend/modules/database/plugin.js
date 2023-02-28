@@ -123,8 +123,9 @@ import {
   BaserowReplace,
   BaserowRowId,
   BaserowT,
-  BaserowNowUtc,
-  BaserowTodayUtc,
+  BaserowNow,
+  BaserowToday,
+  BaserowSetTimezone,
   BaserowToDate,
   BaserowToNumber,
   BaserowToText,
@@ -435,8 +436,9 @@ export default (context) => {
   app.$registry.register('formula_function', new BaserowDatetimeFormat(context))
   app.$registry.register('formula_function', new BaserowDay(context))
   if (app.$featureFlagIsEnabled('now_formula')) {
-    app.$registry.register('formula_function', new BaserowNowUtc(context))
-    app.$registry.register('formula_function', new BaserowTodayUtc(context))
+    app.$registry.register('formula_function', new BaserowNow(context))
+    app.$registry.register('formula_function', new BaserowToday(context))
+    app.$registry.register('formula_function', new BaserowSetTimezone(context))
   }
   app.$registry.register('formula_function', new BaserowToDate(context))
   app.$registry.register('formula_function', new BaserowDateDiff(context))

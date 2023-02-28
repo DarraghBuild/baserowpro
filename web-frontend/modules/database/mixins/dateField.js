@@ -139,8 +139,8 @@ export default {
       this.date = existing.format(dateFormat)
       this.time = existing.format(timeFormat)
     },
-    getCellTimezoneAbbr(field, value) {
-      return getCellTimezoneAbbr(field, value)
+    getCellTimezoneAbbr(field, value, force = false) {
+      return getCellTimezoneAbbr(field, value, force)
     },
     /**
      * Returns a human readable date placeholder of the format for the input.
