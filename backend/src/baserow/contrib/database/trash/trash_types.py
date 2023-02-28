@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import connection
 
@@ -431,7 +432,7 @@ class RowsTrashableItemType(TrashableItemType):
                 )
         update_collector.apply_updates_and_get_updated_fields(field_cache)
 
-        if len(rows_to_restore) < 50:
+        if len(rows_to_restore) < settings.ROWS_UPDATE_LIMIT:
             rows_created.send(
                 self,
                 rows=rows_to_restore,

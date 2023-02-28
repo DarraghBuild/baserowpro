@@ -9,6 +9,7 @@ services:
   redis:
     ports:
       - "${HOST_PUBLISH_IP:-127.0.0.1}:${DEBUG_REDIS_PORT:-6379}:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD:?} --loglevel debug
 
   # Override with the dev caddy file which switches Caddy to only be the media file
   # server in the dev env. Devs will instead directly connect to the backend and

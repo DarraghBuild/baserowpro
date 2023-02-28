@@ -170,7 +170,7 @@ CELERY_REDBEAT_REDIS_URL = REDIS_URL
 # however if the lock timeout is less than the interval the lock will have been released
 # and the beat instance will crash as it attempts to extend the lock which it no longer
 # owns.
-CELERY_BEAT_MAX_LOOP_INTERVAL = os.getenv("CELERY_BEAT_MAX_LOOP_INTERVAL", 20)
+CELERY_BEAT_MAX_LOOP_INTERVAL = int(os.getenv("CELERY_BEAT_MAX_LOOP_INTERVAL", 20))
 # By default CELERY_REDBEAT_LOCK_TIMEOUT = 5 * CELERY_BEAT_MAX_LOOP_INTERVAL
 # Only one beat instance can hold this lock and schedule tasks at any one time.
 # This means if one celery-beat instance crashes any other replicas waiting to take over
@@ -181,8 +181,8 @@ CELERY_BEAT_MAX_LOOP_INTERVAL = os.getenv("CELERY_BEAT_MAX_LOOP_INTERVAL", 20)
 # CELERY_BEAT_MAX_LOOP_INTERVAL seconds. If it crashes or fails to wake up
 # then 80 seconds after the lock was last extended it will be released and a new
 # scheduler will acquire the lock and take over.
-CELERY_REDBEAT_LOCK_TIMEOUT = os.getenv(
-    "CELERY_REDBEAT_LOCK_TIMEOUT", CELERY_BEAT_MAX_LOOP_INTERVAL + 60
+CELERY_REDBEAT_LOCK_TIMEOUT = int(
+    os.getenv("CELERY_REDBEAT_LOCK_TIMEOUT", CELERY_BEAT_MAX_LOOP_INTERVAL + 60)
 )
 
 CHANNEL_LAYERS = {
@@ -595,7 +595,7 @@ DONT_UPDATE_FORMULAS_AFTER_MIGRATION = bool(
     os.getenv("DONT_UPDATE_FORMULAS_AFTER_MIGRATION", "")
 )
 PERIODIC_FIELD_UPDATE_INTERVAL_MINUTES = int(
-    os.getenv("BASEROW_PERIODIC_FIELD_UPDATE_INTERVAL_MINUTES", 10)
+    os.getenv("BASEROW_PERIODIC_FIELD_UPDATE_INTERVAL_MINUTES", 1)
 )
 PERIODIC_FIELD_UPDATE_QUEUE_NAME = os.getenv(
     "BASEROW_PERIODIC_FIELD_UPDATE_QUEUE_NAME", "export"
@@ -765,6 +765,7 @@ BASEROW_DISABLE_MODEL_CACHE = bool(os.getenv("BASEROW_DISABLE_MODEL_CACHE", ""))
 BASEROW_NOWAIT_FOR_LOCKS = not bool(
     os.getenv("BASEROW_WAIT_INSTEAD_OF_409_CONFLICT_ERROR", False)
 )
+ROWS_UPDATE_LIMIT = 50
 
 # Indicates whether we are running the tests or not. Set to True in the test.py settings
 # file used by pytest.ini

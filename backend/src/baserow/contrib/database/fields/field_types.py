@@ -1967,6 +1967,148 @@ class LinkRowFieldType(FieldType):
             fields.append(field.link_row_related_field)
         return fields
 
+    def row_of_dependency_created(
+        self,
+        field: Field,
+        starting_row: "StartingRowType",
+        update_collector: "FieldUpdateCollector",
+        field_cache: "FieldCache",
+        via_path_to_starting_table: Optional[List[LinkRowField]],
+    ):
+        update_collector.add_updated_field(
+            field,
+            via_path_to_starting_table=via_path_to_starting_table,
+        )
+        super().row_of_dependency_created(
+            field,
+            starting_row,
+            update_collector,
+            field_cache,
+            via_path_to_starting_table,
+        )
+
+    def row_of_dependency_updated(
+        self,
+        field: Field,
+        starting_row: "StartingRowType",
+        update_collector: "FieldUpdateCollector",
+        field_cache: "FieldCache",
+        via_path_to_starting_table: List["LinkRowField"],
+    ):
+        update_collector.add_updated_field(
+            field,
+            via_path_to_starting_table=via_path_to_starting_table,
+        )
+        super().row_of_dependency_updated(
+            field,
+            starting_row,
+            update_collector,
+            field_cache,
+            via_path_to_starting_table,
+        )
+
+    def row_of_dependency_deleted(
+        self,
+        field: Field,
+        starting_row: "StartingRowType",
+        update_collector: "FieldUpdateCollector",
+        field_cache: "FieldCache",
+        via_path_to_starting_table: Optional[List[LinkRowField]],
+    ):
+        update_collector.add_updated_field(
+            field,
+            via_path_to_starting_table=via_path_to_starting_table,
+        )
+        super().row_of_dependency_deleted(
+            field,
+            starting_row,
+            update_collector,
+            field_cache,
+            via_path_to_starting_table,
+        )
+
+    def row_of_dependency_moved(
+        self,
+        field: Field,
+        starting_row: "StartingRowType",
+        update_collector: "FieldUpdateCollector",
+        field_cache: "FieldCache",
+        via_path_to_starting_table: Optional[List[LinkRowField]],
+    ):
+        update_collector.add_updated_field(
+            field,
+            via_path_to_starting_table=via_path_to_starting_table,
+        )
+        super().row_of_dependency_moved(
+            field,
+            starting_row,
+            update_collector,
+            field_cache,
+            via_path_to_starting_table,
+        )
+
+    def field_dependency_created(
+        self,
+        field: Field,
+        created_field: Field,
+        update_collector: "FieldUpdateCollector",
+        field_cache: "FieldCache",
+        via_path_to_starting_table: Optional[List[LinkRowField]],
+    ):
+        update_collector.add_updated_field(
+            field,
+            via_path_to_starting_table=via_path_to_starting_table,
+        )
+        super().field_dependency_created(
+            field,
+            created_field,
+            update_collector,
+            field_cache,
+            via_path_to_starting_table,
+        )
+
+    def field_dependency_updated(
+        self,
+        field: Field,
+        updated_field: Field,
+        updated_old_field: Field,
+        update_collector: "FieldUpdateCollector",
+        field_cache: "FieldCache",
+        via_path_to_starting_table: Optional[List[LinkRowField]],
+    ):
+        update_collector.add_updated_field(
+            field,
+            via_path_to_starting_table=via_path_to_starting_table,
+        )
+        super().field_dependency_updated(
+            field,
+            updated_field,
+            updated_old_field,
+            update_collector,
+            field_cache,
+            via_path_to_starting_table,
+        )
+
+    def field_dependency_deleted(
+        self,
+        field: Field,
+        deleted_field: Field,
+        update_collector: "FieldUpdateCollector",
+        field_cache: "FieldCache",
+        via_path_to_starting_table: Optional[List[LinkRowField]],
+    ):
+        update_collector.add_updated_field(
+            field,
+            via_path_to_starting_table=via_path_to_starting_table,
+        )
+        super().field_dependency_deleted(
+            field,
+            deleted_field,
+            update_collector,
+            field_cache,
+            via_path_to_starting_table,
+        )
+
     def to_baserow_formula_type(self, field) -> BaserowFormulaType:
         primary_field = field.get_related_primary_field()
         if primary_field is None:
@@ -3066,11 +3208,15 @@ class FormulaFieldType(ReadOnlyFieldType):
     @staticmethod
     def compatible_with_formula_types(*compatible_formula_types: List[str]):
         def checker(field) -> bool:
+            print(field)
+            print(compatible_formula_types)
             from baserow.contrib.database.fields.registries import field_type_registry
 
             field_type = field_type_registry.get_by_model(field.specific_class)
             if isinstance(field_type, FormulaFieldType):
                 formula_type = field.specific.cached_formula_type
+                print(f"formula type {formula_type}")
+                print(formula_type.type in compatible_formula_types)
                 return formula_type.type in compatible_formula_types
             else:
                 return False

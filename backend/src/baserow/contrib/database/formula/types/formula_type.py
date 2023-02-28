@@ -144,13 +144,19 @@ class BaserowFormulaType(abc.ABC):
         """
 
         kwargs = {}
+        print("user_overidesy")
         for field_name in self.user_overridable_formatting_option_fields:
+            print(field_name)
             override_set_by_user = getattr(formula_field, field_name)
             if override_set_by_user is not None:
+                print("using user")
                 kwargs[field_name] = override_set_by_user
             else:
+                print("using calculated")
                 kwargs[field_name] = getattr(self, field_name)
+        print("internal")
         for field_name in self.internal_fields:
+            print(field_name)
             kwargs[field_name] = getattr(self, field_name)
         return self.__class__(**kwargs)
 

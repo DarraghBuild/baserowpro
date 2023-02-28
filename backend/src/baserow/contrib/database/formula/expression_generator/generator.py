@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional, Tuple, Type
 
+from django.conf import settings
 from django.db.models import (
     BooleanField,
     DecimalField,

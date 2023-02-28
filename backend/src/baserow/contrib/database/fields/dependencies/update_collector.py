@@ -1,13 +1,16 @@
 from collections import defaultdict
 from typing import Dict, List, Optional, Set, Tuple, cast
 
+from django.conf import settings
 from django.db.models import Expression, Q
 
 from baserow.contrib.database.fields.dependencies.exceptions import InvalidViaPath
 from baserow.contrib.database.fields.field_cache import FieldCache
 from baserow.contrib.database.fields.models import Field, LinkRowField
 from baserow.contrib.database.fields.signals import field_updated
+from baserow.contrib.database.rows.signals import before_rows_update, rows_updated
 from baserow.contrib.database.table.models import Table
+from baserow.contrib.database.table.signals import table_updated
 
 StartingRowIdsType = Optional[List[int]]
 
@@ -30,15 +33,17 @@ class PathBasedUpdateStatementCollector:
         """
 
         self.update_statements: Dict[str, Expression] = {}
+        self.updated_field_ids = set()
         self.table = table
         self.sub_paths: Dict[str, PathBasedUpdateStatementCollector] = {}
         self.connection_here: Optional[LinkRowField] = connection_here
         self.connection_is_broken = connection_is_broken
 
-    def add_update_statement(
+    # todo make accept a python func and use to link row field
+    def add_update(
         self,
         field: Field,
-        update_statement: Expression,
+        update_statement: Optional[Expression] = None,
         path_from_starting_table: Optional[List[LinkRowField]] = None,
     ):
         if not path_from_starting_table:
@@ -57,11 +62,11 @@ class PathBasedUpdateStatementCollector:
                     self.sub_paths[broken_name] = collector
                 else:
                     collector = self.sub_paths[broken_name]
-                collector.add_update_statement(
-                    field, update_statement, path_from_starting_table
-                )
+                collector.add_update(field, update_statement, path_from_starting_table)
             else:
-                self.update_statements[field.db_column] = update_statement
+                if update_statement is not None:
+                    self.update_statements[field.db_column] = update_statement
+                self.updated_field_ids.add(field.id)
         else:
             next_via_field_link = path_from_starting_table[0]
             if next_via_field_link.link_row_table != self.table:
@@ -73,7 +78,7 @@ class PathBasedUpdateStatementCollector:
                     next_via_field_link,
                     connection_is_broken=self.connection_is_broken,
                 )
-            self.sub_paths[next_link_db_column].add_update_statement(
+            self.sub_paths[next_link_db_column].add_update(
                 field, update_statement, path_from_starting_table[1:]
             )
 
@@ -130,7 +135,32 @@ class PathBasedUpdateStatementCollector:
             )
 
             qs = qs.filter(filter_for_rows_connected_to_starting_row)
-        qs.update(**self.update_statements)
+        count = qs.count()
+        if count < settings.ROWS_UPDATE_LIMIT:
+            before_return = before_rows_update.send(
+                self,
+                rows=list(qs.all()),
+                user=None,
+                table=self.table,
+                model=model,
+                updated_field_ids=self.updated_field_ids,
+            )
+        if self.update_statements:
+            qs.update(**self.update_statements)
+        if count < settings.ROWS_UPDATE_LIMIT:
+            rows_updated.send(
+                self,
+                rows=list(qs.all()),
+                user=None,
+                table=self.table,
+                model=model,
+                before_return=before_return,
+                updated_field_ids=self.updated_field_ids,
+            )
+        else:
+            table_updated.send(
+                self, table=self.table, user=None, force_table_refresh=True
+            )
 
     def _include_rows_connected_to_deleted_m2m_relationships(
         self,
@@ -230,7 +260,7 @@ class FieldUpdateCollector:
 
         # noinspection PyTypeChecker
         self._updated_fields_per_table[field.table_id][field.id] = field
-        self._update_statement_collector.add_update_statement(
+        self._update_statement_collector.add_update(
             field, update_statement, via_path_to_starting_table
         )
 
@@ -277,3 +307,11 @@ class FieldUpdateCollector:
 
     def _for_table(self, table) -> List[Field]:
         return list(self._updated_fields_per_table.get(table.id, {}).values())
+
+    def add_updated_field(self, field, via_path_to_starting_table):
+        self._updated_fields_per_table[field.table_id][field.id] = field
+        self._update_statement_collector.add_update(
+            field,
+            update_statement=None,
+            path_from_starting_table=via_path_to_starting_table,
+        )

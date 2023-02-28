@@ -475,6 +475,9 @@ if [ "$dont_attach" != true ] && [ "$up" = true ] ; then
       launch_tab_and_attach "caddy" "caddy"
       launch_tab_and_attach "db" "db"
       launch_tab_and_attach "redis" "redis"
+      launch_tab_and_exec "redis-monitor" \
+              "redis" \
+              "redis-cli -a $REDIS_PASSWORD monitor | grep beat"
       launch_tab_and_attach "mailhog" "mailhog"
       if [ "$dev" = true ] ; then
         launch_tab_and_attach "mjml compiler" "mjml-email-compiler"

@@ -736,6 +736,7 @@ class ViewHandler:
         """
 
         field_type = field_type_registry.get_by_model(field.specific_class)
+        print(f"FIELD TYPE CHANGE ========================= {field}")
 
         # If the new field type does not support sorting then all sortings will be
         # removed.

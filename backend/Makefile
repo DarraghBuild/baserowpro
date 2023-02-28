@@ -1,3 +1,5 @@
+.PHONY: lint format sort
+
 install-dependencies:
 	apt-get update && apt-get install -y libpq-dev postgresql-client
 	pip install -r requirements/base.txt
@@ -14,6 +16,11 @@ lint:
 	|| exit;
 
 lint-python: lint
+
+fix: format sort unimport
+
+unimport:
+	unimport -r --ignore-init . ../premium/backend ../enterprise/backend || exit;
 
 format:
 	black . ../premium/backend ../enterprise/backend --extend-exclude='/generated/' || exit;
