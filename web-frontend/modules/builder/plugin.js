@@ -16,9 +16,10 @@ import { BuilderApplicationType } from '@baserow/modules/builder/applicationType
 import { PublicSiteErrorPageType } from '@baserow/modules/builder/errorPageTypes'
 
 import pageStore from '@baserow/modules/builder/store/page'
+import elementStore from '@baserow/modules/builder/store/element'
 import { registerRealtimeEvents } from '@baserow/modules/builder/realtime'
 import {
-  HeaderElementType,
+  HeadingElementType,
   ParagraphElementType,
 } from '@baserow/modules/builder/elementTypes'
 
@@ -40,6 +41,7 @@ export default (context) => {
   registerRealtimeEvents(app.$realtime)
 
   store.registerModule('page', pageStore)
+  store.registerModule('element', elementStore)
 
   app.$registry.registerNamespace('builderSettings')
   app.$registry.registerNamespace('element')
@@ -57,6 +59,6 @@ export default (context) => {
 
   app.$registry.register('errorPage', new PublicSiteErrorPageType(context))
 
-  app.$registry.register('element', new HeaderElementType(context))
+  app.$registry.register('element', new HeadingElementType(context))
   app.$registry.register('element', new ParagraphElementType(context))
 }

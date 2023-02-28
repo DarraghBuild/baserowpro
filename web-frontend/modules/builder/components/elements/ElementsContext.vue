@@ -12,7 +12,7 @@
       :elements="elements"
     />
     <AddElementButton @click="$refs.addElementModal.show()" />
-    <AddElementModal ref="addElementModal" />
+    <AddElementModal ref="addElementModal" :page="page" />
   </Context>
 </template>
 
@@ -21,6 +21,7 @@ import context from '@baserow/modules/core/mixins/context'
 import ElementsList from '@baserow/modules/builder/components/elements/ElementsList'
 import AddElementButton from '@baserow/modules/builder/components/elements/AddElementButton'
 import AddElementModal from '@baserow/modules/builder/components/elements/AddElementModal'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'ElementsContext',
@@ -32,6 +33,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({ page: 'page/getSelected' }),
     elements() {
       // TODO Instead of all elements these need to be the elements currently on the
       // page

@@ -29,8 +29,8 @@
         "searchPlaceholder": "Search elements"
     },
     "elementType": {
-        "header": "Header",
-        "headerDescription": "Page heading title",
+        "heading": "Heading",
+        "headingDescription": "Page heading title",
         "paragraph": "Paragraph",
         "paragraphDescription": "Single line text"
     },

@@ -19,17 +19,17 @@ export class ElementType extends Registerable {
   }
 }
 
-export class HeaderElementType extends ElementType {
+export class HeadingElementType extends ElementType {
   getType() {
-    return 'header'
+    return 'heading'
   }
 
   get name() {
-    return this.app.i18n.t('elementType.header')
+    return this.app.i18n.t('elementType.heading')
   }
 
   get description() {
-    return this.app.i18n.t('elementType.headerDescription')
+    return this.app.i18n.t('elementType.headingDescription')
   }
 
   get iconClass() {

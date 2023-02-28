@@ -125,7 +125,11 @@ const actions = {
   },
 }
 
-const getters = {}
+const getters = {
+  getSelected(state) {
+    return state.selected
+  },
+}
 
 export default {
   namespaced: true,

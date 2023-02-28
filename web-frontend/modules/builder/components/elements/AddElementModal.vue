@@ -12,6 +12,7 @@
         :key="elementType.getType()"
         class="add-element-modal__element-card"
         :element-type="elementType"
+        @click.native.prevent="addElement(elementType)"
       />
     </div>
   </Modal>
@@ -25,6 +26,12 @@ export default {
   name: 'AddElementModal',
   components: { ElementCard },
   mixins: [modal],
+  props: {
+    page: {
+      type: Object,
+      required: true,
+    },
+  },
   data() {
     return {
       search: null,
@@ -53,6 +60,11 @@ export default {
 
         return matchesName || matchesDescription
       })
+    },
+  },
+  methods: {
+    addElement(elementType) {
+      this.$store.dispatch('element/create', { page: this.page, elementType })
     },
   },
 }
