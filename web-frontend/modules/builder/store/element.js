@@ -11,13 +11,25 @@ const mutations = {
 }
 
 const actions = {
-  async create({ commit }, { page, elementType }) {
+  forceCreate({ commit }, element) {
+    commit('ADD_ITEM', element)
+  },
+  async create({ dispatch }, { page, elementType }) {
     const { data: element } = await ElementService(this.$client).create(
       page.id,
       elementType.getType()
     )
 
-    commit('ADD_ITEM', element)
+    dispatch('forceCreate', element)
+  },
+  async fetch({ dispatch }, { page }) {
+    const { data: elements } = await ElementService(this.$client).fetchAll(
+      page.id
+    )
+
+    elements.forEach((element) => dispatch('forceCreate', element))
+
+    return elements
   },
 }
 

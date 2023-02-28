@@ -27,6 +27,9 @@ export default {
       await store.dispatch('group/selectById', builder.group.id)
       data.builder = builder
       data.page = page
+
+      // TODO we can enable the line below once the get elements endpoint exists
+      // await store.dispatch('element/fetch', { page })
     } catch (e) {
       // In case of a network error we want to fail hard.
       if (e.response === undefined && !(e instanceof StoreItemLookupError)) {
