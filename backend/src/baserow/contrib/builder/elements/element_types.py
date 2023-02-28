@@ -1,17 +1,17 @@
-from baserow.contrib.builder.elements.models import HeaderElement, ParagraphElement
+from baserow.contrib.builder.elements.models import HeadingElement, ParagraphElement
 from baserow.contrib.builder.elements.registries import ElementType
 
 
-class HeaderElementType(ElementType):
-    type = "header"
-    model_class = HeaderElement
+class HeadingElementType(ElementType):
+    type = "heading"
+    model_class = HeadingElement
 
     def get_config_serializer_class(self):
         from baserow.contrib.builder.api.elements.element_type_serializers import (
-            HeaderElementConfigSerializer,
+            HeadingElementConfigSerializer,
         )
 
-        return HeaderElementConfigSerializer
+        return HeadingElementConfigSerializer
 
     def get_sample_params(self):
         return {"config": {"value": "Corporis perspiciatis"}}

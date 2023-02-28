@@ -60,7 +60,7 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.CreateModel(
-            name="HeaderElement",
+            name="HeadingElement",
             fields=[
                 (
                     "element_ptr",

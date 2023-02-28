@@ -7,9 +7,9 @@ from baserow.contrib.builder.elements.operations import (
     CreateElementOperationType,
     DeleteElementOperationType,
     ListElementsPageOperationType,
+    OrderElementsPageOperationType,
     ReadElementOperationType,
     UpdateElementOperationType,
-    OrderElementsPageOperationType,
 )
 from baserow.contrib.builder.operations import (
     ListPagesBuilderOperationType,

@@ -51,7 +51,7 @@ class Element(
         return cls.get_highest_order_of_queryset(queryset) + 1
 
 
-class HeaderElement(Element):
+class HeadingElement(Element):
     pass
 
 

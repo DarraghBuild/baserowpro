@@ -21,9 +21,13 @@ class ElementHandler:
         """
 
         try:
-            element = Element.objects.select_related(
-                "page", "page__builder", "page__builder__group"
-            ).get(id=element_id)
+            element = (
+                Element.objects.select_related(
+                    "page", "page__builder", "page__builder__group"
+                )
+                .get(id=element_id)
+                .specific
+            )
         except Element.DoesNotExist:
             raise ElementDoesNotExist()
 

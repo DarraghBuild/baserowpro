@@ -12,6 +12,7 @@ import pytest
 from pyinstrument import Profiler
 
 from baserow.contrib.database.application_types import DatabaseApplicationType
+from baserow.core.exceptions import PermissionDenied
 from baserow.core.permission_manager import CorePermissionManagerType
 from baserow.core.trash.trash_types import GroupTrashableItemType
 
@@ -326,10 +327,23 @@ def trash_item_type_perm_delete_item_raising_operationalerror(
 
 
 class StubbedCorePermissionManagerType(CorePermissionManagerType):
-    def check_permissions(
-        self, actor, operation, group=None, context=None, include_trash=False
-    ):
-        return True
+    """
+    Stub for the first permission manager.
+    """
+
+    def __init__(self, raise_permission_denied: bool = False):
+        self.raise_permission_denied = raise_permission_denied
+
+    def check_multiple_permissions(self, checks, group=None, include_trash=False):
+
+        result = {}
+        for check in checks:
+            if self.raise_permission_denied:
+                result[check] = PermissionDenied()
+            else:
+                result[check] = True
+
+        return result
 
 
 @pytest.fixture
@@ -347,3 +361,31 @@ def bypass_check_permissions(
         first_manager
     ] = stub_core_permission_manager
     yield stub_core_permission_manager
+
+
+@pytest.fixture
+def stub_check_permissions() -> callable:
+    """
+    Overrides the existing `CorePermissionManagerType` so that
+    we can return True or raise a PermissionDenied exception on a `check_permissions`
+    call.
+    """
+
+    @contextlib.contextmanager
+    def _perform_stub(
+        raise_permission_denied: bool = False,
+    ) -> CorePermissionManagerType:
+        from baserow.core.registries import permission_manager_type_registry
+
+        before = permission_manager_type_registry.registry.copy()
+        stub_core_permission_manager = StubbedCorePermissionManagerType(
+            raise_permission_denied
+        )
+        first_manager = settings.PERMISSION_MANAGERS[0]
+        permission_manager_type_registry.registry[
+            first_manager
+        ] = stub_core_permission_manager
+        yield stub_core_permission_manager
+        permission_manager_type_registry.registry = before
+
+    return _perform_stub

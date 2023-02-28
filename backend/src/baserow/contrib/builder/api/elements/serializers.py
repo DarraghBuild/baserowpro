@@ -50,7 +50,7 @@ class UpdateElementSerializer(serializers.ModelSerializer):
 
 
 class OrderElementsSerializer(serializers.Serializer):
-    elements_ids = serializers.ListField(
+    element_ids = serializers.ListField(
         child=serializers.IntegerField(),
         help_text="The ids of the elements in the order they are supposed to be set in",
     )

@@ -83,7 +83,7 @@ class ElementsView(APIView):
         """Creates a new element."""
 
         type_name = data.pop("type")
-        page = PageHandler().get_page_temp(page_id)
+        page = PageHandler().get_page(page_id)
 
         element_type = element_type_registry.get(type_name)
         element = ElementService().create_element(
@@ -177,7 +177,7 @@ class ElementView(APIView):
             ElementDoesNotExist: ERROR_ELEMENT_DOES_NOT_EXIST,
         }
     )
-    @validate_body(CreateElementSerializer)
+    @validate_body(UpdateElementSerializer)
     def patch(self, request, data: Dict, element_id: int):
 
         element = ElementHandler().get_element(element_id)
@@ -223,6 +223,6 @@ class ElementView(APIView):
 
         element = ElementHandler().get_element(element_id)
 
-        ElementService().delete_page(request.user, element)
+        ElementService().delete_element(request.user, element)
 
         return Response(status=204)

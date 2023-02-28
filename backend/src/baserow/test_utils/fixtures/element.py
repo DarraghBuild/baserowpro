@@ -1,9 +1,9 @@
-from baserow.contrib.builder.elements.models import HeaderElement, ParagraphElement
+from baserow.contrib.builder.elements.models import HeadingElement, ParagraphElement
 
 
 class ElementFixtures:
     def create_builder_header_element(self, user=None, page=None, **kwargs):
-        element = self.create_builder_element(HeaderElement, user, page, **kwargs)
+        element = self.create_builder_element(HeadingElement, user, page, **kwargs)
         return element
 
     def create_builder_paragraph_element(self, user=None, page=None, **kwargs):

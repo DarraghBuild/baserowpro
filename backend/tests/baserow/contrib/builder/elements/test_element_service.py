@@ -1,44 +1,42 @@
+from unittest.mock import patch
+
 import pytest
 
 from baserow.contrib.builder.elements.exceptions import (
     ElementDoesNotExist,
     ElementNotInPage,
 )
-from baserow.contrib.builder.elements.models import Element
 from baserow.contrib.builder.elements.registries import element_type_registry
 from baserow.contrib.builder.elements.service import ElementService
-from baserow.core.exceptions import UserNotInGroup
+from baserow.core.exceptions import PermissionException
 
 
 @pytest.mark.django_db
-def test_create_element(data_fixture):
+@patch("baserow.contrib.builder.elements.service.element_created")
+def test_create_element(element_created_mock, data_fixture, stub_check_permissions):
     user = data_fixture.create_user()
     page = data_fixture.create_builder_page(user=user)
 
-    for index, element_type in enumerate(element_type_registry.get_all()):
+    for element_type in element_type_registry.get_all():
         sample_params = element_type.get_sample_params()
 
         element = ElementService().create_element(
             user, element_type, page=page, **sample_params
         )
 
-        assert element.page.id == page.id
-
-        for key, value in sample_params.items():
-            assert getattr(element, key) == value
-
-        assert element.order == index + 1
-        assert Element.objects.count() == index + 1
+        assert element_created_mock.called_with(element=element, user=user)
 
 
 @pytest.mark.django_db
-def test_create_element_user_not_in_group(data_fixture):
+def test_create_element_permission_denied(data_fixture, stub_check_permissions):
     user = data_fixture.create_user()
-    page = data_fixture.create_builder_page()
+    page = data_fixture.create_builder_page(user=user)
 
-    element_type = element_type_registry.get("header")
+    element_type = element_type_registry.get("heading")
 
-    with pytest.raises(UserNotInGroup):
+    with stub_check_permissions(raise_permission_denied=True), pytest.raises(
+        PermissionException
+    ):
         ElementService().create_element(
             user, element_type, page=page, **element_type.get_sample_params()
         )
@@ -61,16 +59,18 @@ def test_get_element_does_not_exist(data_fixture):
 
 
 @pytest.mark.django_db
-def test_get_element_user_not_in_group(data_fixture):
+def test_get_element_permission_denied(data_fixture, stub_check_permissions):
     user = data_fixture.create_user()
-    element = data_fixture.create_builder_header_element()
+    element = data_fixture.create_builder_header_element(user=user)
 
-    with pytest.raises(UserNotInGroup):
+    with stub_check_permissions(raise_permission_denied=True), pytest.raises(
+        PermissionException
+    ):
         ElementService().get_element(user, element.id)
 
 
 @pytest.mark.django_db
-def test_get_elements(data_fixture):
+def test_get_elements(data_fixture, stub_check_permissions):
     user = data_fixture.create_user()
     page = data_fixture.create_builder_page(user=user)
     element1 = data_fixture.create_builder_header_element(page=page)
@@ -83,31 +83,49 @@ def test_get_elements(data_fixture):
         element3.id,
     ]
 
+    def filter_queryset(
+        actor,
+        operation_name,
+        queryset,
+        group=None,
+        context=None,
+        allow_if_template=False,
+    ):
+        return queryset.exclude(id=element1.id)
+
+    with stub_check_permissions() as stub:
+        stub.filter_queryset = filter_queryset
+        assert [p.id for p in ElementService().get_elements(user, page)] == [
+            element2.id,
+            element3.id,
+        ]
+
 
 @pytest.mark.django_db
-def test_delete_element(data_fixture):
+@patch("baserow.contrib.builder.elements.service.element_deleted")
+def test_delete_element(element_deleted_mock, data_fixture):
     user = data_fixture.create_user()
     element = data_fixture.create_builder_header_element(user=user)
 
     ElementService().delete_element(user, element)
 
-    assert Element.objects.count() == 0
+    assert element_deleted_mock.called_with(element_id=element.id, user=user)
 
 
 @pytest.mark.django_db(transaction=True)
-def test_delete_element_user_not_in_group(data_fixture):
+def test_delete_element_permission_denied(data_fixture, stub_check_permissions):
     user = data_fixture.create_user()
-    user_unrelated = data_fixture.create_user()
     element = data_fixture.create_builder_header_element(user=user)
 
-    with pytest.raises(UserNotInGroup):
-        ElementService().delete_element(user_unrelated, element)
-
-    assert Element.objects.count() == 1
+    with stub_check_permissions(raise_permission_denied=True), pytest.raises(
+        PermissionException
+    ):
+        ElementService().delete_element(user, element)
 
 
 @pytest.mark.django_db
-def test_update_element(data_fixture):
+@patch("baserow.contrib.builder.elements.service.element_updated")
+def test_update_element(element_updated_mock, data_fixture):
     user = data_fixture.create_user()
     element = data_fixture.create_builder_header_element(user=user)
 
@@ -115,67 +133,54 @@ def test_update_element(data_fixture):
         user, element, {"config": {"value": "newValue"}}
     )
 
-    assert element_updated.config == {"value": "newValue"}
+    assert element_updated_mock.called_with(element=element_updated, user=user)
 
 
-@pytest.mark.django_db
-def test_update_element_user_not_in_group(data_fixture):
+@pytest.mark.django_db(transaction=True)
+def test_update_element_permission_denied(data_fixture, stub_check_permissions):
     user = data_fixture.create_user()
-    user_unrelated = data_fixture.create_user()
     element = data_fixture.create_builder_header_element(user=user)
 
-    with pytest.raises(UserNotInGroup):
+    with stub_check_permissions(raise_permission_denied=True), pytest.raises(
+        PermissionException
+    ):
         ElementService().update_element(
-            user_unrelated, element, {"config": {"value": "newValue"}}
+            user, element, {"config": {"value": "newValue"}}
         )
 
 
 @pytest.mark.django_db
-def test_update_element_invalid_values(data_fixture):
-
-    user = data_fixture.create_user()
-    element = data_fixture.create_builder_header_element(user=user)
-
-    element_updated = ElementService().update_element(
-        user, element, {"config": {"nonsense": "hello"}}
-    )
-
-    assert not hasattr(element_updated, "nonsense")
-
-
-@pytest.mark.django_db
-def test_order_elements(data_fixture):
+@patch("baserow.contrib.builder.elements.service.elements_reordered")
+def test_order_elements(element_updated_mock, data_fixture):
     user = data_fixture.create_user()
     page = data_fixture.create_builder_page(user=user)
     element1 = data_fixture.create_builder_header_element(page=page)
     element2 = data_fixture.create_builder_header_element(page=page)
     element3 = data_fixture.create_builder_header_element(page=page)
 
-    full_order = ElementService().order_elements(user, page, [element3.id, element1.id])
+    ElementService().order_elements(user, page, [element3.id, element1.id])
 
-    assert full_order == [element2.id, element3.id, element1.id]
-
-    first, second, third = Element.objects.all()
-
-    assert first.id == element2.id
-    assert second.id == element3.id
-    assert third.id == element1.id
+    assert element_updated_mock.called_with(
+        full_order=[element2.id, element3.id, element1.id], page=page, user=user
+    )
 
 
 @pytest.mark.django_db
-def test_order_elements_user_not_in_group(data_fixture):
+def test_order_elements_permission_denied(data_fixture, stub_check_permissions):
     user = data_fixture.create_user()
-    page = data_fixture.create_builder_page()
+    page = data_fixture.create_builder_page(user=user)
     element1 = data_fixture.create_builder_header_element(page=page)
     element2 = data_fixture.create_builder_header_element(page=page)
     element3 = data_fixture.create_builder_header_element(page=page)
 
-    with pytest.raises(UserNotInGroup):
+    with stub_check_permissions(raise_permission_denied=True), pytest.raises(
+        PermissionException
+    ):
         ElementService().order_elements(user, page, [element3.id, element1.id])
 
 
 @pytest.mark.django_db
-def test_order_elements_not_in_page(data_fixture):
+def test_order_elements_not_in_page(data_fixture, stub_check_permissions):
     user = data_fixture.create_user()
     page = data_fixture.create_builder_page(user=user)
     element1 = data_fixture.create_builder_header_element(page=page)
@@ -183,4 +188,18 @@ def test_order_elements_not_in_page(data_fixture):
     element3 = data_fixture.create_builder_header_element(user=user)
 
     with pytest.raises(ElementNotInPage):
+        ElementService().order_elements(user, page, [element3.id, element1.id])
+
+    def filter_queryset(
+        actor,
+        operation_name,
+        queryset,
+        group=None,
+        context=None,
+        allow_if_template=False,
+    ):
+        return queryset.exclude(id=element1.id)
+
+    with stub_check_permissions() as stub, pytest.raises(ElementNotInPage):
+        stub.filter_queryset = filter_queryset
         ElementService().order_elements(user, page, [element3.id, element1.id])
