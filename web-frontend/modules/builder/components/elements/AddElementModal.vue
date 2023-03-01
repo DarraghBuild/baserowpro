@@ -65,6 +65,9 @@ export default {
   methods: {
     addElement(elementType) {
       this.$store.dispatch('element/create', { page: this.page, elementType })
+
+      this.$emit('added')
+      this.hide()
     },
   },
 }

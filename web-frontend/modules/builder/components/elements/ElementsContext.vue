@@ -12,7 +12,7 @@
       :elements="elements"
     />
     <AddElementButton @click="$refs.addElementModal.show()" />
-    <AddElementModal ref="addElementModal" :page="page" />
+    <AddElementModal ref="addElementModal" :page="page" @added="hide()" />
   </Context>
 </template>
 
