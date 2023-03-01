@@ -81,7 +81,8 @@
             <div class="tree__action sidebar__action">
               <a class="tree__link" @click="$refs.trashModal.show()">
                 <div>
-                  <i class="tree__icon fas fa-trash"></i>
+                  <i class="iconoir-trash" style="color: red"></i>
+                  <!-- <i class="tree__icon fas fa-trash"></i> -->
                   <span class="sidebar__item-name">{{
                     $t('sidebar.trash')
                   }}</span>
