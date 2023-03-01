@@ -8,9 +8,14 @@ const state = {
 const mutations = {
   ADD_ITEM(state, { element, pageId }) {
     if (Object.keys(state.elements).includes(pageId.toString())) {
-      state.elements[pageId].push(element)
+      const isElementAlreadyOnPage = state.elements[pageId].some(
+        (e) => e.id === element.id
+      )
+      if (!isElementAlreadyOnPage) {
+        state.elements[pageId].push(element)
+      }
     } else {
-      state.elements[pageId] = [element]
+      state.elements = { ...state.elements, [pageId]: [element] }
     }
   },
   DELETE_ITEM(state, { elementId, pageId }) {
