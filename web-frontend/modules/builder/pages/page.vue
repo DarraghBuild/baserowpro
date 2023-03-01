@@ -34,8 +34,7 @@ export default {
       data.builder = builder
       data.page = page
 
-      // TODO we can enable the line below once the get elements endpoint exists
-      // await store.dispatch('element/fetch', { page })
+      await store.dispatch('element/fetch', { page })
     } catch (e) {
       // In case of a network error we want to fail hard.
       if (e.response === undefined && !(e instanceof StoreItemLookupError)) {
