@@ -1,5 +1,7 @@
 <template>
-  <div>{{ element }}</div>
+  <div>
+    <component :is="elementType.component"></component>
+  </div>
 </template>
 
 <script>
@@ -9,6 +11,11 @@ export default {
     element: {
       type: Object,
       required: true,
+    },
+  },
+  computed: {
+    elementType() {
+      return this.$registry.get('element', this.element.type)
     },
   },
 }

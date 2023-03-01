@@ -1,5 +1,6 @@
 import { Registerable } from '@baserow/modules/core/registry'
 import ParagraphElement from '@baserow/modules/builder/components/elements/components/ParagraphElement'
+import HeadingElement from '@baserow/modules/builder/components/elements/components/HeadingElement'
 
 export class ElementType extends Registerable {
   get name() {
@@ -37,7 +38,7 @@ export class HeadingElementType extends ElementType {
   }
 
   get component() {
-    return ParagraphElement
+    return HeadingElement
   }
 }
 
