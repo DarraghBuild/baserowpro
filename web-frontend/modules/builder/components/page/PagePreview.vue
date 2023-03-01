@@ -13,6 +13,7 @@
           :element="element"
           :active="element.id === elementActiveId"
           @selected="elementActiveId = element.id"
+          @delete="deleteElement(element)"
         />
       </div>
     </div>
@@ -22,6 +23,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import Element from '@baserow/modules/builder/components/page/Element'
+import { notifyIf } from '@baserow/modules/core/utils/error'
 
 export default {
   name: 'PagePreview',
@@ -82,6 +84,13 @@ export default {
       previewScaled.style.transformOrigin = `0 0`
       previewScaled.style.width = `${horizontal * 2 + currentWidth}px`
       previewScaled.style.height = `${vertical * 2 + currentHeight}px`
+    },
+    deleteElement(element) {
+      try {
+        this.$store.dispatch('element/delete', { element })
+      } catch (error) {
+        notifyIf(error)
+      }
     },
   },
 }

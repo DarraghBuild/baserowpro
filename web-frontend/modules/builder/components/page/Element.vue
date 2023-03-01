@@ -4,7 +4,7 @@
     :class="{ 'element--active': active }"
     @click="$emit('selected')"
   >
-    <ElementMenu v-if="active" />
+    <ElementMenu v-if="active" @delete="$emit('delete')" />
     <component :is="elementType.component"></component>
   </div>
 </template>

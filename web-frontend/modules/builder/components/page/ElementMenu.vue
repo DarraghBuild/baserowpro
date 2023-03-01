@@ -18,7 +18,7 @@
         {{ $t('elementMenu.moveDown') }}
       </div>
     </a>
-    <a class="element__menu-item">
+    <a class="element__menu-item" @click="$emit('delete')">
       <i class="fas fa-trash"></i>
       <div class="element__menu-item-description">
         {{ $t('action.delete') }}

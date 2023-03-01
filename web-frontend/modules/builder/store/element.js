@@ -13,11 +13,22 @@ const mutations = {
       state.elements[pageId] = [element]
     }
   },
+  DELETE_ITEM(state, { elementId, pageId }) {
+    if (Object.keys(state.elements).includes(pageId.toString())) {
+      const index = state.elements[pageId].findIndex(
+        (element) => element.id === elementId
+      )
+      state.elements[pageId].splice(index, 1)
+    }
+  },
 }
 
 const actions = {
   forceCreate({ commit }, { element, pageId }) {
     commit('ADD_ITEM', { element, pageId })
+  },
+  forceDelete({ commit }, { elementId, pageId }) {
+    commit('DELETE_ITEM', { elementId, pageId })
   },
   async create({ dispatch }, { page, elementType }) {
     const { data: element } = await ElementService(this.$client).create(
@@ -26,6 +37,11 @@ const actions = {
     )
 
     dispatch('forceCreate', { element, pageId: page.id })
+  },
+  async delete({ dispatch }, { element }) {
+    await ElementService(this.$client).delete(element.id)
+
+    dispatch('forceDelete', { elementId: element.id, pageId: element.page_id })
   },
   async fetch({ dispatch }, { page }) {
     const { data: elements } = await ElementService(this.$client).fetchAll(

@@ -8,5 +8,8 @@ export default (client) => {
         type: elementType,
       })
     },
+    delete(elementId) {
+      client.delete(`builder/element/${elementId}/`)
+    },
   }
 }
