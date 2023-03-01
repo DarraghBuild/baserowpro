@@ -1,5 +1,5 @@
 import { Registerable } from '@baserow/modules/core/registry'
-import ParagraphElement from '@baserow/modules/builder/components/page/components/ParagraphElement'
+import ParagraphElement from '@baserow/modules/builder/components/elements/components/ParagraphElement'
 
 export class ElementType extends Registerable {
   get name() {
