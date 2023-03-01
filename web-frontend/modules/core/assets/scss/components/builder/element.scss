@@ -1,0 +1,38 @@
+.element {
+  position: relative;
+
+  .element__add,
+  .element__menu {
+    display: none;
+  }
+
+  &:hover {
+    .element__add {
+      display: block;
+    }
+
+    .element_menu {
+      display: flex;
+    }
+  }
+
+  &:not(.element--active) {
+    cursor: pointer;
+  }
+
+  &.element--active {
+    cursor: inherit;
+
+    &::before {
+      @include absolute(0, 0, 0, 0);
+
+      content: "";
+      border: solid 1px $color-primary-500;
+      pointer-events: none;
+    }
+
+    .element__add {
+      display: block;
+    }
+  }
+}

@@ -1,5 +1,9 @@
 <template>
-  <div>
+  <div
+    class="element"
+    :class="{ 'element--active': active }"
+    @click="$emit('selected')"
+  >
     <component :is="elementType.component"></component>
   </div>
 </template>
@@ -11,6 +15,11 @@ export default {
     element: {
       type: Object,
       required: true,
+    },
+    active: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   computed: {
