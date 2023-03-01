@@ -21,6 +21,7 @@
 <script>
 import modal from '@baserow/modules/core/mixins/modal'
 import ElementCard from '@baserow/modules/builder/components/elements/ElementCard'
+import { notifyIf } from '@baserow/modules/core/utils/error'
 
 export default {
   name: 'AddElementModal',
@@ -63,8 +64,15 @@ export default {
     },
   },
   methods: {
-    addElement(elementType) {
-      this.$store.dispatch('element/create', { page: this.page, elementType })
+    async addElement(elementType) {
+      try {
+        await this.$store.dispatch('element/create', {
+          page: this.page,
+          elementType,
+        })
+      } catch (error) {
+        notifyIf(error)
+      }
 
       this.$emit('added')
       this.hide()
