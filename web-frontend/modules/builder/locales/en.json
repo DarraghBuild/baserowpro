@@ -40,5 +40,9 @@
     "addElementModal": {
         "title": "Add new element",
         "searchPlaceholder": "Search elements"
+    },
+    "elementMenu": {
+        "moveUp": "Move up",
+        "moveDown": "Move down"
     }
 }

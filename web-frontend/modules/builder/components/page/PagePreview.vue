@@ -7,15 +7,13 @@
       :style="{ 'max-width': maxWidth }"
     >
       <div ref="previewScaled" class="page-preview__scaled">
-        <ul>
-          <li v-for="element in elements" :key="element.id">
-            <Element
-              :element="element"
-              :active="element.id === elementActiveId"
-              @selected="elementActiveId = element.id"
-            />
-          </li>
-        </ul>
+        <Element
+          v-for="element in elements"
+          :key="element.id"
+          :element="element"
+          :active="element.id === elementActiveId"
+          @selected="elementActiveId = element.id"
+        />
       </div>
     </div>
   </div>

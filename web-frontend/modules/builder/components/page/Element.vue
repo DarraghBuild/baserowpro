@@ -4,13 +4,16 @@
     :class="{ 'element--active': active }"
     @click="$emit('selected')"
   >
+    <ElementMenu v-if="active" />
     <component :is="elementType.component"></component>
   </div>
 </template>
 
 <script>
+import ElementMenu from '@baserow/modules/builder/components/page/ElementMenu'
 export default {
   name: 'Element',
+  components: { ElementMenu },
   props: {
     element: {
       type: Object,

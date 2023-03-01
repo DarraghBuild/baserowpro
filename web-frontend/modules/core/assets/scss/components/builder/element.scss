@@ -1,7 +1,21 @@
+.element__menu {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  width: 26px;
+  border: solid 1px $color-neutral-400;
+  border-radius: 3px;
+
+  @include absolute(6px, 6px, auto, auto);
+}
+
 .element {
   position: relative;
 
-  .element__add,
+  .element__add {
+    display: none;
+  }
+
   .element__menu {
     display: none;
   }
@@ -11,7 +25,7 @@
       display: block;
     }
 
-    .element_menu {
+    .element__menu {
       display: flex;
     }
   }
@@ -34,5 +48,44 @@
     .element__add {
       display: block;
     }
+  }
+}
+
+.element__menu-item-description {
+  @include absolute(2px, 30px, auto, auto);
+
+  display: none;
+  background-color: $color-neutral-900;
+  font-size: 11px;
+  color: $white;
+  line-height: 20px;
+  padding: 0 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.element__menu-item {
+  @include center-text(24px, 9px);
+
+  position: relative;
+  background-color: $white;
+  color: $color-primary-900;
+
+  &:hover {
+    background-color: $color-neutral-100;
+
+    .element__menu-item-description {
+      display: block;
+    }
+  }
+
+  &:first-child {
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+  }
+
+  &:last-child {
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
   }
 }
