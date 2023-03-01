@@ -36,18 +36,27 @@ class ElementHandler:
 
         return element
 
-    def get_elements(self, page: Page, base_queryset: QuerySet = None) -> List[Element]:
+    def get_elements(
+        self, page: Page, base_queryset: QuerySet = None, specific: bool = True
+    ) -> List[Element]:
         """
         Gets all the specific elements of a given page.
 
         :param page: The page that holds the elements.
         :param base_queryset: The base queryset to use to build the query.
+        :param specific: Wether or not return the generic elements or the specific
+            instances.
         :return: The elements of that page.
         """
 
         queryset = base_queryset if base_queryset is not None else Element.objects.all()
-        queryset = queryset.filter(page=page).select_related("content_type")
-        return specific_iterator(queryset)
+        queryset = queryset.filter(page=page)
+
+        if specific:
+            queryset = queryset.select_related("content_type")
+            return specific_iterator(queryset)
+        else:
+            return queryset
 
     def create_element(
         self, element_type: ElementType, page: Page, **kwargs
@@ -105,7 +114,7 @@ class ElementHandler:
 
     def order_elements(self, page: Page, new_order: List[int]) -> List[int]:
         """
-        Orders the elements of a page in a new order.
+        Changes the order of the elements of a page.
 
         :param page: The page the elements exist on.
         :param new_order: The new order which they should have.

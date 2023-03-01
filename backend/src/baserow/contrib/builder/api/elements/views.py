@@ -239,7 +239,6 @@ class ElementView(APIView):
             base_serializer_class=UpdateElementSerializer,
         )
 
-        print(data)
         element_updated = ElementService().update_element(request.user, element, data)
 
         serializer = element_type_registry.get_serializer(

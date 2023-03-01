@@ -27,11 +27,11 @@ class ElementType(
         element: Element,
     ) -> Dict[str, Any]:
         """
-        Exports the field to a serialized dict that can be imported by the
+        Exports the element to a serialized dict that can be imported by the
         `import_serialized` method. This dict is also JSON serializable.
 
         :param element: The element instance that must be serialized.
-        :return: The exported field in as serialized dict.
+        :return: The exported element as serialized dict.
         """
 
         serialized = {
@@ -74,13 +74,13 @@ class ElementType(
 
         id_mapping["builder_elements"][element_id] = element.id
 
-        return Element
+        return element
 
     @abstractmethod
     def get_sample_params(self) -> Dict[str, Any]:
         """
-        Returns a sample of params for this type. This can be used for tests for
-        instance.
+        Returns a sample of params for this type. This can be used to tests the element
+        for instance.
         """
 
     def get_serializer_class(self, *args, **kwargs):

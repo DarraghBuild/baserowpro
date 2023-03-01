@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from django.contrib.auth.models import AbstractUser
 
@@ -75,7 +75,12 @@ class ElementService:
         return self.handler.get_elements(page, base_queryset=user_elements)
 
     def create_element(
-        self, user: AbstractUser, element_type: ElementType, page: Page, **kwargs
+        self,
+        user: AbstractUser,
+        element_type: ElementType,
+        page: Page,
+        before_id: Optional[int] = None,
+        **kwargs,
     ) -> Element:
         """
         Creates a new element for a page given the user permissions.
@@ -83,6 +88,8 @@ class ElementService:
         :param user: The user trying to create the element.
         :param element_type: The type of the element.
         :param page: The page the element exists in.
+        :param before_id: If set, the new element is inserted before the element with
+            this id.
         :param kwargs: Additional attributes of the element.
         :return: The created element.
         """
@@ -94,30 +101,29 @@ class ElementService:
             context=page,
         )
 
-        element = self.handler.create_element(element_type, page, **kwargs)
+        new_element = self.handler.create_element(element_type, page, **kwargs)
 
-        element_created.send(self, element=element, user=user)
+        if before_id:
+            old_order = self.handler.get_elements(page, specific=False).values_list(
+                "id", flat=True
+            )
+            # Compute new order by inserting the element before the before_id
+            new_order = []
+            for element_id in old_order:
+                if element_id == new_element.id:
+                    continue
+                if element_id == before_id:
+                    new_order.append(new_element.id)
+                new_order.append(element_id)
 
-        return element
+            self.handler.order_elements(page, new_order)
 
-    def delete_element(self, user: AbstractUser, element: Element):
-        """
-        Deletes an element.
+            # Update the order field
+            new_element.refresh_from_db()
 
-        :param user: The user trying to delete the element.
-        :param element: The to-be-deleted element.
-        """
+        element_created.send(self, element=new_element, before_id=before_id, user=user)
 
-        CoreHandler().check_permissions(
-            user,
-            DeleteElementOperationType.type,
-            group=element.page.builder.group,
-            context=element,
-        )
-
-        self.handler.delete_element(element)
-
-        element_deleted.send(self, element_id=element.id)
+        return new_element
 
     def update_element(
         self, user: AbstractUser, element: Element, values: Dict[str, Any]
@@ -141,9 +147,30 @@ class ElementService:
 
         element = self.handler.update_element(element, values)
 
-        element_updated.send(self, element=element)
+        element_updated.send(self, element=element, user=user)
 
         return element
+
+    def delete_element(self, user: AbstractUser, element: Element):
+        """
+        Deletes an element.
+
+        :param user: The user trying to delete the element.
+        :param element: The to-be-deleted element.
+        """
+
+        page = element.page
+
+        CoreHandler().check_permissions(
+            user,
+            DeleteElementOperationType.type,
+            group=element.page.builder.group,
+            context=element,
+        )
+
+        self.handler.delete_element(element)
+
+        element_deleted.send(self, element_id=element.id, page=page, user=user)
 
     def order_elements(
         self, user: AbstractUser, page: Page, new_order: List[int]
@@ -177,7 +204,7 @@ class ElementService:
 
         element_ids = set(user_elements.values_list("id", flat=True))
 
-        # Check if all ids belongs to the page and if the user has access to it
+        # Check if all ids belong to the page and if the user has access to it
         for element_id in new_order:
             if element_id not in element_ids:
                 raise ElementNotInPage(element_id)

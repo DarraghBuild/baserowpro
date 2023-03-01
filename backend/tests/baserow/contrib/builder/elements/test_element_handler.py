@@ -10,30 +10,34 @@ from baserow.contrib.builder.elements.models import (
 from baserow.contrib.builder.elements.registries import element_type_registry
 
 
-@pytest.mark.django_db
-def test_create_element(data_fixture):
-    page = data_fixture.create_builder_page()
-
-    for index, element_type in enumerate(element_type_registry.get_all()):
-        sample_params = element_type.get_sample_params()
-
-        element = ElementHandler().create_element(
-            element_type, page=page, **sample_params
+def pytest_generate_tests(metafunc):
+    if "element_type" in metafunc.fixturenames:
+        metafunc.parametrize(
+            "element_type",
+            [pytest.param(e, id=e.type) for e in element_type_registry.get_all()],
         )
 
-        assert element.page.id == page.id
 
-        for key, value in sample_params.items():
-            assert getattr(element, key) == value
+@pytest.mark.django_db
+def test_create_element(data_fixture, element_type):
+    page = data_fixture.create_builder_page()
 
-        assert element.order == index + 1
-        assert Element.objects.count() == index + 1
+    sample_params = element_type.get_sample_params()
+
+    element = ElementHandler().create_element(element_type, page=page, **sample_params)
+
+    assert element.page.id == page.id
+
+    for key, value in sample_params.items():
+        assert getattr(element, key) == value
+
+    assert element.order == 1
+    assert Element.objects.count() == 1
 
 
 @pytest.mark.django_db
 def test_get_element(data_fixture):
-    element = data_fixture.create_builder_header_element()
-
+    element = data_fixture.create_builder_heading_element()
     assert ElementHandler().get_element(element.id).id == element.id
 
 
@@ -46,8 +50,8 @@ def test_get_element_does_not_exist(data_fixture):
 @pytest.mark.django_db
 def test_get_elements(data_fixture):
     page = data_fixture.create_builder_page()
-    element1 = data_fixture.create_builder_header_element(page=page)
-    element2 = data_fixture.create_builder_header_element(page=page)
+    element1 = data_fixture.create_builder_heading_element(page=page)
+    element2 = data_fixture.create_builder_heading_element(page=page)
     element3 = data_fixture.create_builder_paragraph_element(page=page)
 
     elements = ElementHandler().get_elements(page)
@@ -64,7 +68,7 @@ def test_get_elements(data_fixture):
 
 @pytest.mark.django_db
 def test_delete_element(data_fixture):
-    element = data_fixture.create_builder_header_element()
+    element = data_fixture.create_builder_heading_element()
 
     ElementHandler().delete_element(element)
 
@@ -74,7 +78,7 @@ def test_delete_element(data_fixture):
 @pytest.mark.django_db
 def test_update_element(data_fixture):
     user = data_fixture.create_user()
-    element = data_fixture.create_builder_header_element(user=user)
+    element = data_fixture.create_builder_heading_element(user=user)
 
     element_updated = ElementHandler().update_element(
         element, {"value": {"type": "plain", "expression": "newValue"}}
@@ -85,7 +89,7 @@ def test_update_element(data_fixture):
 
 @pytest.mark.django_db
 def test_update_element_invalid_values(data_fixture):
-    element = data_fixture.create_builder_header_element()
+    element = data_fixture.create_builder_heading_element()
 
     element_updated = ElementHandler().update_element(element, {"nonsense": "hello"})
 
@@ -95,9 +99,9 @@ def test_update_element_invalid_values(data_fixture):
 @pytest.mark.django_db
 def test_order_elements(data_fixture):
     page = data_fixture.create_builder_page()
-    element1 = data_fixture.create_builder_header_element(page=page)
-    element2 = data_fixture.create_builder_header_element(page=page)
-    element3 = data_fixture.create_builder_header_element(page=page)
+    element1 = data_fixture.create_builder_heading_element(page=page)
+    element2 = data_fixture.create_builder_heading_element(page=page)
+    element3 = data_fixture.create_builder_heading_element(page=page)
 
     ElementHandler().order_elements(page, [element3.id, element1.id])
 

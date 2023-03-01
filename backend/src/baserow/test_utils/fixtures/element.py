@@ -2,7 +2,7 @@ from baserow.contrib.builder.elements.models import HeadingElement, ParagraphEle
 
 
 class ElementFixtures:
-    def create_builder_header_element(self, user=None, page=None, **kwargs):
+    def create_builder_heading_element(self, user=None, page=None, **kwargs):
         element = self.create_builder_element(HeadingElement, user, page, **kwargs)
         return element
 

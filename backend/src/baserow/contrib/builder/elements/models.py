@@ -11,6 +11,20 @@ from baserow.core.mixins import (
 )
 
 
+def default_expression_value():
+    return {"type": "plain", "expression": ""}
+
+
+class ExpressionField(models.JSONField):
+    """
+    An expression that can reference a data source, a formula or a plain value.
+    """
+
+    def __init__(self, *args, **kwargs):
+        kwargs["default"] = kwargs.get("default", default_expression_value)
+        super().__init__(*args, **kwargs)
+
+
 def get_default_element_content_type():
     return ContentType.objects.get_for_model(Element)
 
@@ -23,7 +37,10 @@ class Element(
     PolymorphicContentTypeMixin,
     models.Model,
 ):
-    """ """
+    """
+    This model represents a page element. An element is a piece of the page that
+    display an information or something the user can interact with.
+    """
 
     # uid?
     page = models.ForeignKey(Page, on_delete=models.CASCADE)
@@ -34,8 +51,6 @@ class Element(
         related_name="page_elements",
         on_delete=models.SET(get_default_element_content_type),
     )
-    # config = models.JSONField(default=dict)
-    # style = models.JSONField(default=dict)
     # visibility
     # events->actions
 
@@ -51,21 +66,11 @@ class Element(
         return cls.get_highest_order_of_queryset(queryset) + 1
 
 
-def default_expression():
-    return {"type": "plain", "value": ""}
-
-
-class ExpressionField(models.JSONField):
-    """
-    An expression that can reference a data source, a formula or a plain value.
-    """
-
-    def __init__(self, *args, **kwargs):
-        kwargs["default"] = kwargs.get("default", default_expression)
-        super().__init__(*args, **kwargs)
-
-
 class BaseTextElement(Element):
+    """
+    Base class for text elements.
+    """
+
     value = ExpressionField()
 
     class Meta:
@@ -73,6 +78,10 @@ class BaseTextElement(Element):
 
 
 class HeadingElement(BaseTextElement):
+    """
+    A Heading element to display a title.
+    """
+
     class HeadingLevel(models.IntegerChoices):
         H1 = 1
         H2 = 2
@@ -80,8 +89,12 @@ class HeadingElement(BaseTextElement):
         H4 = 4
         H5 = 5
 
-    level = models.IntegerField(choices=HeadingLevel.choices, default=1)
+    level = models.IntegerField(
+        choices=HeadingLevel.choices, default=1, help_text="The level of the heading"
+    )
 
 
 class ParagraphElement(BaseTextElement):
-    ...
+    """
+    A simple paragraph.
+    """

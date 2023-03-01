@@ -14,7 +14,47 @@ EXPRESSION_TYPES = [
 ]
 
 
+class ExpressionSerializer(serializers.Serializer):
+    """
+    A serializer for Expressions.
+    """
+
+    type = serializers.ChoiceField(
+        help_text="The type of the expression.",
+        choices=EXPRESSION_TYPES,
+        default="plain",
+    )
+    expression = serializers.CharField(
+        help_text="The value of the expression.",
+        allow_blank=True,
+        required=False,
+        default="",
+    )
+
+
+@extend_schema_field(ExpressionSerializer)
+class ExpressionField(serializers.JSONField):
+    """
+    The expression field can be used to ensure the given data is an expression.
+    """
+
+    def __init__(self, *args, **kwargs):
+        kwargs["default"] = kwargs.get(
+            "default", lambda: {"type": "plain", "expression": ""}
+        )
+        super().__init__(*args, **kwargs)
+
+    def to_internal_value(self, data):
+        serializer = ExpressionSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        return serializer.validated_data
+
+
 class ElementSerializer(serializers.ModelSerializer):
+    """
+    Basic element serializer mostly for returned values.
+    """
+
     type = serializers.SerializerMethodField(help_text="The type of the element.")
 
     @extend_schema_field(OpenApiTypes.STR)
@@ -33,6 +73,11 @@ class ElementSerializer(serializers.ModelSerializer):
 
 
 class CreateElementSerializer(serializers.ModelSerializer):
+    """
+    This serializer allow to set the type of an element and the element id before which
+    we want to insert the new element.
+    """
+
     type = serializers.ChoiceField(
         choices=lazy(element_type_registry.get_types, list)(),
         required=True,
@@ -60,31 +105,3 @@ class OrderElementsSerializer(serializers.Serializer):
         child=serializers.IntegerField(),
         help_text="The ids of the elements in the order they are supposed to be set in",
     )
-
-
-class ExpressionSerializer(serializers.Serializer):
-    type = serializers.ChoiceField(
-        help_text="The type of the expression.",
-        choices=EXPRESSION_TYPES,
-        default="plain",
-    )
-    expression = serializers.CharField(
-        help_text="The value of the expression.",
-        allow_blank=True,
-        required=False,
-        default="",
-    )
-
-
-@extend_schema_field(ExpressionSerializer)
-class ExpressionField(serializers.JSONField):
-    def __init__(self, *args, **kwargs):
-        kwargs["default"] = kwargs.get(
-            "default", lambda: {"type": "plain", "expression": ""}
-        )
-        super().__init__(*args, **kwargs)
-
-    def to_internal_value(self, data):
-        serializer = ExpressionSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        return serializer.validated_data

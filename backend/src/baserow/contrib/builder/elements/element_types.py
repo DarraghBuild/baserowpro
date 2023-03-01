@@ -8,7 +8,7 @@ from baserow.contrib.builder.elements.registries import ElementType
 
 class BaseTextElementType(ElementType, ABC):
     """
-    Base class for textual elements.
+    Base class for text elements.
     """
 
     serializer_field_names = ["value"]
@@ -19,7 +19,9 @@ class BaseTextElementType(ElementType, ABC):
         from baserow.contrib.builder.api.elements.serializers import ExpressionField
 
         return {
-            "value": ExpressionField(help_text="The value of the element."),
+            "value": ExpressionField(
+                help_text="The value of the element. Must be an expression."
+            ),
         }
 
 
@@ -43,7 +45,7 @@ class HeadingElementType(BaseTextElementType):
     def serializer_field_overrides(self):
         overrides = {
             "level": serializers.IntegerField(
-                help_text="The level of the heading from 1 to 6",
+                help_text="The level of the heading from 1 to 6.",
                 min_value=1,
                 max_value=6,
                 default=1,
