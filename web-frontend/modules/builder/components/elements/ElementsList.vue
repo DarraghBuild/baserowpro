@@ -1,6 +1,6 @@
 <template>
   <ul>
-    <li v-for="element in elements" :key="element.type">
+    <li v-for="element in elements" :key="element.id">
       <ElementsListItem :element="element" />
     </li>
   </ul>

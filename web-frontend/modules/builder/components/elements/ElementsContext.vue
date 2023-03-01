@@ -49,7 +49,8 @@ export default {
       }
 
       return this.elements.filter((element) => {
-        const nameSanitised = element._.elementType.name.toLowerCase()
+        const elementType = this.$registry.get('element', element.type)
+        const nameSanitised = elementType.name.toLowerCase()
         const searchSanitised = this.search.toLowerCase().trim()
         return nameSanitised.includes(searchSanitised)
       })
