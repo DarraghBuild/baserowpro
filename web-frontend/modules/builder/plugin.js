@@ -22,6 +22,11 @@ import {
   HeadingElementType,
   ParagraphElementType,
 } from '@baserow/modules/builder/elementTypes'
+import {
+  DesktopDeviceType,
+  SmartphoneDeviceType,
+  TabletDeviceType,
+} from '@baserow/modules/builder/deviceTypes'
 
 export default (context) => {
   const { store, app, isDev } = context
@@ -45,6 +50,7 @@ export default (context) => {
 
   app.$registry.registerNamespace('builderSettings')
   app.$registry.registerNamespace('element')
+  app.$registry.registerNamespace('device')
 
   app.$registry.register('application', new BuilderApplicationType(context))
 
@@ -61,4 +67,8 @@ export default (context) => {
 
   app.$registry.register('element', new HeadingElementType(context))
   app.$registry.register('element', new ParagraphElementType(context))
+
+  app.$registry.register('device', new DesktopDeviceType(context))
+  app.$registry.register('device', new TabletDeviceType(context))
+  app.$registry.register('device', new SmartphoneDeviceType(context))
 }

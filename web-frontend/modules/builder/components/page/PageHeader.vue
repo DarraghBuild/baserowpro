@@ -5,13 +5,15 @@
         <PageHeaderElements />
       </li>
     </ul>
+    <DeviceSelector />
   </header>
 </template>
 
 <script>
 import PageHeaderElements from '@baserow/modules/builder/components/elements/PageHeaderElements'
+import DeviceSelector from '@baserow/modules/builder/components/page/components/DeviceSelector'
 export default {
   name: 'PageHeader',
-  components: { PageHeaderElements },
+  components: { DeviceSelector, PageHeaderElements },
 }
 </script>

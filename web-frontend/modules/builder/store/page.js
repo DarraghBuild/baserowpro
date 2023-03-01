@@ -12,6 +12,8 @@ export function populatePage(page) {
 
 const state = {
   selected: {},
+
+  deviceTypeSelected: null,
 }
 
 const mutations = {
@@ -39,6 +41,9 @@ const mutations = {
       const index = order.findIndex((value) => value === pageId)
       page.order = index === -1 ? 0 : index + 1
     })
+  },
+  SET_DEVICE_TYPE_SELECTED(state, deviceType) {
+    state.deviceTypeSelected = deviceType
   },
 }
 
@@ -123,11 +128,17 @@ const actions = {
       throw error
     }
   },
+  setDeviceTypeSelected({ commit }, deviceType) {
+    commit('SET_DEVICE_TYPE_SELECTED', deviceType)
+  },
 }
 
 const getters = {
   getSelected(state) {
     return state.selected
+  },
+  getDeviceTypeSelected(state) {
+    return state.deviceTypeSelected
   },
 }
 
