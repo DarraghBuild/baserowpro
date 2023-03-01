@@ -6,18 +6,29 @@
       class="page-preview"
       :style="{ 'max-width': maxWidth }"
     >
-      <div ref="previewScaled" class="page-preview__scaled">Preview</div>
+      <div ref="previewScaled" class="page-preview__scaled">
+        <ul>
+          <li v-for="element in elements" :key="element.id">
+            <Element :element="element" />
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
+import Element from '@baserow/modules/builder/components/page/Element'
 
 export default {
   name: 'PagePreview',
+  components: { Element },
   computed: {
-    ...mapGetters({ deviceTypeSelected: 'page/getDeviceTypeSelected' }),
+    ...mapGetters({
+      deviceTypeSelected: 'page/getDeviceTypeSelected',
+      elements: 'element/getElements',
+    }),
     deviceType() {
       return this.deviceTypeSelected
         ? this.$registry.get('device', this.deviceTypeSelected)

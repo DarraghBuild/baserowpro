@@ -11,7 +11,7 @@
 
 <script>
 import PageHeaderElements from '@baserow/modules/builder/components/elements/PageHeaderElements'
-import DeviceSelector from '@baserow/modules/builder/components/page/components/DeviceSelector'
+import DeviceSelector from '@baserow/modules/builder/components/page/DeviceSelector'
 export default {
   name: 'PageHeader',
   components: { DeviceSelector, PageHeaderElements },

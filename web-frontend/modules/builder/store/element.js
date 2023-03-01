@@ -33,7 +33,11 @@ const actions = {
   },
 }
 
-const getters = {}
+const getters = {
+  getElements(state) {
+    return state.elements
+  },
+}
 
 export default {
   namespaced: true,

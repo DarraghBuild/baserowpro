@@ -12,7 +12,7 @@
 <script>
 import { StoreItemLookupError } from '@baserow/modules/core/errors'
 import PageHeader from '@baserow/modules/builder/components/page/PageHeader'
-import PagePreview from '@baserow/modules/builder/components/page/components/PagePreview'
+import PagePreview from '@baserow/modules/builder/components/page/PagePreview'
 
 export default {
   name: 'Page',
