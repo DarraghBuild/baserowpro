@@ -35,8 +35,10 @@ export default {
   computed: {
     ...mapGetters({
       page: 'page/getSelected',
-      elements: 'element/getElements',
     }),
+    elements() {
+      return this.$store.getters['element/getElements'](this.page.id)
+    },
     elementsFiltered() {
       if (
         this.search === '' ||

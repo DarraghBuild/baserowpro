@@ -26,9 +26,12 @@ export default {
   components: { Element },
   computed: {
     ...mapGetters({
+      page: 'page/getSelected',
       deviceTypeSelected: 'page/getDeviceTypeSelected',
-      elements: 'element/getElements',
     }),
+    elements() {
+      return this.$store.getters['element/getElements'](this.page.id)
+    },
     deviceType() {
       return this.deviceTypeSelected
         ? this.$registry.get('device', this.deviceTypeSelected)
