@@ -9,7 +9,7 @@
     </div>
     <ElementsList
       class="context__menu elements-context__elements-list"
-      :elements="elements"
+      :elements="elementsFiltered"
     />
     <AddElementButton @click="$refs.addElementModal.show()" />
     <AddElementModal ref="addElementModal" :page="page" @added="hide()" />
@@ -33,22 +33,21 @@ export default {
     }
   },
   computed: {
-    ...mapGetters({ page: 'page/getSelected' }),
-    elements() {
-      // TODO Instead of all elements these need to be the elements currently on the
-      // page
-      const allElements = Object.values(this.$registry.getAll('element'))
-
+    ...mapGetters({
+      page: 'page/getSelected',
+      elements: 'element/getElements',
+    }),
+    elementsFiltered() {
       if (
         this.search === '' ||
         this.search === null ||
         this.search === undefined
       ) {
-        return allElements
+        return this.elements
       }
 
-      return allElements.filter((element) => {
-        const nameSanitised = element.name.toLowerCase()
+      return this.elements.filter((element) => {
+        const nameSanitised = element._.elementType.name.toLowerCase()
         const searchSanitised = this.search.toLowerCase().trim()
         return nameSanitised.includes(searchSanitised)
       })
