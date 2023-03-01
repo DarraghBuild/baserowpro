@@ -75,7 +75,7 @@ def test_get_elements(data_fixture, stub_check_permissions):
     page = data_fixture.create_builder_page(user=user)
     element1 = data_fixture.create_builder_header_element(page=page)
     element2 = data_fixture.create_builder_header_element(page=page)
-    element3 = data_fixture.create_builder_header_element(page=page)
+    element3 = data_fixture.create_builder_paragraph_element(page=page)
 
     assert [p.id for p in ElementService().get_elements(user, page)] == [
         element1.id,
@@ -83,7 +83,7 @@ def test_get_elements(data_fixture, stub_check_permissions):
         element3.id,
     ]
 
-    def filter_queryset(
+    def exclude_element_1(
         actor,
         operation_name,
         queryset,
@@ -94,7 +94,8 @@ def test_get_elements(data_fixture, stub_check_permissions):
         return queryset.exclude(id=element1.id)
 
     with stub_check_permissions() as stub:
-        stub.filter_queryset = filter_queryset
+        stub.filter_queryset = exclude_element_1
+
         assert [p.id for p in ElementService().get_elements(user, page)] == [
             element2.id,
             element3.id,

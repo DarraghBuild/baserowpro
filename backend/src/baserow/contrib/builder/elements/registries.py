@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Type
-
-from rest_framework import serializers
+from typing import TYPE_CHECKING, Any, Dict
 
 from baserow.core.registry import (
     CustomFieldsInstanceMixin,
@@ -24,22 +22,6 @@ class ElementType(
 ):
     """Element type"""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.serializer_field_overrides = {
-            "config": self.get_config_serializer_class()(
-                required=False,
-                help_text="The configuration of the element.",
-            ),
-        }
-
-    @abstractmethod
-    def get_config_serializer_class(self) -> Type[serializers.Serializer]:
-        """
-        Returns the serializer used to serialize the config object for this type.
-        """
-
     def export_serialized(
         self,
         element: Element,
@@ -56,9 +38,9 @@ class ElementType(
             "id": element.id,
             "type": self.type,
             "order": element.order,
-            "config": element.config,
-            # "style": element.style,
         }
+
+        serialized.update({key: getattr(element, key) for key in self.allowed_fields})
 
         return serialized
 

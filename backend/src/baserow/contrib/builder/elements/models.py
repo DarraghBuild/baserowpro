@@ -34,7 +34,7 @@ class Element(
         related_name="page_elements",
         on_delete=models.SET(get_default_element_content_type),
     )
-    config = models.JSONField(default=dict)
+    # config = models.JSONField(default=dict)
     # style = models.JSONField(default=dict)
     # visibility
     # events->actions
@@ -51,9 +51,37 @@ class Element(
         return cls.get_highest_order_of_queryset(queryset) + 1
 
 
-class HeadingElement(Element):
-    pass
+def default_expression():
+    return {"type": "plain", "value": ""}
 
 
-class ParagraphElement(Element):
-    pass
+class ExpressionField(models.JSONField):
+    """
+    An expression that can reference a data source, a formula or a plain value.
+    """
+
+    def __init__(self, *args, **kwargs):
+        kwargs["default"] = kwargs.get("default", default_expression)
+        super().__init__(*args, **kwargs)
+
+
+class BaseTextElement(Element):
+    value = ExpressionField()
+
+    class Meta:
+        abstract = True
+
+
+class HeadingElement(BaseTextElement):
+    class HeadingLevel(models.IntegerChoices):
+        H1 = 1
+        H2 = 2
+        H3 = 3
+        H4 = 4
+        H5 = 5
+
+    level = models.IntegerField(choices=HeadingLevel.choices, default=1)
+
+
+class ParagraphElement(BaseTextElement):
+    ...

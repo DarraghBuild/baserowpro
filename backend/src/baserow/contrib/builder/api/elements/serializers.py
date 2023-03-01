@@ -7,6 +7,12 @@ from rest_framework import serializers
 from baserow.contrib.builder.elements.models import Element
 from baserow.contrib.builder.elements.registries import element_type_registry
 
+EXPRESSION_TYPES = [
+    ("plain", "Plain"),
+    ("formula", "Formula"),
+    ("data", "Data"),
+]
+
 
 class ElementSerializer(serializers.ModelSerializer):
     type = serializers.SerializerMethodField(help_text="The type of the element.")
@@ -17,7 +23,7 @@ class ElementSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Element
-        fields = ("id", "page_id", "type", "order", "config")
+        fields = ("id", "page_id", "type", "order")
         extra_kwargs = {
             "id": {"read_only": True},
             "page_id": {"read_only": True},
@@ -40,13 +46,13 @@ class CreateElementSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Element
-        fields = ("type", "config", "before_id")
+        fields = ("before_id", "type")
 
 
 class UpdateElementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Element
-        fields = ("config",)
+        fields = []
 
 
 class OrderElementsSerializer(serializers.Serializer):
@@ -54,3 +60,31 @@ class OrderElementsSerializer(serializers.Serializer):
         child=serializers.IntegerField(),
         help_text="The ids of the elements in the order they are supposed to be set in",
     )
+
+
+class ExpressionSerializer(serializers.Serializer):
+    type = serializers.ChoiceField(
+        help_text="The type of the expression.",
+        choices=EXPRESSION_TYPES,
+        default="plain",
+    )
+    expression = serializers.CharField(
+        help_text="The value of the expression.",
+        allow_blank=True,
+        required=False,
+        default="",
+    )
+
+
+@extend_schema_field(ExpressionSerializer)
+class ExpressionField(serializers.JSONField):
+    def __init__(self, *args, **kwargs):
+        kwargs["default"] = kwargs.get(
+            "default", lambda: {"type": "plain", "expression": ""}
+        )
+        super().__init__(*args, **kwargs)
+
+    def to_internal_value(self, data):
+        serializer = ExpressionSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        return serializer.validated_data

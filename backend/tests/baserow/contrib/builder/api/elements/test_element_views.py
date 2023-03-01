@@ -11,6 +11,34 @@ from rest_framework.status import (
 
 
 @pytest.mark.django_db
+def test_get_elements(api_client, data_fixture):
+    user, token = data_fixture.create_user_and_token()
+    page = data_fixture.create_builder_page(user=user)
+    element1 = data_fixture.create_builder_header_element(page=page)
+    element2 = data_fixture.create_builder_header_element(page=page)
+    element3 = data_fixture.create_builder_paragraph_element(page=page)
+
+    url = reverse("api:builder:element:list", kwargs={"page_id": page.id})
+    response = api_client.get(
+        url,
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+
+    response_json = response.json()
+    assert response.status_code == HTTP_200_OK
+    assert len(response_json) == 3
+    assert response_json[0]["id"] == element1.id
+    assert response_json[0]["type"] == "heading"
+    assert "level" in response_json[0]
+    assert response_json[1]["id"] == element2.id
+    assert response_json[1]["type"] == "heading"
+    assert response_json[2]["id"] == element3.id
+    assert response_json[2]["type"] == "paragraph"
+    assert "level" not in response_json[2]
+
+
+@pytest.mark.django_db
 def test_create_element(api_client, data_fixture):
     user, token = data_fixture.create_user_and_token()
     page = data_fixture.create_builder_page(user=user)
@@ -26,6 +54,39 @@ def test_create_element(api_client, data_fixture):
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
     assert response_json["type"] == "heading"
+    assert response_json["value"] == {"type": "plain", "expression": ""}
+
+    response = api_client.post(
+        url,
+        {
+            "type": "heading",
+            "value": {"type": "plain", "expression": "test"},
+        },
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+
+    response_json = response.json()
+    assert response.status_code == HTTP_200_OK
+    assert response_json["value"] == {"type": "plain", "expression": "test"}
+
+
+@pytest.mark.django_db
+def test_create_element_bad_request(api_client, data_fixture):
+    user, token = data_fixture.create_user_and_token()
+    page = data_fixture.create_builder_page(user=user)
+
+    url = reverse("api:builder:element:list", kwargs={"page_id": page.id})
+    response = api_client.post(
+        url,
+        {"type": "heading", "value": "foo"},
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+
+    response_json = response.json()
+    assert response.status_code == HTTP_400_BAD_REQUEST
+    assert response_json["error"] == "ERROR_REQUEST_BODY_VALIDATION"
 
 
 @pytest.mark.django_db
@@ -59,7 +120,6 @@ def test_create_element_page_does_not_exist(api_client, data_fixture):
         format="json",
         HTTP_AUTHORIZATION=f"JWT {token}",
     )
-
     assert response.status_code == HTTP_404_NOT_FOUND
     assert response.json()["error"] == "ERROR_PAGE_DOES_NOT_EXIST"
 
@@ -73,12 +133,38 @@ def test_update_element(api_client, data_fixture):
     url = reverse("api:builder:element:item", kwargs={"element_id": element1.id})
     response = api_client.patch(
         url,
-        {"config": {"value": "unusual value"}},
+        {"value": {"type": "plain", "expression": "unusual value"}, "level": 3},
         format="json",
         HTTP_AUTHORIZATION=f"JWT {token}",
     )
     assert response.status_code == HTTP_200_OK
-    assert response.json()["config"] == {"value": "unusual value"}
+    assert response.json()["value"] == {"type": "plain", "expression": "unusual value"}
+
+
+@pytest.mark.django_db
+def test_update_element_bad_request(api_client, data_fixture):
+    user, token = data_fixture.create_user_and_token()
+    page = data_fixture.create_builder_page(user=user)
+    element1 = data_fixture.create_builder_header_element(page=page)
+
+    url = reverse("api:builder:element:item", kwargs={"element_id": element1.id})
+    response = api_client.patch(
+        url,
+        {"value": "Bad value"},
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+    assert response.status_code == HTTP_400_BAD_REQUEST
+    assert response.json()["error"] == "ERROR_REQUEST_BODY_VALIDATION"
+
+    response = api_client.patch(
+        url,
+        {"value": {"type": "bad value"}},
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+    assert response.status_code == HTTP_400_BAD_REQUEST
+    assert response.json()["error"] == "ERROR_REQUEST_BODY_VALIDATION"
 
 
 @pytest.mark.django_db

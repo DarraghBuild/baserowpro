@@ -14,7 +14,11 @@ from baserow.api.decorators import (
     validate_body_custom_fields,
 )
 from baserow.api.schemas import CLIENT_SESSION_ID_SCHEMA_PARAMETER, get_error_schema
-from baserow.api.utils import DiscriminatorCustomFieldsMappingSerializer
+from baserow.api.utils import (
+    DiscriminatorCustomFieldsMappingSerializer,
+    type_from_data_or_registry,
+    validate_data_custom_fields,
+)
 from baserow.contrib.builder.api.elements.errors import (
     ERROR_ELEMENT_DOES_NOT_EXIST,
     ERROR_ELEMENT_NOT_IN_PAGE,
@@ -46,13 +50,58 @@ class ElementsView(APIView):
                 name="page_id",
                 location=OpenApiParameter.PATH,
                 type=OpenApiTypes.INT,
+                description="Returns only the elements of the page related to the "
+                "provided Id.",
+            )
+        ],
+        tags=["Builder page elements"],
+        operation_id="list_builder_page_elements",
+        description=(
+            "Lists all the elements of the page related to the provided parameter if "
+            "the user has access to the related builder's group. If the group is "
+            "related to a template, then this endpoint will be publicly accessible."
+        ),
+        responses={
+            200: DiscriminatorCustomFieldsMappingSerializer(
+                element_type_registry, ElementSerializer, many=True
+            ),
+            404: get_error_schema(["ERROR_PAGE_DOES_NOT_EXIST"]),
+        },
+    )
+    @map_exceptions(
+        {
+            PageDoesNotExist: ERROR_PAGE_DOES_NOT_EXIST,
+        }
+    )
+    def get(self, request, page_id):
+        """
+        Responds with a list of serialized elements that belong to the page if the user
+        has access to that page.
+        """
+
+        page = PageHandler().get_page(page_id)
+
+        elements = ElementService().get_elements(request.user, page)
+
+        data = [
+            element_type_registry.get_serializer(element, ElementSerializer).data
+            for element in elements
+        ]
+        return Response(data)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="page_id",
+                location=OpenApiParameter.PATH,
+                type=OpenApiTypes.INT,
                 description="Creates an element for the builder page related to the "
                 "provided value.",
             ),
             CLIENT_SESSION_ID_SCHEMA_PARAMETER,
         ],
-        tags=["Builder elements"],
-        operation_id="create_builder_element",
+        tags=["Builder page elements"],
+        operation_id="create_builder_page_element",
         description="Creates a new builder element",
         request=DiscriminatorCustomFieldsMappingSerializer(
             element_type_registry,
@@ -105,8 +154,8 @@ class OrderElementsPageView(APIView):
             ),
             CLIENT_SESSION_ID_SCHEMA_PARAMETER,
         ],
-        tags=["Builder elements"],
-        operation_id="order_builder_elements",
+        tags=["Builder page elements"],
+        operation_id="order_builder_page_elements",
         description="Apply a new order to the elements of the given page.",
         request=OrderElementsSerializer,
         responses={
@@ -148,8 +197,8 @@ class ElementView(APIView):
             ),
             CLIENT_SESSION_ID_SCHEMA_PARAMETER,
         ],
-        tags=["Builder elements"],
-        operation_id="update_builder_element",
+        tags=["Builder page elements"],
+        operation_id="update_builder_page_element",
         description="Updates an existing builder element.",
         request=DiscriminatorCustomFieldsMappingSerializer(
             element_type_registry,
@@ -177,11 +226,20 @@ class ElementView(APIView):
             ElementDoesNotExist: ERROR_ELEMENT_DOES_NOT_EXIST,
         }
     )
-    @validate_body(UpdateElementSerializer)
-    def patch(self, request, data: Dict, element_id: int):
+    def patch(self, request, element_id: int):
 
         element = ElementHandler().get_element(element_id)
+        type_name = type_from_data_or_registry(
+            request.data, element_type_registry, element
+        )
+        data = validate_data_custom_fields(
+            type_name,
+            element_type_registry,
+            request.data,
+            base_serializer_class=UpdateElementSerializer,
+        )
 
+        print(data)
         element_updated = ElementService().update_element(request.user, element, data)
 
         serializer = element_type_registry.get_serializer(
@@ -199,8 +257,8 @@ class ElementView(APIView):
             ),
             CLIENT_SESSION_ID_SCHEMA_PARAMETER,
         ],
-        tags=["Builder elements"],
-        operation_id="delete_builder_element",
+        tags=["Builder page elements"],
+        operation_id="delete_builder_page_element",
         description="Deletes the element designed by the given id.",
         responses={
             204: None,

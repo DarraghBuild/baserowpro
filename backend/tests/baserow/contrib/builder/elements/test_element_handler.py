@@ -2,7 +2,11 @@ import pytest
 
 from baserow.contrib.builder.elements.exceptions import ElementDoesNotExist
 from baserow.contrib.builder.elements.handler import ElementHandler
-from baserow.contrib.builder.elements.models import Element
+from baserow.contrib.builder.elements.models import (
+    Element,
+    HeadingElement,
+    ParagraphElement,
+)
 from baserow.contrib.builder.elements.registries import element_type_registry
 
 
@@ -44,13 +48,18 @@ def test_get_elements(data_fixture):
     page = data_fixture.create_builder_page()
     element1 = data_fixture.create_builder_header_element(page=page)
     element2 = data_fixture.create_builder_header_element(page=page)
-    element3 = data_fixture.create_builder_header_element(page=page)
+    element3 = data_fixture.create_builder_paragraph_element(page=page)
 
-    assert [p.id for p in ElementHandler().get_elements(page)] == [
+    elements = ElementHandler().get_elements(page)
+
+    assert [e.id for e in elements] == [
         element1.id,
         element2.id,
         element3.id,
     ]
+
+    assert isinstance(elements[0], HeadingElement)
+    assert isinstance(elements[2], ParagraphElement)
 
 
 @pytest.mark.django_db
@@ -68,19 +77,17 @@ def test_update_element(data_fixture):
     element = data_fixture.create_builder_header_element(user=user)
 
     element_updated = ElementHandler().update_element(
-        element, {"config": {"value": "newValue"}}
+        element, {"value": {"type": "plain", "expression": "newValue"}}
     )
 
-    assert element_updated.config == {"value": "newValue"}
+    assert element_updated.value == {"type": "plain", "expression": "newValue"}
 
 
 @pytest.mark.django_db
 def test_update_element_invalid_values(data_fixture):
     element = data_fixture.create_builder_header_element()
 
-    element_updated = ElementHandler().update_element(
-        element, {"config": {"nonsense": "hello"}}
-    )
+    element_updated = ElementHandler().update_element(element, {"nonsense": "hello"})
 
     assert not hasattr(element_updated, "nonsense")
 

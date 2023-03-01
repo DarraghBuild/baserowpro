@@ -30,7 +30,7 @@ class ElementService:
 
     def get_element(self, user: AbstractUser, element_id: int) -> Element:
         """
-        Returns an element instance from the database
+        Returns an element instance from the database. Also checks the user permissions.
 
         :param user: The user trying to get the element
         :param element_id: The ID of the element
@@ -50,11 +50,11 @@ class ElementService:
 
     def get_elements(self, user: AbstractUser, page: Page) -> List[Element]:
         """
-        Gets all the elements of a given page.
+        Gets all the elements of a given page visible to the given user.
 
-        :param user: The user trying to get the elements
-        :param page: The page that holds the elements
-        :return: The elements of that page
+        :param user: The user trying to get the elements.
+        :param page: The page that holds the elements.
+        :return: The elements of that page.
         """
 
         CoreHandler().check_permissions(
@@ -64,29 +64,27 @@ class ElementService:
             context=page,
         )
 
-        all_elements = self.handler.get_elements(page)
-
         user_elements = CoreHandler().filter_queryset(
             user,
             ListElementsPageOperationType.type,
-            all_elements,
+            Element.objects.all(),
             group=page.builder.group,
             context=page,
         )
 
-        return user_elements
+        return self.handler.get_elements(page, base_queryset=user_elements)
 
     def create_element(
         self, user: AbstractUser, element_type: ElementType, page: Page, **kwargs
     ) -> Element:
         """
-        Creates a new element for a page
+        Creates a new element for a page given the user permissions.
 
-        :param user: The user trying to create the element
-        :param element_type: The type of the element
-        :param page: The page the element exists in
-        :param kwargs: Additional attributes of the element
-        :return: The created element
+        :param user: The user trying to create the element.
+        :param element_type: The type of the element.
+        :param page: The page the element exists in.
+        :param kwargs: Additional attributes of the element.
+        :return: The created element.
         """
 
         CoreHandler().check_permissions(
@@ -104,10 +102,10 @@ class ElementService:
 
     def delete_element(self, user: AbstractUser, element: Element):
         """
-        Deletes an element
+        Deletes an element.
 
-        :param user: The user trying to delete the elemtn
-        :param element: The to-be-deleted element
+        :param user: The user trying to delete the element.
+        :param element: The to-be-deleted element.
         """
 
         CoreHandler().check_permissions(
@@ -128,10 +126,10 @@ class ElementService:
         Updates and element with values. Will also check if the values are allowed
         to be set on the element first.
 
-        :param user: The user trying to update the element
-        :param element: The element that should be updated
-        :param values: The values that should be set on the element
-        :return: The updated element
+        :param user: The user trying to update the element.
+        :param element: The element that should be updated.
+        :param values: The values that should be set on the element.
+        :return: The updated element.
         """
 
         CoreHandler().check_permissions(
@@ -151,12 +149,13 @@ class ElementService:
         self, user: AbstractUser, page: Page, new_order: List[int]
     ) -> List[int]:
         """
-        Orders the elements of a page in a new order
+        Orders the elements of a page in a new order. The user must have the permissions
+        over all elements matching the given ids.
 
-        :param user: The user trying to re-order the elements
-        :param page: The page the elements exist on
-        :param new_order: The new order which they should have
-        :return: The full order of all elements after they have been ordered
+        :param user: The user trying to re-order the elements.
+        :param page: The page the elements exist on.
+        :param new_order: The new order which they should have.
+        :return: The full order of all elements after they have been ordered.
         """
 
         CoreHandler().check_permissions(
