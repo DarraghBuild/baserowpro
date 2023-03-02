@@ -44,4 +44,11 @@
   width: 100%;
   height: 100%;
   overflow: auto;
+
+  // We need to do this because the border of the preview is round on top and the first
+  // element has a blue border when selected. That border has to have the same shape.
+  > div:first-child::before {
+    border-top-right-radius: 15px;
+    border-top-left-radius: 15px;
+  }
 }
