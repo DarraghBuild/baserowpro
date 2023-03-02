@@ -5,6 +5,7 @@
   width: 26px;
   border: solid 1px $color-neutral-400;
   border-radius: 3px;
+  z-index: 2;
 
   @include absolute(6px, 6px, auto, auto);
 }
