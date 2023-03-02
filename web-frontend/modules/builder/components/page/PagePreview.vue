@@ -14,6 +14,7 @@
           :active="element.id === elementActiveId"
           @selected="elementActiveId = element.id"
           @delete="deleteElement(element)"
+          @move="move(element, $event)"
         />
       </div>
     </div>
@@ -21,7 +22,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 import Element from '@baserow/modules/builder/components/page/Element'
 import { notifyIf } from '@baserow/modules/core/utils/error'
 
@@ -60,6 +61,10 @@ export default {
     },
   },
   methods: {
+    ...mapActions({
+      actionMoveElement: 'element/move',
+      actionDeleteElement: 'element/delete',
+    }),
     resized(deviceType) {
       // The widths are the minimum width the preview must have. If the preview dom
       // element becomes smaller than the target, it will be scaled down so that the
@@ -87,7 +92,18 @@ export default {
     },
     deleteElement(element) {
       try {
-        this.$store.dispatch('element/delete', { element })
+        this.actionDeleteElement({ element })
+      } catch (error) {
+        notifyIf(error)
+      }
+    },
+    move(element, direction) {
+      try {
+        this.actionMoveElement({
+          pageId: this.page.id,
+          elementId: element.id,
+          direction,
+        })
       } catch (error) {
         notifyIf(error)
       }

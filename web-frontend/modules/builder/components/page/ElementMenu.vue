@@ -6,13 +6,13 @@
         {{ $t('action.copy') }}
       </div>
     </a>
-    <a class="element__menu-item">
+    <a class="element__menu-item" @click="$emit('move', 'up')">
       <i class="fas fa-arrow-up"></i>
       <div class="element__menu-item-description">
         {{ $t('elementMenu.moveUp') }}
       </div>
     </a>
-    <a class="element__menu-item">
+    <a class="element__menu-item" @click="$emit('move', 'down')">
       <i class="fas fa-arrow-down"></i>
       <div class="element__menu-item-description">
         {{ $t('elementMenu.moveDown') }}

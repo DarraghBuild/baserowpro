@@ -26,6 +26,11 @@ const mutations = {
       state.elements[pageId].splice(index, 1)
     }
   },
+  ORDER_ITEMS(state, { newOrder, pageId }) {
+    state.elements[pageId] = newOrder.map((id) =>
+      state.elements[pageId].find((element) => element.id === id)
+    )
+  },
 }
 
 const actions = {
@@ -34,6 +39,9 @@ const actions = {
   },
   forceDelete({ commit }, { elementId, pageId }) {
     commit('DELETE_ITEM', { elementId, pageId })
+  },
+  forceMove({ commit }, { newOrder, pageId }) {
+    commit('ORDER_ITEMS', { newOrder, pageId })
   },
   async create({ dispatch }, { page, elementType }) {
     const { data: element } = await ElementService(this.$client).create(
@@ -58,6 +66,25 @@ const actions = {
     )
 
     return elements
+  },
+  async move({ state, commit }, { elementId, direction, pageId }) {
+    const order = state.elements[pageId].map((element) => element.id)
+    const elementIndex = order.findIndex((id) => id === elementId)
+
+    const indexToSwapWith =
+      direction === 'up' ? elementIndex - 1 : elementIndex + 1
+
+    // The element could be the last or the first one which we need to handle
+    if (indexToSwapWith === -1 || indexToSwapWith === order.length) {
+      return
+    }
+
+    order[elementIndex] = order[indexToSwapWith]
+    order[indexToSwapWith] = elementId
+
+    await ElementService(this.$client).order(pageId, order)
+
+    commit('ORDER_ITEMS', { newOrder: order, pageId })
   },
 }
 

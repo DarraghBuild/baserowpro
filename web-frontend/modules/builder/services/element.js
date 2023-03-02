@@ -11,5 +11,10 @@ export default (client) => {
     delete(elementId) {
       client.delete(`builder/element/${elementId}/`)
     },
+    order(pageId, newOrder) {
+      client.post(`builder/page/${pageId}/elements/order/`, {
+        element_ids: newOrder,
+      })
+    },
   }
 }
