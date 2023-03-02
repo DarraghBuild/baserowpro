@@ -5,7 +5,10 @@
     @click="$emit('selected')"
   >
     <ElementMenu v-if="active" @delete="$emit('delete')" />
-    <component :is="elementType.component"></component>
+    <component
+      :is="elementType.component"
+      class="element__component"
+    ></component>
   </div>
 </template>
 
