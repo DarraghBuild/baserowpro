@@ -8,6 +8,7 @@
       />
     </div>
     <ElementsList
+      v-if="elementsFiltered.length"
       class="context__menu elements-context__elements-list"
       :elements="elementsFiltered"
     />
