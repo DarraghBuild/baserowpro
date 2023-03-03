@@ -6,6 +6,8 @@
   >
     <ElementMenu
       v-if="active"
+      :move-up-disabled="isFirstElement"
+      :move-down-disabled="isLastElement"
       @delete="$emit('delete')"
       @move="$emit('move', $event)"
     />
@@ -27,6 +29,16 @@ export default {
       required: true,
     },
     active: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    isLastElement: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    isFirstElement: {
       type: Boolean,
       required: false,
       default: false,

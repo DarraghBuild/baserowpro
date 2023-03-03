@@ -12,6 +12,8 @@
           :key="element.id"
           :element="element"
           :active="element.id === elementActiveId"
+          :is-first-element="index === 0"
+          :is-last-element="index === elements.length - 1"
           @selected="elementActiveId = element.id"
           @delete="deleteElement(element)"
           @move="move(element, index, $event)"

@@ -6,13 +6,21 @@
         {{ $t('action.copy') }}
       </div>
     </a>
-    <a class="element__menu-item" @click="$emit('move', 'up')">
+    <a
+      v-if="!moveUpDisabled"
+      class="element__menu-item"
+      @click="$emit('move', 'up')"
+    >
       <i class="fas fa-arrow-up"></i>
       <div class="element__menu-item-description">
         {{ $t('elementMenu.moveUp') }}
       </div>
     </a>
-    <a class="element__menu-item" @click="$emit('move', 'down')">
+    <a
+      v-if="!moveDownDisabled"
+      class="element__menu-item"
+      @click="$emit('move', 'down')"
+    >
       <i class="fas fa-arrow-down"></i>
       <div class="element__menu-item-description">
         {{ $t('elementMenu.moveDown') }}
@@ -30,5 +38,17 @@
 <script>
 export default {
   name: 'ElementMenu',
+  props: {
+    moveUpDisabled: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    moveDownDisabled: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+  },
 }
 </script>
