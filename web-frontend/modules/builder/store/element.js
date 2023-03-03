@@ -1,41 +1,41 @@
 import ElementService from '@baserow/modules/builder/services/element'
 
 const state = {
-  // Maps page id to elements on that page
-  elements: {},
+  // Maps page id to elementsMap on that page
+  elementsMap: {},
 }
 
 const mutations = {
   ADD_ITEM(state, { element, pageId, beforeId = null }) {
-    if (Object.keys(state.elements).includes(pageId.toString())) {
-      const isElementAlreadyOnPage = state.elements[pageId].some(
+    if (Object.keys(state.elementsMap).includes(pageId.toString())) {
+      const isElementAlreadyOnPage = state.elementsMap[pageId].some(
         (e) => e.id === element.id
       )
       if (!isElementAlreadyOnPage) {
         if (beforeId === null) {
-          state.elements[pageId].push(element)
+          state.elementsMap[pageId].push(element)
         } else {
-          const insertionIndex = state.elements[pageId].findIndex(
+          const insertionIndex = state.elementsMap[pageId].findIndex(
             (e) => e.id === beforeId
           )
-          state.elements[pageId].splice(insertionIndex, 0, element)
+          state.elementsMap[pageId].splice(insertionIndex, 0, element)
         }
       }
     } else {
-      state.elements = { ...state.elements, [pageId]: [element] }
+      state.elementsMap = { ...state.elementsMap, [pageId]: [element] }
     }
   },
   DELETE_ITEM(state, { elementId, pageId }) {
-    if (Object.keys(state.elements).includes(pageId.toString())) {
-      const index = state.elements[pageId].findIndex(
+    if (Object.keys(state.elementsMap).includes(pageId.toString())) {
+      const index = state.elementsMap[pageId].findIndex(
         (element) => element.id === elementId
       )
-      state.elements[pageId].splice(index, 1)
+      state.elementsMap[pageId].splice(index, 1)
     }
   },
   ORDER_ITEMS(state, { newOrder, pageId }) {
-    state.elements[pageId] = newOrder.map((id) =>
-      state.elements[pageId].find((element) => element.id === id)
+    state.elementsMap[pageId] = newOrder.map((id) =>
+      state.elementsMap[pageId].find((element) => element.id === id)
     )
   },
 }
@@ -76,7 +76,7 @@ const actions = {
     return elements
   },
   async move({ state, dispatch }, { elementId, beforeElementId, pageId }) {
-    const order = state.elements[pageId].map((element) => element.id)
+    const order = state.elementsMap[pageId].map((element) => element.id)
     const elementIndex = order.findIndex((id) => id === elementId)
     const indexToSwapWith = order.findIndex((id) => id === beforeElementId)
 
@@ -96,7 +96,7 @@ const actions = {
 
 const getters = {
   getElements: (state) => (pageId) => {
-    return state.elements[pageId] || []
+    return state.elementsMap[pageId] || []
   },
 }
 
