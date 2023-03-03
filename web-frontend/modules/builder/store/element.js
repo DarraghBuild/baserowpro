@@ -67,12 +67,10 @@ const actions = {
 
     return elements
   },
-  async move({ state, commit }, { elementId, direction, pageId }) {
+  async move({ state, commit }, { elementId, beforeElementId, pageId }) {
     const order = state.elements[pageId].map((element) => element.id)
     const elementIndex = order.findIndex((id) => id === elementId)
-
-    const indexToSwapWith =
-      direction === 'up' ? elementIndex - 1 : elementIndex + 1
+    const indexToSwapWith = order.findIndex((id) => id === beforeElementId)
 
     // The element could be the last or the first one which we need to handle
     if (indexToSwapWith === -1 || indexToSwapWith === order.length) {

@@ -8,13 +8,13 @@
     >
       <div ref="previewScaled" class="page-preview__scaled">
         <Element
-          v-for="element in elements"
+          v-for="(element, index) in elements"
           :key="element.id"
           :element="element"
           :active="element.id === elementActiveId"
           @selected="elementActiveId = element.id"
           @delete="deleteElement(element)"
-          @move="move(element, $event)"
+          @move="move(element, index, $event)"
         />
       </div>
     </div>
@@ -97,12 +97,29 @@ export default {
         notifyIf(error)
       }
     },
-    move(element, direction) {
+    move(element, index, direction) {
+      let elementToMoveId = null
+      let beforeElementId = null
+
+      if (direction === 'up' && index !== 0) {
+        elementToMoveId = element.id
+        beforeElementId = this.elements[index - 1].id
+      } else if (direction === 'down' && index !== this.elements.length - 1) {
+        elementToMoveId = this.elements[index + 1].id
+        beforeElementId = element.id
+      }
+
+      // If either is null then we are on the top or bottom end of the elements
+      // and therefore the element can't be moved anymore
+      if (elementToMoveId === null || beforeElementId === null) {
+        return
+      }
+
       try {
         this.actionMoveElement({
           pageId: this.page.id,
-          elementId: element.id,
-          direction,
+          elementId: elementToMoveId,
+          beforeElementId,
         })
       } catch (error) {
         notifyIf(error)
