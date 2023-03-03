@@ -75,6 +75,12 @@ export default {
       })
     },
   },
+  mounted() {
+    window.addEventListener('resize', this.windowResized)
+  },
+  destroyed() {
+    window.removeEventListener('resize', this.windowResized)
+  },
   methods: {
     ...mapActions({
       actionCreateElement: 'element/create',
@@ -82,6 +88,11 @@ export default {
       actionMoveElement: 'element/move',
       actionDeleteElement: 'element/delete',
     }),
+    windowResized() {
+      this.$nextTick(() => {
+        this.resized(this.deviceType)
+      })
+    },
     resized(deviceType) {
       // The widths are the minimum width the preview must have. If the preview dom
       // element becomes smaller than the target, it will be scaled down so that the
