@@ -67,7 +67,7 @@ const actions = {
 
     return elements
   },
-  async move({ state, commit }, { elementId, beforeElementId, pageId }) {
+  async move({ state, dispatch }, { elementId, beforeElementId, pageId }) {
     const order = state.elements[pageId].map((element) => element.id)
     const elementIndex = order.findIndex((id) => id === elementId)
     const indexToSwapWith = order.findIndex((id) => id === beforeElementId)
@@ -82,7 +82,7 @@ const actions = {
 
     await ElementService(this.$client).order(pageId, order)
 
-    commit('ORDER_ITEMS', { newOrder: order, pageId })
+    dispatch('forceMove', { newOrder: order, pageId })
   },
 }
 
