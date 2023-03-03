@@ -6,13 +6,20 @@ const state = {
 }
 
 const mutations = {
-  ADD_ITEM(state, { element, pageId }) {
+  ADD_ITEM(state, { element, pageId, beforeId = null }) {
     if (Object.keys(state.elements).includes(pageId.toString())) {
       const isElementAlreadyOnPage = state.elements[pageId].some(
         (e) => e.id === element.id
       )
       if (!isElementAlreadyOnPage) {
-        state.elements[pageId].push(element)
+        if (beforeId === null) {
+          state.elements[pageId].push(element)
+        } else {
+          const insertionIndex = state.elements[pageId].findIndex(
+            (e) => e.id === beforeId
+          )
+          state.elements[pageId].splice(insertionIndex, 0, element)
+        }
       }
     } else {
       state.elements = { ...state.elements, [pageId]: [element] }
@@ -34,8 +41,8 @@ const mutations = {
 }
 
 const actions = {
-  forceCreate({ commit }, { element, pageId }) {
-    commit('ADD_ITEM', { element, pageId })
+  forceCreate({ commit }, { element, pageId, beforeId = null }) {
+    commit('ADD_ITEM', { element, pageId, beforeId })
   },
   forceDelete({ commit }, { elementId, pageId }) {
     commit('DELETE_ITEM', { elementId, pageId })
@@ -43,13 +50,14 @@ const actions = {
   forceMove({ commit }, { newOrder, pageId }) {
     commit('ORDER_ITEMS', { newOrder, pageId })
   },
-  async create({ dispatch }, { page, elementType }) {
+  async create({ dispatch }, { page, elementType, beforeId = null }) {
     const { data: element } = await ElementService(this.$client).create(
       page.id,
-      elementType.getType()
+      elementType.getType(),
+      beforeId
     )
 
-    dispatch('forceCreate', { element, pageId: page.id })
+    dispatch('forceCreate', { element, pageId: page.id, beforeId })
   },
   async delete({ dispatch }, { element }) {
     await ElementService(this.$client).delete(element.id)

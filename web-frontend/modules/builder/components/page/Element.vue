@@ -4,7 +4,11 @@
     :class="{ 'element--active': active }"
     @click="$emit('selected')"
   >
-    <InsertElementButton v-if="active" class="element__insert--top" />
+    <InsertElementButton
+      v-if="active"
+      class="element__insert--top"
+      @click="$emit('insert', 'top')"
+    />
     <ElementMenu
       v-if="active"
       :move-up-disabled="isFirstElement"
@@ -16,7 +20,11 @@
       :is="elementType.component"
       class="element__component"
     ></component>
-    <InsertElementButton v-if="active" class="element__insert--bottom" />
+    <InsertElementButton
+      v-if="active"
+      class="element__insert--bottom"
+      @click="$emit('insert', 'bottom')"
+    />
   </div>
 </template>
 

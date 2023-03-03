@@ -17,9 +17,11 @@
           @selected="elementActiveId = element.id"
           @delete="deleteElement(element)"
           @move="move(element, index, $event)"
+          @insert="insert(element, index, $event)"
         />
       </div>
     </div>
+    <AddElementModal ref="addElementModal" :page="page" @add="addElement" />
   </div>
 </template>
 
@@ -27,13 +29,17 @@
 import { mapGetters, mapActions } from 'vuex'
 import Element from '@baserow/modules/builder/components/page/Element'
 import { notifyIf } from '@baserow/modules/core/utils/error'
+import AddElementModal from '@baserow/modules/builder/components/elements/AddElementModal'
 
 export default {
   name: 'PagePreview',
-  components: { Element },
+  components: { AddElementModal, Element },
   data() {
     return {
       elementActiveId: null,
+      // This value is set when the insertion of a new element is in progress to
+      // indicate where the element should be inserted
+      beforeId: null,
     }
   },
   computed: {
@@ -64,6 +70,7 @@ export default {
   },
   methods: {
     ...mapActions({
+      actionCreateElement: 'element/create',
       actionMoveElement: 'element/move',
       actionDeleteElement: 'element/delete',
     }),
@@ -123,6 +130,23 @@ export default {
           elementId: elementToMoveId,
           beforeElementId,
         })
+      } catch (error) {
+        notifyIf(error)
+      }
+    },
+    insert(element, index, direction) {
+      this.beforeId =
+        direction === 'top' ? element.id : this.elements[index + 1]?.id
+      this.$refs.addElementModal.show()
+    },
+    async addElement(elementType) {
+      try {
+        await this.actionCreateElement({
+          page: this.page,
+          elementType,
+          beforeId: this.beforeId,
+        })
+        this.$refs.addElementModal.hide()
       } catch (error) {
         notifyIf(error)
       }

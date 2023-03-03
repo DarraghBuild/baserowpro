@@ -12,7 +12,7 @@
         :key="elementType.getType()"
         class="add-element-modal__element-card"
         :element-type="elementType"
-        @click.native.prevent="addElement(elementType)"
+        @click.native.prevent="$emit('add', elementType)"
       />
     </div>
   </Modal>
@@ -61,21 +61,6 @@ export default {
 
         return matchesName || matchesDescription
       })
-    },
-  },
-  methods: {
-    async addElement(elementType) {
-      try {
-        await this.$store.dispatch('element/create', {
-          page: this.page,
-          elementType,
-        })
-      } catch (error) {
-        notifyIf(error)
-      }
-
-      this.$emit('added')
-      this.hide()
     },
   },
 }

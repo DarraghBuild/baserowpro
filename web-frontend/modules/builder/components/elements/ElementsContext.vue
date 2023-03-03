@@ -12,7 +12,7 @@
       :elements="elementsFiltered"
     />
     <AddElementButton @click="$refs.addElementModal.show()" />
-    <AddElementModal ref="addElementModal" :page="page" @added="hide()" />
+    <AddElementModal ref="addElementModal" :page="page" @add="addElement" />
   </Context>
 </template>
 
@@ -22,6 +22,7 @@ import ElementsList from '@baserow/modules/builder/components/elements/ElementsL
 import AddElementButton from '@baserow/modules/builder/components/elements/AddElementButton'
 import AddElementModal from '@baserow/modules/builder/components/elements/AddElementModal'
 import { mapGetters } from 'vuex'
+import { notifyIf } from '@baserow/modules/core/utils/error'
 
 export default {
   name: 'ElementsContext',
@@ -54,6 +55,20 @@ export default {
         const searchSanitised = this.search.toLowerCase().trim()
         return nameSanitised.includes(searchSanitised)
       })
+    },
+  },
+  methods: {
+    async addElement(elementType) {
+      try {
+        await this.$store.dispatch('element/create', {
+          page: this.page,
+          elementType,
+        })
+      } catch (error) {
+        notifyIf(error)
+      }
+      this.hide()
+      this.$refs.addElementModal.hide()
     },
   },
 }
