@@ -142,7 +142,7 @@ export default {
     async addElement(elementType) {
       try {
         await this.actionCreateElement({
-          page: this.page,
+          pageId: this.page.id,
           elementType,
           beforeId: this.beforeId,
         })

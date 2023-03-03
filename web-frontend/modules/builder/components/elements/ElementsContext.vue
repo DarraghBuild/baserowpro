@@ -61,7 +61,7 @@ export default {
     async addElement(elementType) {
       try {
         await this.$store.dispatch('element/create', {
-          page: this.page,
+          pageId: this.page.id,
           elementType,
         })
       } catch (error) {

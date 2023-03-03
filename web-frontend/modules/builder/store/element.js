@@ -50,14 +50,14 @@ const actions = {
   forceMove({ commit }, { newOrder, pageId }) {
     commit('ORDER_ITEMS', { newOrder, pageId })
   },
-  async create({ dispatch }, { page, elementType, beforeId = null }) {
+  async create({ dispatch }, { pageId, elementType, beforeId = null }) {
     const { data: element } = await ElementService(this.$client).create(
-      page.id,
+      pageId,
       elementType.getType(),
       beforeId
     )
 
-    dispatch('forceCreate', { element, pageId: page.id, beforeId })
+    dispatch('forceCreate', { element, pageId, beforeId })
   },
   async delete({ dispatch }, { element }) {
     await ElementService(this.$client).delete(element.id)
