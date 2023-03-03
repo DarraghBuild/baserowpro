@@ -7,9 +7,9 @@
       </div>
     </a>
     <a
-      v-if="!moveUpDisabled"
       class="element__menu-item"
-      @click="$emit('move', 'up')"
+      :class="{ disabled: moveUpDisabled }"
+      @click="!moveUpDisabled && $emit('move', 'up')"
     >
       <i class="fas fa-arrow-up"></i>
       <div class="element__menu-item-description">
@@ -17,9 +17,9 @@
       </div>
     </a>
     <a
-      v-if="!moveDownDisabled"
       class="element__menu-item"
-      @click="$emit('move', 'down')"
+      :class="{ disabled: moveDownDisabled }"
+      @click="!moveDownDisabled && $emit('move', 'down')"
     >
       <i class="fas fa-arrow-down"></i>
       <div class="element__menu-item-description">

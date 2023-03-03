@@ -89,6 +89,11 @@
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
   }
+
+  &.disabled {
+    cursor: inherit;
+    color: $color-error-300;
+  }
 }
 
 .element__component {
