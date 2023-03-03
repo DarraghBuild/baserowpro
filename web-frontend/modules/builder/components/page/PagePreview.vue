@@ -109,7 +109,10 @@ export default {
     },
     deleteElement(element) {
       try {
-        this.actionDeleteElement({ element })
+        this.actionDeleteElement({
+          elementId: element.id,
+          pageId: this.page.id,
+        })
       } catch (error) {
         notifyIf(error)
       }

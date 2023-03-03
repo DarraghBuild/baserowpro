@@ -59,10 +59,10 @@ const actions = {
 
     dispatch('forceCreate', { element, pageId, beforeId })
   },
-  async delete({ dispatch }, { element }) {
-    await ElementService(this.$client).delete(element.id)
+  async delete({ dispatch }, { elementId, pageId }) {
+    await ElementService(this.$client).delete(elementId)
 
-    dispatch('forceDelete', { elementId: element.id, pageId: element.page_id })
+    dispatch('forceDelete', { elementId, pageId })
   },
   async fetch({ dispatch }, { page }) {
     const { data: elements } = await ElementService(this.$client).fetchAll(
