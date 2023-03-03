@@ -21,7 +21,6 @@
 <script>
 import modal from '@baserow/modules/core/mixins/modal'
 import ElementCard from '@baserow/modules/builder/components/elements/ElementCard'
-import { notifyIf } from '@baserow/modules/core/utils/error'
 
 export default {
   name: 'AddElementModal',
