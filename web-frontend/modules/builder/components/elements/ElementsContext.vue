@@ -11,6 +11,7 @@
       v-if="elementsFiltered.length"
       class="context__menu elements-context__elements-list"
       :elements="elementsFiltered"
+      @select="selectElement($event)"
     />
     <AddElementButton @click="$refs.addElementModal.show()" />
     <AddElementModal
@@ -27,7 +28,7 @@ import context from '@baserow/modules/core/mixins/context'
 import ElementsList from '@baserow/modules/builder/components/elements/ElementsList'
 import AddElementButton from '@baserow/modules/builder/components/elements/AddElementButton'
 import AddElementModal from '@baserow/modules/builder/components/elements/AddElementModal'
-import { mapGetters } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 import { notifyIf } from '@baserow/modules/core/utils/error'
 
 export default {
@@ -65,10 +66,14 @@ export default {
     },
   },
   methods: {
+    ...mapActions({
+      actionCreateElement: 'element/create',
+      actionSelectElement: 'element/select',
+    }),
     async addElement(elementType) {
       this.loading = true
       try {
-        await this.$store.dispatch('element/create', {
+        await this.actionCreateElement({
           pageId: this.page.id,
           elementType: elementType.getType(),
         })
@@ -78,6 +83,10 @@ export default {
       this.loading = false
       this.hide()
       this.$refs.addElementModal.hide()
+    },
+    selectElement(element) {
+      this.actionSelectElement({ element })
+      this.hide()
     },
   },
 }

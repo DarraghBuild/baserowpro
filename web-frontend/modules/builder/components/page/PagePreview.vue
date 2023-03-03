@@ -11,10 +11,10 @@
           v-for="(element, index) in elements"
           :key="element.id"
           :element="element"
-          :active="element.id === elementActiveId"
+          :active="element.id === elementSelectedId"
           :is-first-element="index === 0"
           :is-last-element="index === elements.length - 1"
-          @selected="elementActiveId = element.id"
+          @selected="select(element)"
           @delete="deleteElement(element)"
           @move="move(element, index, $event)"
           @insert="insert(element, index, $event)"
@@ -42,7 +42,6 @@ export default {
   components: { AddElementModal, Element },
   data() {
     return {
-      elementActiveId: null,
       // This value is set when the insertion of a new element is in progress to
       // indicate where the element should be inserted
       beforeId: null,
@@ -53,9 +52,13 @@ export default {
     ...mapGetters({
       page: 'page/getSelected',
       deviceTypeSelected: 'page/getDeviceTypeSelected',
+      elementSelected: 'element/getSelected',
     }),
     elements() {
       return this.$store.getters['element/getElements'](this.page.id)
+    },
+    elementSelectedId() {
+      return this.elementSelected?.id
     },
     deviceType() {
       return this.deviceTypeSelected
@@ -87,6 +90,7 @@ export default {
       actionCopyElement: 'element/copy',
       actionMoveElement: 'element/move',
       actionDeleteElement: 'element/delete',
+      actionSelectElement: 'element/select',
     }),
     windowResized() {
       this.$nextTick(() => {
@@ -185,6 +189,9 @@ export default {
       } catch (error) {
         notifyIf(error)
       }
+    },
+    select(element) {
+      this.actionSelectElement({ element })
     },
   },
 }

@@ -1,5 +1,5 @@
 <template>
-  <a>
+  <a @click="$emit('click')">
     <i :class="`fas fa-${elementType.iconClass}`"></i>
     <span class="margin-left-1"> {{ elementType.name }}</span>
   </a>

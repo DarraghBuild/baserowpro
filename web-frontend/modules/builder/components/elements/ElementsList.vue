@@ -1,7 +1,7 @@
 <template>
   <ul>
     <li v-for="element in elements" :key="element.id">
-      <ElementsListItem :element="element" />
+      <ElementsListItem :element="element" @click="$emit('select', element)" />
     </li>
   </ul>
 </template>

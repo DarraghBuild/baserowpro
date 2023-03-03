@@ -3,6 +3,9 @@ import ElementService from '@baserow/modules/builder/services/element'
 const state = {
   // Maps page id to elementsMap on that page
   elementsMap: {},
+
+  // The currently selected element
+  selected: null,
 }
 
 const mutations = {
@@ -38,6 +41,9 @@ const mutations = {
       state.elementsMap[pageId].find((element) => element.id === id)
     )
   },
+  SELECT_ITEM(state, { element }) {
+    state.selected = element
+  },
 }
 
 const actions = {
@@ -49,6 +55,9 @@ const actions = {
   },
   forceMove({ commit }, { newOrder, pageId }) {
     commit('ORDER_ITEMS', { newOrder, pageId })
+  },
+  select({ commit }, { element }) {
+    commit('SELECT_ITEM', { element })
   },
   async create({ dispatch }, { pageId, elementType, beforeId = null }) {
     const { data: element } = await ElementService(this.$client).create(
@@ -105,6 +114,9 @@ const actions = {
 const getters = {
   getElements: (state) => (pageId) => {
     return state.elementsMap[pageId] || []
+  },
+  getSelected(state) {
+    return state.selected
   },
 }
 
