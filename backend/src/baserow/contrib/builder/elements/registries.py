@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, Generic, TypeVar
 
 from baserow.core.registry import (
     CustomFieldsInstanceMixin,
@@ -14,18 +14,29 @@ from baserow.core.registry import (
 if TYPE_CHECKING:
     from baserow.contrib.builder.pages.models import Page
 
+from baserow.contrib.builder.types import ElementDict
+
 from .models import Element
+
+T = TypeVar("T", bound=ElementDict)
 
 
 class ElementType(
-    CustomFieldsInstanceMixin, ModelInstanceMixin, ImportExportMixin, Instance, ABC
+    CustomFieldsInstanceMixin,
+    ModelInstanceMixin,
+    ImportExportMixin,
+    Instance,
+    Generic[T],
+    ABC,
 ):
     """Element type"""
+
+    SerializedDict: T
 
     def export_serialized(
         self,
         element: Element,
-    ) -> Dict[str, Any]:
+    ) -> T:
         """
         Exports the element to a serialized dict that can be imported by the
         `import_serialized` method. This dict is also JSON serializable.
@@ -34,13 +45,13 @@ class ElementType(
         :return: The exported element as serialized dict.
         """
 
-        serialized = {
-            "id": element.id,
-            "type": self.type,
-            "order": element.order,
-        }
+        other_properties = {key: getattr(element, key) for key in self.allowed_fields}
 
-        serialized.update({key: getattr(element, key) for key in self.allowed_fields})
+        print(self.SerializedDict)
+
+        serialized = self.SerializedDict(
+            id=element.id, type=self.type, order=element.order, **other_properties
+        )
 
         return serialized
 
@@ -92,7 +103,11 @@ class ElementType(
         )
 
 
-class ElementTypeRegistry(Registry, ModelRegistryMixin, CustomFieldsRegistryMixin):
+class ElementTypeRegistry(
+    Registry[ElementType],
+    ModelRegistryMixin[Any, ElementType],
+    CustomFieldsRegistryMixin,
+):
     """
     Contains all registered element types.
     """

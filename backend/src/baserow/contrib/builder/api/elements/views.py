@@ -238,6 +238,9 @@ class ElementView(APIView):
             request.data,
             base_serializer_class=UpdateElementSerializer,
         )
+        # We drop the "type" value if present as the serializer allows it only
+        # because we need it for the auto generated documentation.
+        data.pop("type", None)
 
         element_updated = ElementService().update_element(request.user, element, data)
 

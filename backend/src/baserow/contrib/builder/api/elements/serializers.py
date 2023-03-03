@@ -95,9 +95,18 @@ class CreateElementSerializer(serializers.ModelSerializer):
 
 
 class UpdateElementSerializer(serializers.ModelSerializer):
+    type = serializers.ChoiceField(
+        choices=lazy(element_type_registry.get_types, list)(),
+        required=False,
+        help_text=(
+            "This property will be ignored. "
+            "Only here to show allowed fields for each element type."
+        ),
+    )
+
     class Meta:
         model = Element
-        fields = []
+        fields = ["type"]
 
 
 class OrderElementsSerializer(serializers.Serializer):

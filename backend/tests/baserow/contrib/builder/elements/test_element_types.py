@@ -1,7 +1,8 @@
 import pytest
+
 from baserow.contrib.builder.elements.registries import (
-    element_type_registry,
     ElementType,
+    element_type_registry,
 )
 
 

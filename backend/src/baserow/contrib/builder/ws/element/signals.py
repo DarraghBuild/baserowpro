@@ -7,9 +7,9 @@ from django.dispatch import receiver
 from baserow.contrib.builder.api.elements.serializers import ElementSerializer
 from baserow.contrib.builder.elements import signals as element_signals
 from baserow.contrib.builder.elements.models import Element
-from baserow.contrib.builder.elements.registries import element_type_registry
 from baserow.contrib.builder.elements.object_scopes import BuilderElementObjectScopeType
 from baserow.contrib.builder.elements.operations import ReadElementOperationType
+from baserow.contrib.builder.elements.registries import element_type_registry
 from baserow.contrib.builder.pages.models import Page
 from baserow.core.utils import generate_hash
 from baserow.ws.tasks import broadcast_to_group, broadcast_to_permitted_users

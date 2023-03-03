@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from baserow.contrib.builder.elements.models import HeadingElement, ParagraphElement
 from baserow.contrib.builder.elements.registries import ElementType
+from baserow.contrib.builder.types import ElementDict, Expression
 
 
 class BaseTextElementType(ElementType, ABC):
@@ -13,6 +14,9 @@ class BaseTextElementType(ElementType, ABC):
 
     serializer_field_names = ["value"]
     allowed_fields = ["value"]
+
+    class SerializedDict(ElementDict):
+        value: Expression
 
     @property
     def serializer_field_overrides(self):
@@ -32,6 +36,10 @@ class HeadingElementType(BaseTextElementType):
 
     type = "heading"
     model_class = HeadingElement
+
+    class SerializedDict(ElementDict):
+        value: Expression
+        level: int
 
     @property
     def serializer_field_names(self):

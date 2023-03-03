@@ -2,8 +2,8 @@ from unittest.mock import patch
 
 import pytest
 
-from baserow.contrib.builder.elements.service import ElementService
 from baserow.contrib.builder.elements.registries import element_type_registry
+from baserow.contrib.builder.elements.service import ElementService
 from baserow.core.utils import generate_hash
 
 
