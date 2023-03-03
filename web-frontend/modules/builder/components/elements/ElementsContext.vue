@@ -62,7 +62,7 @@ export default {
       try {
         await this.$store.dispatch('element/create', {
           pageId: this.page.id,
-          elementType,
+          elementType: elementType.getType(),
         })
       } catch (error) {
         notifyIf(error)

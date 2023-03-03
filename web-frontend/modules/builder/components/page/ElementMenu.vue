@@ -1,6 +1,6 @@
 <template>
   <div class="element__menu">
-    <a class="element__menu-item">
+    <a class="element__menu-item" @click="$emit('copy')">
       <i class="fas fa-copy"></i>
       <div class="element__menu-item-description">
         {{ $t('action.copy') }}

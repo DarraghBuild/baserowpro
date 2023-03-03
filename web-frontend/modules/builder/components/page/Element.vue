@@ -15,6 +15,7 @@
       :move-down-disabled="isLastElement"
       @delete="$emit('delete')"
       @move="$emit('move', $event)"
+      @copy="$emit('copy')"
     />
     <component
       :is="elementType.component"

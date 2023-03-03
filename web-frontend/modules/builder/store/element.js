@@ -53,7 +53,7 @@ const actions = {
   async create({ dispatch }, { pageId, elementType, beforeId = null }) {
     const { data: element } = await ElementService(this.$client).create(
       pageId,
-      elementType.getType(),
+      elementType,
       beforeId
     )
 
@@ -91,6 +91,14 @@ const actions = {
     await ElementService(this.$client).order(pageId, order)
 
     dispatch('forceMove', { newOrder: order, pageId })
+  },
+  async copy({ state, dispatch }, { elementId, pageId }) {
+    const element = state.elementsMap[pageId].find((e) => e.id === elementId)
+    await dispatch('create', {
+      pageId,
+      elementType: element.type,
+      beforeId: element.id,
+    })
   },
 }
 

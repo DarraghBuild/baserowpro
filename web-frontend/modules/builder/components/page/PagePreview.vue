@@ -18,6 +18,7 @@
           @delete="deleteElement(element)"
           @move="move(element, index, $event)"
           @insert="insert(element, index, $event)"
+          @copy="copy(element)"
         />
       </div>
     </div>
@@ -71,6 +72,7 @@ export default {
   methods: {
     ...mapActions({
       actionCreateElement: 'element/create',
+      actionCopyElement: 'element/copy',
       actionMoveElement: 'element/move',
       actionDeleteElement: 'element/delete',
     }),
@@ -143,8 +145,19 @@ export default {
       try {
         await this.actionCreateElement({
           pageId: this.page.id,
-          elementType,
+          elementType: elementType.getType(),
           beforeId: this.beforeId,
+        })
+        this.$refs.addElementModal.hide()
+      } catch (error) {
+        notifyIf(error)
+      }
+    },
+    async copy(element) {
+      try {
+        await this.actionCopyElement({
+          pageId: this.page.id,
+          elementId: element.id,
         })
         this.$refs.addElementModal.hide()
       } catch (error) {
