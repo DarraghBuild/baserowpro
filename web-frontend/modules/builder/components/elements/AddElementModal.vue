@@ -12,6 +12,7 @@
         :key="elementType.getType()"
         class="add-element-modal__element-card"
         :element-type="elementType"
+        :loading="loading"
         @click.native.prevent="$emit('add', elementType)"
       />
     </div>
@@ -30,6 +31,11 @@ export default {
     page: {
       type: Object,
       required: true,
+    },
+    loading: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   data() {

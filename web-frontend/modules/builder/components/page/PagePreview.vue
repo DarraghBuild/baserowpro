@@ -22,7 +22,12 @@
         />
       </div>
     </div>
-    <AddElementModal ref="addElementModal" :page="page" @add="addElement" />
+    <AddElementModal
+      ref="addElementModal"
+      :loading="addingElement"
+      :page="page"
+      @add="addElement"
+    />
   </div>
 </template>
 
@@ -41,6 +46,7 @@ export default {
       // This value is set when the insertion of a new element is in progress to
       // indicate where the element should be inserted
       beforeId: null,
+      addingElement: false,
     }
   },
   computed: {
@@ -142,6 +148,7 @@ export default {
       this.$refs.addElementModal.show()
     },
     async addElement(elementType) {
+      this.addingElement = true
       try {
         await this.actionCreateElement({
           pageId: this.page.id,
@@ -152,6 +159,7 @@ export default {
       } catch (error) {
         notifyIf(error)
       }
+      this.addingElement = false
     },
     async copy(element) {
       try {

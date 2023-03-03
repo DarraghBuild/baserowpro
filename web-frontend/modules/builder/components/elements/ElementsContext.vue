@@ -13,7 +13,12 @@
       :elements="elementsFiltered"
     />
     <AddElementButton @click="$refs.addElementModal.show()" />
-    <AddElementModal ref="addElementModal" :page="page" @add="addElement" />
+    <AddElementModal
+      ref="addElementModal"
+      :loading="loading"
+      :page="page"
+      @add="addElement"
+    />
   </Context>
 </template>
 
@@ -32,6 +37,7 @@ export default {
   data() {
     return {
       search: null,
+      loading: false,
     }
   },
   computed: {
@@ -60,6 +66,7 @@ export default {
   },
   methods: {
     async addElement(elementType) {
+      this.loading = true
       try {
         await this.$store.dispatch('element/create', {
           pageId: this.page.id,
@@ -68,6 +75,7 @@ export default {
       } catch (error) {
         notifyIf(error)
       }
+      this.loading = false
       this.hide()
       this.$refs.addElementModal.hide()
     },
