@@ -4,6 +4,7 @@
     :class="{ 'element--active': active }"
     @click="$emit('selected')"
   >
+    <InsertElementButton v-if="active" class="element__insert--top" />
     <ElementMenu
       v-if="active"
       :move-up-disabled="isFirstElement"
@@ -15,14 +16,16 @@
       :is="elementType.component"
       class="element__component"
     ></component>
+    <InsertElementButton v-if="active" class="element__insert--bottom" />
   </div>
 </template>
 
 <script>
 import ElementMenu from '@baserow/modules/builder/components/page/ElementMenu'
+import InsertElementButton from '@baserow/modules/builder/components/page/InsertElementButton'
 export default {
   name: 'Element',
-  components: { ElementMenu },
+  components: { ElementMenu, InsertElementButton },
   props: {
     element: {
       type: Object,

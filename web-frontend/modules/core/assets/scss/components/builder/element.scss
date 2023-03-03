@@ -10,10 +10,39 @@
   @include absolute(6px, 6px, auto, auto);
 }
 
+.element__insert {
+  @include center-text(26px, 10px);
+
+  display: block;
+  border-radius: 100%;
+  border: solid 1px $color-neutral-300;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.16);
+  color: $color-primary-900;
+  background-color: $white;
+
+  &:hover {
+    background-color: $color-neutral-50;
+    box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.32);
+  }
+
+  &--top,
+  &--bottom {
+    @include absolute(-13px, auto, auto, 50%);
+
+    margin-left: -12px;
+    z-index: 2;
+  }
+
+  &--bottom {
+    top: auto;
+    bottom: -12px;
+  }
+}
+
 .element {
   position: relative;
 
-  .element__add {
+  .element__insert {
     display: none;
   }
 
@@ -22,7 +51,7 @@
   }
 
   &:hover {
-    .element__add {
+    .element__insert {
       display: block;
     }
 
@@ -46,7 +75,7 @@
       pointer-events: none;
     }
 
-    .element__add {
+    .element__insert {
       display: block;
     }
   }
@@ -97,5 +126,5 @@
 }
 
 .element__component {
-  margin-top: 0;
+  margin: 0;
 }
