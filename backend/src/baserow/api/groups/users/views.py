@@ -38,7 +38,10 @@ from baserow.core.exceptions import (
 )
 from baserow.core.handler import CoreHandler
 from baserow.core.models import GroupUser
-from baserow.core.operations import ListGroupUsersGroupOperationType
+from baserow.core.operations import (
+    ListGroupUsersGroupOperationType,
+    ReadGroupUserOperationType,
+)
 
 from .serializers import (
     GetGroupUsersViewParamsSerializer,
@@ -47,7 +50,7 @@ from .serializers import (
     get_list_group_user_serializer,
 )
 
-ListGroupUsersWithMemberDataSerializer = get_list_group_user_serializer()
+GroupUserWithMemberDataSerializer = get_list_group_user_serializer()
 
 
 class GroupUsersView(APIView, SearchableViewMixin, SortableViewMixin):
@@ -87,7 +90,7 @@ class GroupUsersView(APIView, SearchableViewMixin, SortableViewMixin):
             "must be sent first."
         ),
         responses={
-            200: ListGroupUsersWithMemberDataSerializer(many=True),
+            200: GroupUserWithMemberDataSerializer(many=True),
             400: get_error_schema(
                 [
                     "ERROR_USER_NOT_IN_GROUP",
@@ -131,7 +134,7 @@ class GroupUsersView(APIView, SearchableViewMixin, SortableViewMixin):
         qs = self.apply_search(search, qs)
         qs = self.apply_sorts_or_default_sort(sorts, qs)
 
-        serializer = ListGroupUsersWithMemberDataSerializer(qs, many=True)
+        serializer = GroupUserWithMemberDataSerializer(qs, many=True)
         # Iterate over any registered `member_data_registry`
         # member data types and annotate the response with it.
         for data_type in member_data_registry.get_all():
@@ -232,3 +235,59 @@ class GroupUserView(APIView):
         )
         CoreHandler().delete_group_user(request.user, group_user)
         return Response(status=204)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="group_user_id",
+                location=OpenApiParameter.PATH,
+                type=OpenApiTypes.INT,
+                description="The group user id to get the latest data for",
+            )
+        ],
+        tags=["Groups"],
+        operation_id="get_group_user",
+        description=(
+            "Gets information specific to a user in a particular group if the "
+            "authorized user has the correct permissions for the related group."
+        ),
+        responses={
+            200: GroupUserWithMemberDataSerializer(),
+            404: get_error_schema(["ERROR_GROUP_USER_DOES_NOT_EXIST"]),
+        },
+    )
+    @map_exceptions(
+        {
+            GroupUserDoesNotExist: ERROR_GROUP_USER_DOES_NOT_EXIST,
+            UserInvalidGroupPermissionsError: ERROR_USER_INVALID_GROUP_PERMISSIONS,
+        }
+    )
+    def get(self, request, group_user_id):
+        group_user = CoreHandler().get_group_user(
+            group_user_id,
+            base_queryset=GroupUser.objects.select_related(
+                "group", "user", "user__profile"
+            ),
+        )
+
+        allowed = CoreHandler().check_permissions(
+            request.user,
+            ReadGroupUserOperationType.type,
+            group=group_user.group,
+            context=group_user,
+            raise_permission_exceptions=False,
+        )
+        if not allowed:
+            # Don't leak information about particular group user ids not existing by
+            # telling them they are unauthorized if the user does exist but they don't
+            # have permissions.
+            raise GroupUserDoesNotExist()
+
+        serializer = GroupUserWithMemberDataSerializer(group_user)
+        single_user_serialized_data = [serializer.data]
+        for data_type in member_data_registry.get_all():
+            single_user_serialized_data = data_type.annotate_serialized_data(
+                group_user.group, single_user_serialized_data, request.user
+            )
+
+        return Response(single_user_serialized_data[0])

@@ -48,7 +48,7 @@ def get_member_data_types_request_serializer():
     and creating a new serializer with those attributes.
 
     The resulting serializer will be inherited by
-    `ListGroupUsersWithMemberDataSerializer`.
+    `GroupUserWithMemberDataSerializer`.
     """
 
     attrs = {}

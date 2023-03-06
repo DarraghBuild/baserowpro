@@ -45,6 +45,7 @@
 import { mapGetters } from 'vuex'
 import { clone } from '@baserow/modules/core/utils/object'
 import RoleAssignmentsService from '@baserow_enterprise/services/roleAssignments'
+import GroupService from '@baserow/modules/core/services/group'
 import EditRoleContext from '@baserow/modules/core/components/settings/members/EditRoleContext'
 import { filterRoles } from '@baserow_enterprise/utils/roles'
 import { notifyIf } from '@baserow/modules/core/utils/error'
@@ -101,7 +102,10 @@ export default {
           'group',
           permissionsNew
         )
-        this.$emit('refresh')
+        const updatedMemberInfoFromServer = await GroupService(
+          this.$client
+        ).getUser(newMember.id)
+        this.$emit('row-update', updatedMemberInfoFromServer.data)
       } catch (error) {
         this.$emit('row-update', oldMember)
         notifyIf(error)

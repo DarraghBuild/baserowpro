@@ -96,6 +96,10 @@ class DeleteGroupUserOperationType(GroupUserOperationType):
     type = "group_user.delete"
 
 
+class ReadGroupUserOperationType(GroupUserOperationType):
+    type = "group_user.read"
+
+
 class ApplicationOperationType(OperationType, ABC):
     context_scope_name = "application"
 

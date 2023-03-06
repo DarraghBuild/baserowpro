@@ -1,5 +1,6 @@
 from django.shortcuts import reverse
 
+import freezegun
 import pytest
 from rest_framework.status import (
     HTTP_200_OK,
@@ -260,3 +261,134 @@ def test_get_group_user_sorts(api_client, data_fixture):
     assert response_json[2]["name"] == user_1.first_name
     assert response_json[2]["email"] == user_1.email
     assert "created_on" in response_json[2]
+
+
+@pytest.mark.django_db
+def test_can_get_data_for_specific_group_user(api_client, data_fixture):
+    user_1, token_1 = data_fixture.create_user_and_token(email="test1@test.nl")
+    group_1 = data_fixture.create_group()
+    with freezegun.freeze_time("2023-03-06T15:16:35.011313Z"):
+        group_user = data_fixture.create_user_group(
+            group=group_1, user=user_1, permissions="ADMIN"
+        )
+        response = api_client.get(
+            reverse("api:groups:users:item", kwargs={"group_user_id": group_user.id}),
+            HTTP_AUTHORIZATION=f"JWT {token_1}",
+        )
+    response_json = response.json()
+    assert response.status_code == HTTP_200_OK
+    assert response_json == {
+        "created_on": "2023-03-06T15:16:35.011313Z",
+        "email": "test1@test.nl",
+        "group": group_1.id,
+        "id": group_user.id,
+        "name": group_user.user.first_name,
+        "permissions": "ADMIN",
+        "role_uid": None,
+        "highest_role_uid": None,
+        "teams": [],
+        "to_be_deleted": False,
+        "user_id": user_1.id,
+    }
+
+
+@pytest.mark.django_db
+def test_cant_get_user_if_not_in_group(api_client, data_fixture):
+    user_1, token_1 = data_fixture.create_user_and_token(email="test1@test.nl")
+    user_in_other_group, token_2 = data_fixture.create_user_and_token(
+        email="test2@test.nl"
+    )
+    group_1 = data_fixture.create_group()
+    with freezegun.freeze_time("2023-03-06T15:16:35.011313Z"):
+        group_user = data_fixture.create_user_group(
+            group=group_1, user=user_1, permissions="ADMIN"
+        )
+        response = api_client.get(
+            reverse("api:groups:users:item", kwargs={"group_user_id": group_user.id}),
+            HTTP_AUTHORIZATION=f"JWT {token_2}",
+        )
+    response_json = response.json()
+    assert response.status_code == HTTP_404_NOT_FOUND
+    assert response_json == {
+        "detail": "The requested group user does not exist.",
+        "error": "ERROR_GROUP_USER_DOES_NOT_EXIST",
+    }
+
+
+@pytest.mark.django_db
+def test_cant_get_user_if_doesnt_exist(api_client, data_fixture):
+    user_1, token_1 = data_fixture.create_user_and_token(email="test1@test.nl")
+    group_1 = data_fixture.create_group()
+    with freezegun.freeze_time("2023-03-06T15:16:35.011313Z"):
+        group_user = data_fixture.create_user_group(
+            group=group_1, user=user_1, permissions="ADMIN"
+        )
+        response = api_client.get(
+            reverse("api:groups:users:item", kwargs={"group_user_id": 99999}),
+            HTTP_AUTHORIZATION=f"JWT {token_1}",
+        )
+    response_json = response.json()
+    assert response.status_code == HTTP_404_NOT_FOUND
+    assert response_json == {
+        "detail": "The requested group user does not exist.",
+        "error": "ERROR_GROUP_USER_DOES_NOT_EXIST",
+    }
+
+
+@pytest.mark.django_db
+def test_cant_get_group_user_if_removed_from_group(api_client, data_fixture):
+    user_1, token_1 = data_fixture.create_user_and_token(email="test1@test.nl")
+    user_2 = data_fixture.create_user(email="test2@test.nl")
+    group_1 = data_fixture.create_group()
+    group_user_1 = data_fixture.create_user_group(
+        group=group_1, user=user_1, permissions="ADMIN"
+    )
+    group_user_to_remove = data_fixture.create_user_group(
+        group=group_1, user=user_2, permissions="ADMIN"
+    )
+    response = api_client.delete(
+        reverse(
+            "api:groups:users:item", kwargs={"group_user_id": group_user_to_remove.id}
+        ),
+        HTTP_AUTHORIZATION=f"JWT {token_1}",
+    )
+    assert response.status_code == HTTP_204_NO_CONTENT
+
+    response = api_client.get(
+        reverse(
+            "api:groups:users:item", kwargs={"group_user_id": group_user_to_remove.id}
+        ),
+        HTTP_AUTHORIZATION=f"JWT {token_1}",
+    )
+    response_json = response.json()
+    assert response.status_code == HTTP_404_NOT_FOUND
+    assert response_json == {
+        "detail": "The requested group user does not exist.",
+        "error": "ERROR_GROUP_USER_DOES_NOT_EXIST",
+    }
+
+
+@pytest.mark.django_db
+def test_cant_get_group_user_if_group_trashed(api_client, data_fixture):
+    user_1, token_1 = data_fixture.create_user_and_token(email="test1@test.nl")
+    user_2 = data_fixture.create_user(email="test2@test.nl")
+    group_1 = data_fixture.create_group()
+    group_user_1 = data_fixture.create_user_group(
+        group=group_1, user=user_1, permissions="ADMIN"
+    )
+    group_user_2 = data_fixture.create_user_group(
+        group=group_1, user=user_2, permissions="ADMIN"
+    )
+
+    TrashHandler().trash(user_1, group_1, None, group_1)
+
+    response = api_client.get(
+        reverse("api:groups:users:item", kwargs={"group_user_id": group_user_1.id}),
+        HTTP_AUTHORIZATION=f"JWT {token_1}",
+    )
+    response_json = response.json()
+    assert response.status_code == HTTP_404_NOT_FOUND
+    assert response_json == {
+        "detail": "The requested group user does not exist.",
+        "error": "ERROR_GROUP_USER_DOES_NOT_EXIST",
+    }

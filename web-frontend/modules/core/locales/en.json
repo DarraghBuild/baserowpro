@@ -359,7 +359,7 @@
         "settingAllowNonStaffCreateGroupOperationDescription":  "By default, everyone can create new groups. Disable this to only allow staff to create new groups.",
         "settingAllowNonStaffCreateGroupOperationWarning": "New users will have a group automatically created for them where they are an Admin.",
         "settingTrackGroupUsage": "Track group usage",
-        "settingTrackGroupUsageDescription": "Enables a nightly job that counts row and file usage per group, displayed on the premium group admin page.",
+        "settingTrackGroupUsageDescription": "Enables a nightly job that counts row , file and seat usage per group, displayed on the premium group admin page.",
         "userDeletionGraceDelay": "User deletion",
         "settingUserDeletionGraceDelay": "Grace delay",
         "settingUserDeletionGraceDelayDescription": "This is the number of days without a login after which an account scheduled for deletion is permanently deleted.",

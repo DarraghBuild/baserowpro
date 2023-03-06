@@ -41,6 +41,9 @@ export default (client) => {
       deleteUser(groupUserId) {
         return client.delete(`/groups/users/${groupUserId}/`)
       },
+      getUser(groupUserId) {
+        return client.get(`/groups/users/${groupUserId}/`)
+      },
       fetchAllInvitations(groupId) {
         return client.get(`/groups/invitations/group/${groupId}/`)
       },

@@ -82,6 +82,7 @@ class CoreConfig(AppConfig):
             OrderApplicationsOperationType,
             ReadApplicationOperationType,
             ReadGroupOperationType,
+            ReadGroupUserOperationType,
             ReadInvitationGroupOperationType,
             RestoreApplicationOperationType,
             RestoreGroupOperationType,
@@ -119,6 +120,7 @@ class CoreConfig(AppConfig):
         operation_type_registry.register(ListGroupUsersGroupOperationType())
         operation_type_registry.register(OrderApplicationsOperationType())
         operation_type_registry.register(UpdateGroupUserOperationType())
+        operation_type_registry.register(ReadGroupUserOperationType())
         operation_type_registry.register(DeleteGroupUserOperationType())
         operation_type_registry.register(UpdateApplicationOperationType())
         operation_type_registry.register(DuplicateApplicationOperationType())
