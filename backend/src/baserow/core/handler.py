@@ -134,7 +134,7 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
             if cached_settings:
                 return cached_settings
 
-        settings = Settings.objects.get_or_create()
+        settings, created = Settings.objects.get_or_create()
 
         if use_cache:
             # I think it's okay to not lock anything here because if the cache entry
