@@ -114,14 +114,20 @@ tracer = trace.get_tracer(__name__)
 
 
 class CoreHandler(metaclass=baserow_trace_methods(tracer)):
-    def get_settings(self, use_cache: bool = True) -> Settings:
+    def get_settings(
+        self, use_cache: bool = True, base_queryset: Optional[QuerySet] = None
+    ) -> Settings:
         """
         Returns a settings model instance containing all the admin configured settings.
 
         :param use_cache: Indicates whether the cached object must cached.
+        :param base_queryset: Alternative base queryset.
         :return: The settings instance.
         :rtype: Settings
         """
+
+        if not base_queryset:
+            base_queryset = Settings.objects
 
         if use_cache:
             cached_settings = None
@@ -134,7 +140,7 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
             if cached_settings:
                 return cached_settings
 
-        settings, created = Settings.objects.get_or_create()
+        settings, created = base_queryset.get_or_create()
 
         if use_cache:
             # I think it's okay to not lock anything here because if the cache entry
@@ -165,7 +171,9 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
         )
 
         if not settings_instance:
-            settings_instance = self.get_settings(use_cache=False)
+            settings_instance = self.get_settings(
+                use_cache=False, base_queryset=Settings.object.select_for_update()
+            )
 
         settings_instance = set_allowed_attrs(
             kwargs,
