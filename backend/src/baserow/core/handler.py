@@ -181,7 +181,7 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
         )
         settings_instance.save()
 
-        transaction.on_commit(lambda: cache.delete("SETTINGS_CACHE_KEY"))
+        transaction.on_commit(lambda: cache.delete(SETTINGS_CACHE_KEY))
 
         return settings_instance
 
