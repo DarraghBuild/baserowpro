@@ -3,6 +3,7 @@ import json
 import os
 from io import BytesIO
 from pathlib import Path
+from pickle import UnpicklingError
 from typing import IO, Any, Dict, List, NewType, Optional, Tuple, Union, cast
 from urllib.parse import urljoin, urlparse
 from zipfile import ZIP_DEFLATED, ZipFile
@@ -10,6 +11,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
+from django.core.cache import cache
 from django.core.files.storage import Storage, default_storage
 from django.db import OperationalError, transaction
 from django.db.models import Count, Prefetch, Q, QuerySet
@@ -22,6 +24,7 @@ from tqdm import tqdm
 from baserow.core.user.utils import normalize_email_address
 
 from .emails import WorkspaceInvitationEmail
+from .constants import SETTINGS_CACHE_KEY
 from .exceptions import (
     ApplicationDoesNotExist,
     ApplicationNotInWorkspace,
@@ -111,18 +114,36 @@ tracer = trace.get_tracer(__name__)
 
 
 class CoreHandler(metaclass=baserow_trace_methods(tracer)):
-    def get_settings(self):
+    def get_settings(self, use_cache: bool = True) -> Settings:
         """
         Returns a settings model instance containing all the admin configured settings.
 
+        :param use_cache: Indicates whether the cached object must cached.
         :return: The settings instance.
         :rtype: Settings
         """
 
-        try:
-            return Settings.objects.all()[:1].get()
-        except Settings.DoesNotExist:
-            return Settings.objects.create()
+        if use_cache:
+            cached_settings = None
+
+            try:
+                cached_settings = cache.get(SETTINGS_CACHE_KEY)
+            except UnpicklingError:
+                pass
+
+            if cached_settings:
+                return cached_settings
+
+        settings = Settings.objects.get_or_create()
+
+        if use_cache:
+            # I think it's okay to not lock anything here because if the cache entry
+            # doesn't exist, it means the settings have just been updated or have never
+            # been cached before. Therefore, if a race condition happens,
+            # both workers will always set or override it with the same value.
+            cache.set(SETTINGS_CACHE_KEY, settings, timeout=None)
+
+        return settings
 
     def update_settings(self, user, settings_instance=None, **kwargs):
         """
@@ -144,7 +165,7 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
         )
 
         if not settings_instance:
-            settings_instance = self.get_settings()
+            settings_instance = self.get_settings(use_cache=False)
 
         settings_instance = set_allowed_attrs(
             kwargs,
@@ -158,8 +179,10 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
             ],
             settings_instance,
         )
-
         settings_instance.save()
+
+        transaction.on_commit(lambda: cache.delete("SETTINGS_CACHE_KEY"))
+
         return settings_instance
 
     def check_multiple_permissions(
