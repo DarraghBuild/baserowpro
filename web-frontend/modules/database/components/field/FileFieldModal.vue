@@ -150,6 +150,7 @@ export default {
   methods: {
     show(index = 0) {
       this.selected = index
+      this.renaming = false
       return baseModal.methods.show.call(this)
     },
     getIconClass(mimeType) {
