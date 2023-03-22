@@ -91,11 +91,12 @@
         </ul>
         <ul v-if="preview" class="file-field-modal__actions">
           <DownloadLink
+            ref="downloadLink"
             class="file-field-modal__action"
             :url="preview.url"
             :filename="preview.visible_name"
             :loading-class="'file-field-modal__action--loading'"
-            ><i class="fas fa-download" @click.stop=""></i
+            ><i class="fas fa-download"></i
           ></DownloadLink>
           <a
             v-if="!readOnly"
@@ -113,6 +114,7 @@
 <script>
 import baseModal from '@baserow/modules/core/mixins/baseModal'
 import { mimetype2fa } from '@baserow/modules/core/utils/fontawesome'
+import { isElement } from '@baserow/modules/core/utils/dom'
 import PreviewAny from '@baserow/modules/database/components/preview/PreviewAny'
 
 export default {
@@ -135,7 +137,6 @@ export default {
     return {
       renaming: false,
       selected: 0,
-      canClose: true,
     }
   },
   computed: {
@@ -192,14 +193,15 @@ export default {
       return baseModal.methods.keyup.call(this, event)
     },
     outside(event) {
-      if (event.target === this.$refs.rename.$el) {
-        return
-      }
-      const modalPreview = this.$refs.modalPreview.$el
-      const targetClassname = event.target.className
-      const isPreviewImage =
-        !!modalPreview.getElementsByClassName(targetClassname).length
-      if (!isPreviewImage && this.canClose) {
+      const protectedElements = [
+        this.$refs.rename.$el,
+        this.$refs.downloadLink.$el,
+        ...this.$refs.modalPreview.$el.children,
+      ]
+      const isProtectedElement = protectedElements.some((element) =>
+        isElement(element, event.target)
+      )
+      if (!isProtectedElement) {
         this.hide()
       }
     },
