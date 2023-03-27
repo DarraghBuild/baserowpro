@@ -151,7 +151,9 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
 
         return settings
 
-    def update_settings(self, user, settings_instance=None, **kwargs):
+    def update_settings(
+        self, user: AbstractUser, settings_instance: Optional[Settings] = None, **kwargs
+    ) -> Settings:
         """
         Updates one or more setting values if the user has staff permissions.
 
@@ -172,7 +174,8 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
 
         if not settings_instance:
             settings_instance = self.get_settings(
-                use_cache=False, base_queryset=Settings.objects.select_for_update()
+                use_cache=False,
+                base_queryset=Settings.objects.select_for_update(of=("self",)),
             )
 
         settings_instance = set_allowed_attrs(
