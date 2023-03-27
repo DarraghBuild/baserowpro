@@ -126,7 +126,7 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
         :rtype: Settings
         """
 
-        if not base_queryset:
+        if base_queryset is None:
             base_queryset = Settings.objects
 
         if use_cache:
@@ -172,7 +172,7 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
 
         if not settings_instance:
             settings_instance = self.get_settings(
-                use_cache=False, base_queryset=Settings.object.select_for_update()
+                use_cache=False, base_queryset=Settings.objects.select_for_update()
             )
 
         settings_instance = set_allowed_attrs(
