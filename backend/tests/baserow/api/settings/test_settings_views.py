@@ -12,7 +12,7 @@ from baserow.core.handler import CoreHandler
 from baserow.core.models import Settings
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 def test_get_settings(api_client):
     response = api_client.get(reverse("api:settings:get"))
     assert response.status_code == HTTP_200_OK
@@ -31,7 +31,7 @@ def test_get_settings(api_client):
     assert response_json["allow_new_signups"] is False
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 def test_require_first_admin_user_is_false_after_admin_creation(
     api_client, data_fixture
 ):
@@ -64,7 +64,7 @@ def test_require_first_admin_user_is_false_after_admin_creation(
     assert response_json["show_admin_signup_page"] is False
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 def test_get_instance_id(api_client, data_fixture):
     user, token = data_fixture.create_user_and_token(is_staff=True)
     user_2, token_2 = data_fixture.create_user_and_token()
@@ -100,7 +100,7 @@ def test_get_instance_id(api_client, data_fixture):
     assert response_json["instance_id"] == settings.instance_id
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 def test_update_settings(api_client, data_fixture):
     user, token = data_fixture.create_user_and_token(is_staff=True)
     user_2, token_2 = data_fixture.create_user_and_token()

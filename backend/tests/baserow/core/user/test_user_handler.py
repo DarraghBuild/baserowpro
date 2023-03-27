@@ -80,7 +80,7 @@ def test_get_user(data_fixture):
     assert handler.get_active_user(email=user_1.email).id == user_1.id
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 def test_create_user(data_fixture):
     plugin_mock = MagicMock()
     with patch.dict(plugin_registry.registry, {"mock": plugin_mock}):
@@ -340,7 +340,7 @@ def test_send_reset_password_email_in_different_language(data_fixture, mailoutbo
 def test_send_reset_password_email_reset_password_disabled(data_fixture):
     user = data_fixture.create_user(email="test@localhost", is_staff=True)
 
-    CoreHandler().update_settings(user, allow_reset_password=False)
+    data_fixture.update_settings(allow_reset_password=False)
 
     with pytest.raises(ResetPasswordDisabledError):
         UserHandler().send_reset_password_email(

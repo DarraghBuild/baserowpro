@@ -140,7 +140,12 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
             if cached_settings:
                 return cached_settings
 
-        settings, created = base_queryset.get_or_create()
+        # We can't use `get_or_create` here because we're rarely in a transaction when
+        # this method is called.
+        try:
+            return base_queryset.all()[:1].get()
+        except Settings.DoesNotExist:
+            return base_queryset.create()
 
         if use_cache:
             # I think it's okay to not lock anything here because if the cache entry
