@@ -3,7 +3,7 @@ import json
 import os
 from io import BytesIO
 from pathlib import Path
-from pickle import UnpicklingError
+from pickle import UnpicklingError  # nosec
 from typing import IO, Any, Dict, List, NewType, Optional, Tuple, Union, cast
 from urllib.parse import urljoin, urlparse
 from zipfile import ZIP_DEFLATED, ZipFile
@@ -134,7 +134,7 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
 
             try:
                 cached_settings = cache.get(SETTINGS_CACHE_KEY)
-            except UnpicklingError:
+            except UnpicklingError:  # nosec
                 pass
 
             if cached_settings:
