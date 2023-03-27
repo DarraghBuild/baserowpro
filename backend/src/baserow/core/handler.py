@@ -23,8 +23,8 @@ from tqdm import tqdm
 
 from baserow.core.user.utils import normalize_email_address
 
-from .emails import WorkspaceInvitationEmail
 from .constants import SETTINGS_CACHE_KEY
+from .emails import WorkspaceInvitationEmail
 from .exceptions import (
     ApplicationDoesNotExist,
     ApplicationNotInWorkspace,
@@ -190,9 +190,8 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
             ],
             settings_instance,
         )
+        # Calling the save method invalidates the cache when the transaction commits.
         settings_instance.save()
-
-        transaction.on_commit(lambda: cache.delete(SETTINGS_CACHE_KEY))
 
         return settings_instance
 

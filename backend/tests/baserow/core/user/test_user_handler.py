@@ -80,7 +80,7 @@ def test_get_user(data_fixture):
     assert handler.get_active_user(email=user_1.email).id == user_1.id
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_create_user(data_fixture):
     plugin_mock = MagicMock()
     with patch.dict(plugin_registry.registry, {"mock": plugin_mock}):

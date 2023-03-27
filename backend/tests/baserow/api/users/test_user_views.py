@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.shortcuts import reverse
 
 import pytest
@@ -448,8 +449,9 @@ def test_send_reset_password_email(data_fixture, client, mailoutbox):
     assert "test@localhost.nl" in email.to
     assert email.body.index("http://localhost:3000")
 
-    user = data_fixture.create_user(is_staff=True)
-    CoreHandler().update_settings(user, allow_reset_password=False)
+    with transaction.atomic():
+        user = data_fixture.create_user(is_staff=True)
+        CoreHandler().update_settings(user, allow_reset_password=False)
 
     response = client.post(
         reverse("api:user:send_reset_password_email"),

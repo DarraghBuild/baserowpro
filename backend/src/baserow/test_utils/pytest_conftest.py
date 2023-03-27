@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Dict, Optional
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.management import call_command
 from django.db import DEFAULT_DB_ALIAS, OperationalError, connection
 from django.db.migrations.executor import MigrationExecutor
@@ -22,6 +23,16 @@ from baserow.core.trash.trash_types import WorkspaceTrashableItemType
 
 SKIP_FLAGS = ["disabled-in-ci", "once-per-day-in-ci"]
 COMMAND_LINE_FLAG_PREFIX = "--run-"
+
+
+@pytest.fixture(autouse=True)
+def run_before_and_after_tests():
+    # Runs before every test
+    # None of the tests should share cache entries in between. For some reason,
+    # the in memory cache persists, so here we always clear it.
+    cache.clear()
+    yield
+    # Runs after every test
 
 
 # Provides a new fake instance for each class. Solve uniqueness problem sometimes.

@@ -4,10 +4,12 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
-from django.db import models
+from django.core.cache import cache
+from django.db import models, transaction
 from django.db.models import Q, UniqueConstraint
 from django.utils import timezone
 
+from baserow.core.constants import SETTINGS_CACHE_KEY
 from baserow.core.jobs.mixins import (
     JobWithUndoRedoIds,
     JobWithUserIpAddress,
@@ -108,6 +110,12 @@ class Settings(models.Model):
         help_text="Runs a job once per day which calculates per group row counts and "
         "file storage usage, displayed on the admin group page.",
     )
+
+    def save(self, *args, **kwargs) -> None:
+        super().save(*args, **kwargs)
+        # When getting the settings, it's automatically cached. When something
+        # changes on the settings, it must always be invalidated.
+        transaction.on_commit(lambda: cache.delete(SETTINGS_CACHE_KEY))
 
 
 class UserProfile(models.Model):
