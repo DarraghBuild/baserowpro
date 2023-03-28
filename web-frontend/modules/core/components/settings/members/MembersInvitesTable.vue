@@ -111,7 +111,12 @@ export default {
           this.$t('membersSettings.invitesTable.columns.email'),
           SimpleField,
           true,
-          true
+          true,
+          false,
+          {},
+          '',
+          null,
+          200
         ),
         new CrudTableColumn(
           'message',

@@ -43,7 +43,12 @@ export default {
         () => this.$t('workspacesAdminTable.name'),
         WorkspaceNameField,
         true,
-        true
+        true,
+        false,
+        {},
+        '',
+        null,
+        200
       ),
       new CrudTableColumn(
         'users',

@@ -128,7 +128,12 @@ export default {
           this.$t('teamsTable.nameColumn'),
           SimpleField,
           true,
-          true
+          true,
+          false,
+          {},
+          '',
+          null,
+          200
         ),
         new CrudTableColumn(
           'default_role',

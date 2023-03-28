@@ -122,7 +122,12 @@ export default {
           this.$t('membersSettings.membersTable.columns.name'),
           SimpleField,
           true,
-          true
+          true,
+          false,
+          {},
+          '',
+          null,
+          200
         ),
         new CrudTableColumn(
           'email',

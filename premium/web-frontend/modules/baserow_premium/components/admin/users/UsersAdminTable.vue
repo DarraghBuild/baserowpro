@@ -48,7 +48,8 @@ export default {
         true,
         false,
         {},
-        20
+        null,
+        200
       ),
       new CrudTableColumn(
         'name',
@@ -63,16 +64,7 @@ export default {
       new CrudTableColumn(
         'workspaces',
         () => this.$t('usersAdminTable.workspaces'),
-<<<<<<< HEAD
         UserWorkspacesField
-=======
-        UserGroupsField,
-        false,
-        false,
-        false,
-        {},
-        20
->>>>>>> f8e4ab89b (Tidying CrudTableColumns in various tables, making use of the new widthPerc parameter to control their widths.)
       ),
       new CrudTableColumn(
         'last_login',

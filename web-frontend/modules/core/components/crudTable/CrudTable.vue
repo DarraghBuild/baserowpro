@@ -21,7 +21,7 @@
             <th
               v-for="col in columns"
               :key="'head-' + col.key"
-              :style="col.widthPerc ? `--width: ${col.widthPerc}%` : ''"
+              :style="computeColWidthStyle(col.widthPerc, col.fixedWidth)"
               class="data-table__table-cell data-table__table-cell--header"
               :class="{
                 'data-table__table-cell--sticky-left': col.stickyLeft,
@@ -74,7 +74,10 @@
               }"
               @contextmenu="$emit('row-context', { col, row, event: $event })"
             >
-              <div class="data-table__table-cell-content">
+              <div
+                class="data-table__table-cell-content"
+                :style="col.fixedWidth ? `width: ${col.fixedWidth}px` : ''"
+              >
                 <component
                   :is="col.cellComponent"
                   :row="row"
@@ -312,6 +315,10 @@ export default {
     },
     refresh() {
       this.fetch(this.page)
+    },
+    computeColWidthStyle(percentageWidth, fixedWidth) {
+      if (fixedWidth) return `width: ${fixedWidth}px`
+      return `width: ${percentageWidth}%`
     },
   },
 }
