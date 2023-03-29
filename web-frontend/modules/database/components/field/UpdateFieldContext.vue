@@ -5,8 +5,15 @@
       :table="table"
       :default-values="field"
       :primary="field.primary"
+      :dropdown-target="dropdownTarget"
       @submitted="submit"
+      @keydown-enter="$refs.submitButton.focus()"
+      @dropdown-open="$refs.context.toggleScroll()"
+      @dropdown-closed="$refs.context.toggleScroll()"
     >
+    </FieldForm>
+
+    <template #footer>
       <div
         class="context__form-actions context__form-actions--multiple-actions"
       >
@@ -14,15 +21,17 @@
           {{ $t('action.cancel') }}
         </a>
         <button
+          ref="submitButton"
           type="submit"
           class="button"
           :class="{ 'button--loading': loading }"
           :disabled="loading"
+          @click="$refs.form.submit($refs.form.values)"
         >
           {{ $t('action.save') }}
         </button>
       </div>
-    </FieldForm>
+    </template>
   </Context>
 </template>
 
@@ -48,6 +57,7 @@ export default {
   data() {
     return {
       loading: false,
+      dropdownTarget: null,
     }
   },
   watch: {
@@ -57,6 +67,11 @@ export default {
       // the correct base values.
       this.reset()
     },
+  },
+  mounted() {
+    this.dropdownTarget = {
+      HTMLElement: this.$refs.context.getContainerElement(),
+    }
   },
   methods: {
     reset() {

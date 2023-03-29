@@ -648,6 +648,7 @@ exports[`Dropdown component test focus 1`] = `
    
   <div
     class="dropdown__items"
+    style="max-height: 758px;"
   >
     <div
       class="select__search"
@@ -722,6 +723,7 @@ exports[`Dropdown component test focus 2`] = `
    
   <div
     class="dropdown__items hidden"
+    style="max-height: 758px;"
   >
     <div
       class="select__search"
@@ -796,6 +798,7 @@ exports[`Dropdown component test interactions 1`] = `
    
   <div
     class="dropdown__items"
+    style="max-height: 758px;"
   >
     <div
       class="select__search"
@@ -895,6 +898,7 @@ exports[`Dropdown component test interactions 2`] = `
    
   <div
     class="dropdown__items hidden"
+    style="max-height: 758px;"
   >
     <div
       class="select__search"

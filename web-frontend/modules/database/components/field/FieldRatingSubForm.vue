@@ -24,7 +24,9 @@
           class="dropdown--floating rating-field-form__dropdown-style"
           :class="{ 'dropdown--error': $v.values.style.$error }"
           :show-search="false"
-          @hide="$v.values.style.$touch()"
+          :target="dropdownTarget"
+          @show="$emit('dropdown-open')"
+          @hide="handleStyleDropdownClosed"
         >
           <DropdownItem
             v-for="style in styles"
@@ -46,7 +48,9 @@
           class="dropdown--floating"
           :class="{ 'dropdown--error': $v.values.max_value.$error }"
           :show-search="false"
-          @hide="$v.values.max_value.$touch()"
+          :target="dropdownTarget"
+          @show="$emit('dropdown-open')"
+          @hide="handleMaxValueDropdownClosed"
         >
           <DropdownItem
             v-for="index in 10"
@@ -78,6 +82,13 @@ export default {
   name: 'FieldRatingSubForm',
   components: { ColorSelectContext },
   mixins: [form, fieldSubForm],
+  props: {
+    dropdownTarget: {
+      type: Object,
+      required: false,
+      default: null,
+    },
+  },
   data() {
     return {
       allowedValues: ['max_value', 'color', 'style'],
@@ -102,6 +113,14 @@ export default {
     },
     updateColor(color) {
       this.values.color = color
+    },
+    handleStyleDropdownClosed() {
+      this.$v.values.style.$touch()
+      this.$emit('dropdown-closed')
+    },
+    handleMaxValueDropdownClosed() {
+      this.$v.values.max_value.$touch()
+      this.$emit('dropdown-closed')
     },
   },
   validations: {

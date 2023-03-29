@@ -1,18 +1,21 @@
 <template>
   <Context ref="viewsContext" class="select views-context" @shown="shown">
-    <div class="select__search">
-      <i class="select__search-icon fas fa-search"></i>
-      <input
-        v-model="query"
-        type="text"
-        class="select__search-input"
-        :placeholder="$t('viewsContext.searchView')"
-      />
-    </div>
+    <template #header>
+      <div class="select__search select__search--no-border">
+        <i class="select__search-icon fas fa-search"></i>
+        <input
+          v-model="query"
+          type="text"
+          class="select__search-input"
+          :placeholder="$t('viewsContext.searchView')"
+        />
+      </div>
+    </template>
+
     <div v-if="isLoading" class="context--loading">
       <div class="loading"></div>
     </div>
-    <div class="views-context__select_items">
+    <div>
       <div v-for="type in activeViewOwnershipTypes" :key="type.getType()">
         <div
           v-if="viewsByOwnership(views, type.getType()).length > 0"
@@ -55,21 +58,24 @@
     <div v-if="!isLoading && views.length == 0" class="context__description">
       {{ $t('viewsContext.noViews') }}
     </div>
-    <div
-      v-if="!readOnly && availableViewOwnershipTypesForCreation.length > 0"
-      class="select__footer"
-    >
-      <div class="select__footer-create">
-        <CreateViewLink
-          v-for="(viewType, type) in viewTypes"
-          :key="type"
-          :database="database"
-          :table="table"
-          :view-type="viewType"
-          @created="selectedView"
-        ></CreateViewLink>
+
+    <template #footer>
+      <div
+        v-if="!readOnly && availableViewOwnershipTypesForCreation.length > 0"
+        class="select__footer"
+      >
+        <div class="select__footer-create">
+          <CreateViewLink
+            v-for="(viewType, type) in viewTypes"
+            :key="type"
+            :database="database"
+            :table="table"
+            :view-type="viewType"
+            @created="selectedView"
+          ></CreateViewLink>
+        </div>
       </div>
-    </div>
+    </template>
   </Context>
 </template>
 

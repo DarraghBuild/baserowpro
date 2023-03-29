@@ -1,6 +1,7 @@
 <template>
   <Context
     ref="context"
+    :overflow-y="contextOverflowY"
     class="field-form-context"
     @shown="$emit('shown', $event)"
   >
@@ -8,20 +9,27 @@
       ref="form"
       :table="table"
       :forced-type="forcedType"
+      :dropdown-target="dropdownTarget"
       @submitted="submit"
       @keydown-enter="$refs.submitButton.focus()"
+      @dropdown-open="$refs.context.toggleScroll()"
+      @dropdown-closed="$refs.context.toggleScroll()"
     >
+    </FieldForm>
+
+    <template #footer>
       <div class="context__form-actions">
         <button
           ref="submitButton"
           class="button"
           :class="{ 'button--loading': loading }"
           :disabled="loading"
+          @click="$refs.form.submit($refs.form.values)"
         >
           {{ $t('action.create') }}
         </button>
       </div>
-    </FieldForm>
+    </template>
   </Context>
 </template>
 
@@ -54,6 +62,13 @@ export default {
   data() {
     return {
       loading: false,
+      dropdownTarget: null,
+      contextOverflowY: 'auto',
+    }
+  },
+  mounted() {
+    this.dropdownTarget = {
+      HTMLElement: this.$refs.context.getContainerElement(),
     }
   },
   methods: {

@@ -9,7 +9,12 @@
     @focusin="show()"
     @focusout="focusout($event)"
   >
-    <a v-if="showInput" class="dropdown__selected" @click="show()">
+    <a
+      v-if="showInput"
+      ref="dropdownSelected"
+      class="dropdown__selected"
+      @click="show()"
+    >
       <template v-if="hasValue()">
         <slot name="value">
           <i
@@ -32,7 +37,14 @@
       </template>
       <i class="dropdown__toggle-icon fas fa-caret-down"></i>
     </a>
-    <div class="dropdown__items" :class="{ hidden: !open }">
+    <div
+      ref="dropdown"
+      class="dropdown__items"
+      :class="{
+        hidden: !open,
+        'dropdown__items--reverse': direction === 'top',
+      }"
+    >
       <div v-if="showSearch" class="select__search">
         <i class="select__search-icon fas fa-search"></i>
         <input

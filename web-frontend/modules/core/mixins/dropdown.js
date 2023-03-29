@@ -49,6 +49,14 @@ export default {
       required: false,
       default: 0,
     },
+    // The target is the element that will be used to set the direction of the dropdown
+    // The object must have HTMLElement property providing the target HTMLElement.
+    // If not provided the dropdown direction will be set relative to the viewport
+    target: {
+      type: Object,
+      required: false,
+      default: null,
+    },
   },
   data() {
     return {
@@ -60,6 +68,7 @@ export default {
       hasItems: true,
       hasDropdownItem: true,
       hover: null,
+      direction: 'bottom',
     }
   },
   computed: {
@@ -87,6 +96,19 @@ export default {
         // When the value changes we want to forcefully reload the selectName and
         // selectedIcon a little bit later because the children might have changed.
         this.forceRefreshSelectedValue()
+      })
+    },
+    open(isOpen) {
+      this.$nextTick(() => {
+        switch (isOpen) {
+          case true:
+            if (this.target)
+              this.displayDropdownWithinTarget(
+                this.$refs.dropdown,
+                this.target.HTMLElement
+              )
+            else this.displayDropdownWithinViewport(this.$refs.dropdown)
+        }
       })
     },
   },
@@ -251,6 +273,7 @@ export default {
       // Make sure that all the items are visible the next time we open the dropdown.
       this.query = ''
       this.search(this.query)
+      this.direction = 'bottom' // Reset the direction to the default value.
     },
     /**
      * Selects a new value which will also be
@@ -404,6 +427,82 @@ export default {
       // In the case that the next item to scroll to is completely visible we simply
       // return the current scroll position so that no scrolling happens
       return this.$refs.items.scrollTop
+    },
+    displayDropdownWithinViewport(dropdownElement) {
+      const dropdownHeight = dropdownElement.offsetHeight
+      const dropdownTop = dropdownElement.getBoundingClientRect().top
+      const canTop = dropdownTop + dropdownHeight > 0
+      const canBottom = dropdownTop + dropdownHeight < window.innerHeight
+
+      this.handleDirection(window, canTop, canBottom)
+    },
+    displayDropdownWithinTarget(dropdownElement, targetElement) {
+      const dropdownHeight = dropdownElement.offsetHeight
+      const dropdownTop = dropdownElement.getBoundingClientRect().top
+      const canBottom =
+        dropdownTop + dropdownHeight <
+        targetElement.getBoundingClientRect().bottom
+      const canTop =
+        dropdownTop - dropdownHeight > targetElement.getBoundingClientRect().top
+
+      // in case the dropdown can't overflow the target
+      if (targetElement.style.overflowY === 'hidden') {
+        // let's check which direction is the best
+        this.handleDirection(targetElement, canTop, canBottom)
+      } else {
+        // in case the dropdown can overflow the target, it means we have to take care about viewport bounds instead
+        this.displayDropdownWithinViewport(dropdownElement)
+      }
+    },
+    setMaxHeight(target, direction) {
+      const targetIsWindow = target === window
+      if (direction === 'top' && !targetIsWindow) {
+        this.$refs.dropdown.style.maxHeight = `${
+          this.$refs.dropdownSelected.getBoundingClientRect().top -
+          this.target.HTMLElement.getBoundingClientRect().top +
+          10
+        }px`
+      } else if (direction === 'bottom' && !targetIsWindow) {
+        this.$refs.dropdown.style.maxHeight = `${
+          this.target.HTMLElement.getBoundingClientRect().bottom -
+          this.$refs.dropdownSelected.getBoundingClientRect().top -
+          10
+        }px`
+      } else if (direction === 'top' && targetIsWindow) {
+        this.$refs.dropdown.style.maxHeight = `${
+          this.$refs.dropdownSelected.getBoundingClientRect().bottom - 10
+        }px`
+      } else if (direction === 'bottom' && targetIsWindow) {
+        this.$refs.dropdown.style.maxHeight = `${
+          window.innerHeight -
+          this.$refs.dropdownSelected.getBoundingClientRect().top -
+          10
+        }px`
+      }
+    },
+    handleDirection(target, canTop, canBottom) {
+      if (canTop && !canBottom) this.direction = 'top'
+      else if (canBottom && !canTop) this.direction = 'bottom'
+      else if ((canTop && canBottom) || (!canTop && !canBottom))
+        this.direction = this.getTheDirectionWithTheMostSpaceAvailable(target)
+
+      this.setMaxHeight(target, this.direction)
+    },
+    getTheDirectionWithTheMostSpaceAvailable(target) {
+      const dropdown = this.$refs.dropdown.getBoundingClientRect()
+      let spaceAbove = 0
+      let spaceBelow = 0
+
+      if (target === window) {
+        spaceAbove = dropdown.top - 0
+        spaceBelow = window.innerHeight - dropdown.top
+      } else {
+        const targetElBounds = this.target.HTMLElement.getBoundingClientRect()
+        spaceAbove = dropdown.top - targetElBounds.top
+        spaceBelow = targetElBounds.bottom - dropdown.top
+      }
+
+      return spaceAbove > spaceBelow ? 'top' : 'bottom'
     },
   },
 }

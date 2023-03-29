@@ -1,6 +1,18 @@
 <template>
   <div class="context" :class="{ 'visibility-hidden': !open || !updatedOnce }">
-    <slot v-if="openedOnce"></slot>
+    <header v-show="hasHeaderSlot" ref="header" class="context__header">
+      <slot name="header"></slot>
+    </header>
+    <main
+      ref="mainContainer"
+      class="context__main"
+      :style="{ 'overflow-y': overflowY }"
+    >
+      <slot v-if="openedOnce"></slot>
+    </main>
+    <footer v-if="hasFooterSlot" ref="footer" class="context__footer">
+      <slot name="footer"></slot>
+    </footer>
   </div>
 </template>
 
@@ -30,9 +42,42 @@ export default {
       updatedOnce: false,
       // If opened once, should stay in DOM to keep nested content
       openedOnce: false,
+      overflowY: 'auto',
+      isScrollable: false,
+      mutationObserver: null,
+      // space between the edge of the viewport and the context menu
+      viewportVerticalOffset: 25,
     }
   },
+  computed: {
+    hasFooterSlot() {
+      return !!this.$slots.footer
+    },
+    hasHeaderSlot() {
+      return !!this.$slots.header
+    },
+  },
   methods: {
+    /** This method listen to the added/removed element dom element
+      within the context main container, so we can check if
+      the content is scrollable or not */
+    listenContentDomChanges() {
+      const targetNode = this.$refs.mainContainer
+      const observerOptions = {
+        childList: true,
+        subtree: true,
+      }
+      this.mutationObserver = new MutationObserver((mutationList, observer) => {
+        mutationList.forEach((mutation) => {
+          switch (mutation.type) {
+            case 'childList':
+              this.isScrollable = this.isContentScrollable()
+              break
+          }
+        })
+      })
+      this.mutationObserver.observe(targetNode, observerOptions)
+    },
     /**
      * Toggles the open state of the context menu.
      *
@@ -66,7 +111,7 @@ export default {
       }
 
       if (value) {
-        return this.show(
+        this.show(
           target,
           vertical,
           horizontal,
@@ -89,30 +134,6 @@ export default {
       horizontalOffset = 0
     ) {
       const isElementOrigin = isDomElement(target)
-      const updatePosition = () => {
-        const css = isElementOrigin
-          ? this.calculatePositionElement(
-              target,
-              vertical,
-              horizontal,
-              verticalOffset,
-              horizontalOffset
-            )
-          : this.calculatePositionFixed(
-              target,
-              vertical,
-              horizontal,
-              verticalOffset,
-              horizontalOffset
-            )
-
-        // Set the calculated positions of the context.
-        for (const key in css) {
-          const value = css[key] !== null ? Math.ceil(css[key]) + 'px' : 'auto'
-          this.$el.style[key] = value
-        }
-        this.updatedOnce = true
-      }
 
       // If we store the element who opened the context menu we can exclude the element
       // when clicked outside of this element.
@@ -124,7 +145,13 @@ export default {
       // Delay the position update to the next tick to let the Context content
       // be available in DOM for accurate positioning.
       await this.$nextTick()
-      updatePosition()
+      this.updatePosition(
+        target,
+        vertical,
+        horizontal,
+        verticalOffset,
+        horizontalOffset
+      )
 
       this.$el.cancelOnClickOutside = onClickOutside(this.$el, (target) => {
         if (
@@ -145,12 +172,26 @@ export default {
       })
 
       this.$el.updatePositionEvent = (event) => {
-        updatePosition()
+        // if scroll is triggered by the context menu itself, we don't need to update
+        if (event.target.classList?.contains('context__main')) return
+
+        this.updatePosition(
+          target,
+          vertical,
+          horizontal,
+          verticalOffset,
+          horizontalOffset
+        )
       }
+
       window.addEventListener('scroll', this.$el.updatePositionEvent, true)
       window.addEventListener('resize', this.$el.updatePositionEvent)
 
       this.$emit('shown')
+
+      await this.$nextTick()
+      this.isScrollable = this.isContentScrollable()
+      this.listenContentDomChanges()
     },
     /**
      * Toggles context menu next to mouse when click event has happened
@@ -222,6 +263,7 @@ export default {
       ) {
         this.$el.cancelOnClickOutside()
       }
+      this.mutationObserver?.disconnect()
       window.removeEventListener('scroll', this.$el.updatePositionEvent, true)
       window.removeEventListener('resize', this.$el.updatePositionEvent)
     },
@@ -241,12 +283,11 @@ export default {
       const visible =
         window.getComputedStyle(target).getPropertyValue('display') !== 'none'
 
-      // If the target is not visible then we can't calculate the position, so we
-      // temporarily need to show the element forcefully.
-      if (!visible) {
-        target.classList.add('forced-block')
-      }
+      this.$el.style.width = 'auto'
 
+      // If the target is not visible then we can't calculate the position, so we
+      // temporarily need to shw the element forcefully.
+      if (!visible) target.classList.add('forced-block')
       const targetRect = target.getBoundingClientRect()
 
       const positions = { top: null, right: null, bottom: null, left: null }
@@ -266,25 +307,34 @@ export default {
 
       // Calculate the correct positions for horizontal and vertical values.
       if (horizontalAdjusted === 'left') {
-        positions.left = targetRect.left + horizontalOffset
+        positions.transform = 'none'
+        positions.left = `${targetRect.left + horizontalOffset}px`
       }
 
       if (horizontalAdjusted === 'right') {
-        positions.right =
+        positions.transform = 'none'
+        positions.right = `${
           window.innerWidth - targetRect.right - horizontalOffset
+        }px`
       }
 
-      if (verticalAdjusted === 'bottom') {
-        positions.top = targetRect.bottom + verticalOffset
+      // in case there is no enough space on the right and left
+      // we horizontally center the context menu in the viewport
+      if (horizontalAdjusted === 'window') {
+        positions.left = '50%'
+        positions.transform = 'translateX(-50%)'
+        positions.width = '90%'
       }
 
-      if (verticalAdjusted === 'top') {
-        positions.bottom = window.innerHeight - targetRect.top + verticalOffset
-      }
+      if (verticalAdjusted === 'bottom')
+        positions.top = `${targetRect.bottom + verticalOffset}px`
 
-      if (!visible) {
-        target.classList.remove('forced-block')
-      }
+      if (verticalAdjusted === 'top')
+        positions.bottom = `${
+          window.innerHeight - targetRect.top + verticalOffset
+        }px`
+
+      if (!visible) target.classList.remove('forced-block')
 
       return positions
     },
@@ -329,20 +379,26 @@ export default {
 
       // Calculate the correct positions for horizontal and vertical values.
       if (horizontalAdjusted === 'left') {
-        positions.left = targetLeft - contextRect.width + horizontalOffset
+        positions.transform = 'none'
+        positions.left = `${
+          targetLeft - contextRect.width + horizontalOffset
+        }px`
       }
 
       if (horizontalAdjusted === 'right') {
-        positions.right = targetRight - contextRect.width - horizontalOffset
+        positions.transform = 'none'
+        positions.right = `${
+          window.innerWidth - targetLeft - contextRect.width - horizontalOffset
+        }px`
       }
 
-      if (verticalAdjusted === 'bottom') {
-        positions.top = targetTop + verticalOffset
-      }
+      if (verticalAdjusted === 'bottom')
+        positions.top = `${targetTop + verticalOffset}px`
 
-      if (verticalAdjusted === 'top') {
-        positions.bottom = targetBottom + verticalOffset
-      }
+      if (verticalAdjusted === 'top')
+        positions.bottom = `${
+          window.innerHeight - targetTop + verticalOffset
+        }px`
 
       return positions
     },
@@ -361,15 +417,26 @@ export default {
       horizontalOffset
     ) {
       const contextRect = this.$el.getBoundingClientRect()
-      const canTop = targetRect.top - contextRect.height - verticalOffset > 0
-      const canBottom =
-        window.innerHeight -
-          targetRect.bottom -
-          contextRect.height -
-          verticalOffset >
-        0
+
+      const contextFullHeight =
+        (this.$refs.header?.scrollHeight || 0) +
+        (this.$refs.mainContainer?.scrollHeight || 0) +
+        (this.$refs.footer?.scrollHeight || 0) +
+        this.viewportVerticalOffset +
+        25 // adding 5 to avoid scrollbar to appear briefly when resizing the window
+
+      const topSpace = targetRect.top - contextFullHeight - verticalOffset
+
+      const canTop = topSpace > 0
+
+      const bottomSpace =
+        window.innerHeight - targetRect.top - contextFullHeight - verticalOffset
+
+      const canBottom = bottomSpace > 0
+
       const canRight =
         targetRect.right - contextRect.width - horizontalOffset > 0
+
       const canLeft =
         window.innerWidth -
           targetRect.right -
@@ -379,23 +446,105 @@ export default {
 
       // If bottom, top, left or right doesn't fit, but their opposite does we switch to
       // that.
-      if (vertical === 'bottom' && !canBottom && canTop) {
-        vertical = 'top'
-      }
+      if (vertical === 'bottom' && !canBottom && canTop) vertical = 'top'
 
-      if (vertical === 'top' && !canTop) {
-        vertical = 'bottom'
-      }
+      if (vertical === 'top' && !canTop) vertical = 'bottom'
 
-      if (horizontal === 'left' && !canLeft && canRight) {
-        horizontal = 'right'
-      }
+      if (horizontal === 'left' && !canLeft && canRight) horizontal = 'right'
 
-      if (horizontal === 'right' && !canRight) {
-        horizontal = 'left'
+      if (horizontal === 'right' && !canRight) horizontal = 'left'
+
+      if (!canLeft && !canRight) horizontal = 'window'
+
+      // If both top and bottom don't fit, we check which one has the most space,
+      if (!canTop && !canBottom) {
+        switch (topSpace > bottomSpace) {
+          case true:
+            vertical = 'top'
+            break
+          case false:
+            vertical = 'bottom'
+            break
+          default:
+            vertical = 'bottom'
+            break
+        }
       }
 
       return { vertical, horizontal }
+    },
+    setMaxHeight(direction = 'bottom') {
+      const element = this.$el
+      const elementRect = element.getBoundingClientRect()
+      if (direction === 'bottom') {
+        const maxHeight =
+          window.innerHeight - elementRect.top - this.viewportVerticalOffset
+        element.style.maxHeight = `${maxHeight}px`
+      } else if (direction === 'top') {
+        const maxHeight = elementRect.bottom - this.viewportVerticalOffset
+        element.style.maxHeight = `${maxHeight}px`
+      }
+    },
+    isContentScrollable() {
+      return (
+        this.$refs.mainContainer.scrollHeight >
+        this.$refs.mainContainer.clientHeight
+      )
+    },
+    toggleScroll() {
+      // disable scroll
+      if (this.overflowY === 'auto') {
+        switch (this.isScrollable) {
+          case true:
+            this.overflowY = 'hidden'
+            break
+          default:
+            this.overflowY = 'visible'
+            break
+        }
+      } else {
+        // enable scroll
+        this.overflowY = 'auto'
+      }
+    },
+    getContainerElement() {
+      return this.$refs.mainContainer
+    },
+    updatePosition(
+      target,
+      vertical,
+      horizontal,
+      verticalOffset,
+      horizontalOffset
+    ) {
+      const isElementOrigin = isDomElement(target)
+      const css = isElementOrigin
+        ? this.calculatePositionElement(
+            target,
+            vertical,
+            horizontal,
+            verticalOffset,
+            horizontalOffset
+          )
+        : this.calculatePositionFixed(
+            target,
+            vertical,
+            horizontal,
+            verticalOffset,
+            horizontalOffset
+          )
+      // Set the calculated positions of the context.
+      for (const key in css) {
+        let value = null
+        if (typeof css[key] === 'number') value = Math.ceil(css[key]) + 'px'
+        else value = css[key] !== null ? css[key] : 'auto'
+
+        this.$el.style[key] = value
+      }
+      this.updatedOnce = true
+
+      const verticalDirection = css.top ? 'bottom' : 'top'
+      this.setMaxHeight(verticalDirection)
     },
   },
 }

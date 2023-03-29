@@ -9,6 +9,10 @@
   border-bottom: 1px solid $color-neutral-200;
 }
 
+.select__search--no-border {
+  border-bottom: none;
+}
+
 .select__search-icon {
   color: $color-neutral-300;
 
@@ -51,6 +55,11 @@
   white-space: normal;
   text-align: center;
   color: $color-neutral-500;
+}
+
+.select__items--noscroll {
+  max-height: none;
+  overflow-y: hidden;
 }
 
 .select__items--expanded {
@@ -206,10 +215,6 @@
 .select__description {
   padding-bottom: 14px;
   text-align: center;
-}
-
-.select__footer {
-  border-top: 1px solid $color-neutral-200;
 }
 
 .select__footer-button {

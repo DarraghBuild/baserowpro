@@ -8,7 +8,9 @@
         <Dropdown
           v-model="values.number_decimal_places"
           :class="{ 'dropdown--error': $v.values.number_decimal_places.$error }"
-          @hide="$v.values.number_decimal_places.$touch()"
+          :target="dropdownTarget"
+          @show="$emit('dropdown-open')"
+          @hide="handleDropdownClosed"
         >
           <DropdownItem name="0 (1)" :value="0"></DropdownItem>
           <DropdownItem name="1 (1.0)" :value="1"></DropdownItem>
@@ -49,6 +51,11 @@ export default {
       required: false,
       default: true,
     },
+    dropdownTarget: {
+      type: Object,
+      required: false,
+      default: null,
+    },
   },
   data() {
     let allowedValues = ['number_decimal_places']
@@ -67,6 +74,12 @@ export default {
   validations: {
     values: {
       number_decimal_places: { required },
+    },
+  },
+  methods: {
+    handleDropdownClosed() {
+      this.$v.values.number_decimal_places.$touch()
+      this.$emit('dropdown-closed')
     },
   },
 }

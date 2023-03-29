@@ -51,7 +51,9 @@
           v-model="values.type"
           :class="{ 'dropdown--error': $v.values.type.$error }"
           class="field-form-context__dropdown"
-          @hide="$v.values.type.$touch()"
+          :target="dropdownTarget"
+          @show="$emit('dropdown-open')"
+          @hide="handleDropownClosed"
         >
           <DropdownItem
             v-for="(fieldType, type) in fieldTypes"
@@ -75,8 +77,11 @@
         :field-type="values.type"
         :name="values.name"
         :default-values="defaultValues"
+        :dropdown-target="dropdownTarget"
         @validate="$v.$touch"
         @suggested-field-name="handleSuggestedFieldName($event)"
+        @dropdown-open="$emit('dropdown-open')"
+        @dropdown-closed="$emit('dropdown-closed')"
       />
     </template>
     <slot></slot>
@@ -109,6 +114,11 @@ export default {
     },
     forcedType: {
       type: [String, null],
+      required: false,
+      default: null,
+    },
+    dropdownTarget: {
+      type: Object,
       required: false,
       default: null,
     },
@@ -212,6 +222,10 @@ export default {
       event.preventDefault()
       this.$emit('keydown-enter')
       this.submit()
+    },
+    handleDropownClosed() {
+      this.$v.values.type.$touch()
+      this.$emit('dropdown-closed')
     },
   },
 }

@@ -6,6 +6,8 @@
   border-radius: 6px;
   border: 1px solid $color-neutral-200;
   box-shadow: 0 2px 6px 0 rgba($black, 0.16);
+  display: flex;
+  flex-direction: column;
 
   &.context--loading-overlay {
     &::before {
@@ -26,6 +28,22 @@
       @include absolute(50%, auto, auto, 50%);
     }
   }
+}
+
+.context__header {
+  border-bottom: 1px solid $color-neutral-200;
+  flex: 0 0 auto;
+}
+
+.context__footer {
+  border-top: 1px solid $color-neutral-200;
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+.context__main {
+  flex: 1 1 auto;
+  overflow-y: auto;
 }
 
 .context--loading {
@@ -157,6 +175,7 @@
   display: flex;
   align-items: center;
   justify-content: right;
+  padding: 8px 16px;
 
   &--multiple-actions {
     justify-content: space-between;

@@ -128,7 +128,8 @@
 
 .sortings__add {
   display: inline-block;
-  margin: 12px 0 6px 4px;
+  margin: 0;
+  padding: 0;
 
   &:hover {
     text-decoration: none;
@@ -143,4 +144,8 @@
   .context__menu-icon {
     color: $color-primary-900;
   }
+}
+
+.sortings_footer {
+  padding: 12px 15px;
 }

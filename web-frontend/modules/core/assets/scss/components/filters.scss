@@ -1,9 +1,11 @@
 .filters {
-  padding: 12px;
-
   .dropdown__selected {
     @extend %ellipsis;
   }
+}
+
+.filters_main {
+  padding: 12px 18px 12px 12px;
 }
 
 .filters__none {
@@ -159,12 +161,10 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+  padding: 8px 15px;
 }
 
 .filters__add {
-  display: inline-block;
-  margin: 12px 0 6px 4px;
-
   &:hover {
     text-decoration: none;
     color: $color-primary-900;

@@ -1,21 +1,23 @@
 <template>
   <Context ref="workspacesContext" class="select">
-    <div class="select__search">
-      <i class="select__search-icon fas fa-search"></i>
-      <input
-        v-model="query"
-        type="text"
-        class="select__search-input"
-        :placeholder="$t('workspacesContext.search')"
-      />
-    </div>
-    <div v-if="isLoading" class="context--loading">
-      <div class="loading"></div>
-    </div>
+    <template #header>
+      <div class="select__search select__search--no-border">
+        <i class="select__search-icon fas fa-search"></i>
+        <input
+          v-model="query"
+          type="text"
+          class="select__search-input"
+          :placeholder="$t('workspacesContext.search')"
+        />
+      </div>
+      <div v-if="isLoading" class="context--loading">
+        <div class="loading"></div>
+      </div>
+    </template>
     <ul
       v-if="!isLoading && isLoaded && workspaces.length > 0"
       v-auto-overflow-scroll
-      class="select__items"
+      class="select__items select__items--noscroll"
     >
       <WorkspacesContextItem
         v-for="workspace in searchAndSort(workspaces)"
@@ -31,16 +33,18 @@
     >
       {{ $t('workspacesContext.noResults') }}
     </div>
-    <div class="select__footer">
-      <a
-        v-if="$hasPermission('create_workspace')"
-        class="select__footer-button"
-        @click="$refs.createWorkspaceModal.show()"
-      >
-        <i class="fas fa-plus"></i>
-        {{ $t('workspacesContext.createWorkspace') }}
-      </a>
-    </div>
+    <template #footer>
+      <div class="select__footer">
+        <a
+          v-if="$hasPermission('create_workspace')"
+          class="select__footer-button"
+          @click="$refs.createWorkspaceModal.show()"
+        >
+          <i class="fas fa-plus"></i>
+          {{ $t('workspacesContext.createWorkspace') }}
+        </a>
+      </div>
+    </template>
     <CreateWorkspaceModal
       ref="createWorkspaceModal"
       @created="hide"

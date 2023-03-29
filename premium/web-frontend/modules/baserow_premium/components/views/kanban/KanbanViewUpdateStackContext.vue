@@ -5,16 +5,20 @@
       :default-values="option"
       @submitted="submit"
     >
+    </KanbanViewOptionForm>
+
+    <template #footer>
       <div class="context__form-actions">
         <button
           class="button"
           :class="{ 'button--loading': loading }"
           :disabled="loading"
+          @click="$refs.form.submit($refs.form.values)"
         >
           {{ $t('action.save') }}
         </button>
       </div>
-    </KanbanViewOptionForm>
+    </template>
   </Context>
 </template>
 

@@ -10,7 +10,9 @@
             v-model="values.link_row_table_id"
             :class="{ 'dropdown--error': $v.values.link_row_table_id.$error }"
             :disabled="!isSelectedFieldAccessible"
-            @hide="$v.values.link_row_table_id.$touch()"
+            :target="dropdownTarget"
+            @show="$emit('dropdown-open')"
+            @hide="handleDropownClosed"
           >
             <DropdownItem
               v-for="table in tablesWhereFieldsCanBeCreated"
@@ -45,6 +47,13 @@ import fieldSubForm from '@baserow/modules/database/mixins/fieldSubForm'
 export default {
   name: 'FieldLinkRowSubForm',
   mixins: [form, fieldSubForm],
+  props: {
+    dropdownTarget: {
+      type: Object,
+      required: false,
+      default: null,
+    },
+  },
   data() {
     return {
       allowedValues: ['link_row_table_id', 'has_related_field'],
@@ -145,6 +154,10 @@ export default {
         data.has_related_field = false
       }
       return data
+    },
+    handleDropownClosed() {
+      this.$v.values.link_row_table_id.$touch()
+      this.$emit('dropdown-closed')
     },
   },
 }

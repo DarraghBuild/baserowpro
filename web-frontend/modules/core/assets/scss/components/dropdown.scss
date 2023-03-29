@@ -63,6 +63,12 @@
   background-color: $white;
   box-shadow: 0 2px 6px 0 rgba($black, 0.16);
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+
+  &.hidden {
+    display: none;
+  }
 
   @include absolute(0, 0, auto, 0);
 
@@ -89,5 +95,15 @@
   .dropdown--floating-left & {
     left: auto;
     right: 0;
+  }
+}
+
+.dropdown__items--reverse {
+  flex-direction: column-reverse;
+  inset: auto 0 0 0;
+
+  .select__search {
+    border-top: 1px solid $color-neutral-200;
+    border-bottom: none;
   }
 }
