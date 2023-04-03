@@ -35,6 +35,34 @@ parser.add_argument(
 )
 
 
+class BackendScenarios:
+    @classmethod
+    def list_rows(cls, headers: dict):
+        url = (
+            f"{settings.PUBLIC_BACKEND_URL}/api/database/views/grid/1910/"
+            "?limit=120&offset=0&include=row_metadata"
+        )
+        return requests.get(url, headers=headers)
+
+    @classmethod
+    def update_row(cls, headers: dict):
+        url = f"{settings.PUBLIC_BACKEND_URL}/api/database/rows/table/450/2/"
+        return requests.patch(url, {"field_4125": "foobar"}, headers=headers)
+
+    @classmethod
+    def search_rows(cls, headers: dict):
+        url = (
+            f"{settings.PUBLIC_BACKEND_URL}/api/database/views/grid/1910/"
+            "?limit=120&offset=0&include=row_metadata&search=sarah"
+        )
+        return requests.get(url, headers=headers)
+
+    @classmethod
+    def read_aggregations(cls, headers: dict):
+        url = f"{settings.PUBLIC_BACKEND_URL}/api/database/views/grid/1910/aggregations"
+        return requests.get(url, headers=headers)
+
+
 class BackendBenchmark:
     @classmethod
     def initdb(cls):
@@ -80,37 +108,28 @@ class BackendBenchmark:
         return response.json()["access_token"]
 
     @classmethod
-    def dispatch(cls, url: str, headers: dict) -> None:
-        print(f"> GET {url}")
-        requests.get(url, headers=headers)
-
-    @classmethod
     def scenario(cls, args):
         scenarios = {
-            "list-rows": "/api/database/views/grid/1910/?limit=120&offset=0"
-            "&include=row_metadata",
-            "search": "/api/database/views/grid/1910/?limit=120&offset=0"
-            "&include=row_metadata&search=sarah",
-            "aggregations": "/api/database/views/grid/1910/aggregations",
+            "list-rows": BackendScenarios.list_rows,
+            "update-row": BackendScenarios.update_row,
+            "search-rows": BackendScenarios.search_rows,
+            "aggregations": BackendScenarios.read_aggregations,
         }
         if args.scenario not in scenarios:
             raise ValueError(
                 f"Invalid test scenario, please use: {', '.join(scenarios.keys())}"
             )
         headers = {"Authorization": f"JWT {cls.get_jwt()}"}
-        url = settings.PUBLIC_BACKEND_URL + scenarios[args.scenario]
+        dispatch = scenarios[args.scenario]
         for _ in range(0, args.n):
             if args.p:
                 process = Process(
-                    target=cls.dispatch,
-                    args=(
-                        url,
-                        headers,
-                    ),
+                    target=dispatch,
+                    args=(headers,),
                 )
                 process.start()
             else:
-                cls.dispatch(url, headers)
+                dispatch(headers)
 
 
 if __name__ == "__main__":
