@@ -26,6 +26,7 @@ RUN apt-get update &&  \
     gnupg2 \
     libpq-dev \
     dos2unix \
+    apache2-utils \
     tini \
     && \
     # Postgresql repository has to be added manually to get pre-13 versions.
