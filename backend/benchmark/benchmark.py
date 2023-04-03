@@ -2,6 +2,7 @@
 
 import argparse
 import subprocess
+from multiprocessing import Process
 from pathlib import Path
 
 import psycopg2
@@ -20,6 +21,17 @@ parser.add_argument(
     "--scenario",
     action="store",
     help="Execute an HTTP request which is experiencing performance issues.",
+)
+parser.add_argument(
+    "-n",
+    default=1,
+    type=int,
+    help="How many requests to dispatch.",
+)
+parser.add_argument(
+    "-p",
+    action="store_true",
+    help="Execute the requests in parallel.",
 )
 
 
@@ -68,20 +80,37 @@ class BackendBenchmark:
         return response.json()["access_token"]
 
     @classmethod
-    def scenario(cls, scenario: str):
+    def dispatch(cls, url: str, headers: dict) -> None:
+        print(f"> GET {url}")
+        requests.get(url, headers=headers)
+
+    @classmethod
+    def scenario(cls, args):
         scenarios = {
-            "rows": "/api/database/views/grid/1910/?limit=120&offset=0"
+            "list-rows": "/api/database/views/grid/1910/?limit=120&offset=0"
             "&include=row_metadata",
             "search": "/api/database/views/grid/1910/?limit=120&offset=0"
             "&include=row_metadata&search=sarah",
             "aggregations": "/api/database/views/grid/1910/aggregations",
         }
-        if scenario not in scenarios:
+        if args.scenario not in scenarios:
             raise ValueError(
                 f"Invalid test scenario, please use: {', '.join(scenarios.keys())}"
             )
-        url = settings.PUBLIC_BACKEND_URL + scenarios[scenario]
-        requests.get(url, headers={"Authorization": f"JWT {cls.get_jwt()}"})
+        headers = {"Authorization": f"JWT {cls.get_jwt()}"}
+        url = settings.PUBLIC_BACKEND_URL + scenarios[args.scenario]
+        for _ in range(0, args.n):
+            if args.p:
+                process = Process(
+                    target=cls.dispatch,
+                    args=(
+                        url,
+                        headers,
+                    ),
+                )
+                process.start()
+            else:
+                cls.dispatch(url, headers)
 
 
 if __name__ == "__main__":
@@ -89,4 +118,4 @@ if __name__ == "__main__":
     if args.initdb:
         BackendBenchmark.initdb()
     if args.scenario:
-        BackendBenchmark.scenario(args.scenario)
+        BackendBenchmark.scenario(args)
