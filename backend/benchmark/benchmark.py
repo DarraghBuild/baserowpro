@@ -45,6 +45,33 @@ class BackendScenarios:
         return requests.get(url, headers=headers)
 
     @classmethod
+    def create_row(cls, headers: dict):
+        url = f"{settings.PUBLIC_BACKEND_URL}/api/database/rows/table/450/batch/"
+        return requests.post(
+            url,
+            json={
+                "items": [
+                    {
+                        "field_4125": "",
+                        "field_4126": "",
+                        "field_4127": False,
+                        "field_4151": [],
+                        "field_4157": [],
+                        "field_4159": False,
+                        "field_4164": "",
+                        "field_4165": "",
+                        "field_4166": None,
+                        "field_4167": "",
+                        "field_4168": [],
+                        "field_4170": [],
+                        "field_4300": [],
+                    }
+                ]
+            },
+            headers=headers,
+        )
+
+    @classmethod
     def update_row(cls, headers: dict):
         url = f"{settings.PUBLIC_BACKEND_URL}/api/database/rows/table/450/2/"
         return requests.patch(url, {"field_4125": "foobar"}, headers=headers)
@@ -111,6 +138,7 @@ class BackendBenchmark:
     def scenario(cls, args):
         scenarios = {
             "list-rows": BackendScenarios.list_rows,
+            "create-row": BackendScenarios.create_row,
             "update-row": BackendScenarios.update_row,
             "search-rows": BackendScenarios.search_rows,
             "aggregations": BackendScenarios.read_aggregations,
