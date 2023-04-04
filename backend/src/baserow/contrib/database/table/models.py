@@ -454,6 +454,7 @@ class Table(
         add_dependencies=True,
         managed=False,
         use_cache=True,
+        skip_nested_models_generation=False,
     ) -> Type[GeneratedTableModel]:
         """
         Generates a temporary Django model based on available fields that belong to
@@ -541,6 +542,7 @@ class Table(
             "_generated_table_model": True,
             "baserow_table": self,
             "baserow_table_id": self.id,
+            "_skip_nested_models_generation": skip_nested_models_generation,
             # We are using our own table model manager to implement some queryset
             # helpers.
             "objects": TableModelManager(),
@@ -603,6 +605,10 @@ class Table(
 
     @baserow_trace(tracer)
     def _after_model_generation(self, attrs, manytomany_models, model):
+
+        if manytomany_models and model._skip_nested_models_generation:
+            return
+
         # In some situations the field can only be added once the model class has been
         # generated. So for each field we will call the after_model_generation with
         # the generated model as argument in order to do this. This is for example used

@@ -1521,7 +1521,8 @@ class LinkRowFieldType(FieldType):
             # If we do not have a related table model already we can generate a new one.
             if related_model is None:
                 related_model = instance.link_row_table.get_model(
-                    manytomany_models=manytomany_models
+                    manytomany_models=manytomany_models,
+                    skip_nested_models_generation=model._skip_nested_models_generation,
                 )
 
         instance._related_model = related_model
