@@ -330,6 +330,7 @@ class RowsView(APIView):
         model = table.get_model(
             fields=fields,
             field_ids=[] if fields else None,
+            skip_nested_models_generation=True,
         )
         queryset = model.objects.all().enhance_by_fields()
 

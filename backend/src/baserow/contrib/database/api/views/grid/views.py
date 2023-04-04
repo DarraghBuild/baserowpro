@@ -256,7 +256,7 @@ class GridViewView(APIView):
             view.table, include_fields, exclude_fields
         )
 
-        model = view.table.get_model()
+        model = view.table.get_model(skip_nested_models_generation=True)
         queryset = view_handler.get_queryset(view, search, model)
 
         if "count" in request.GET:
