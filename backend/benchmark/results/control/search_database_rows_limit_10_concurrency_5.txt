@@ -13,30 +13,30 @@ Document Path:          /api/database/views/grid/1910/?limit=120&offset=0&includ
 Document Length:        89680 bytes
 
 Concurrency Level:      5
-Time taken for tests:   1.509 seconds
+Time taken for tests:   2.092 seconds
 Complete requests:      10
 Failed requests:        0
 Total transferred:      899410 bytes
 HTML transferred:       896800 bytes
-Requests per second:    6.63 [#/sec] (mean)
-Time per request:       754.411 [ms] (mean)
-Time per request:       150.882 [ms] (mean, across all concurrent requests)
-Transfer rate:          582.13 [Kbytes/sec] received
+Requests per second:    4.78 [#/sec] (mean)
+Time per request:       1045.839 [ms] (mean)
+Time per request:       209.168 [ms] (mean, across all concurrent requests)
+Transfer rate:          419.92 [Kbytes/sec] received
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.0      0       0
-Processing:   270  461 145.4    548     627
-Waiting:      270  461 145.5    548     627
-Total:        270  461 145.4    548     627
+Connect:        0    0   0.1      0       0
+Processing:   395  639 279.3    502    1258
+Waiting:      395  639 279.4    502    1258
+Total:        396  640 279.3    502    1258
 
 Percentage of the requests served within a certain time (ms)
-  50%    548
-  66%    557
-  75%    614
-  80%    627
-  90%    627
-  95%    627
-  98%    627
-  99%    627
- 100%    627 (longest request)
+  50%    502
+  66%    776
+  75%    800
+  80%    865
+  90%   1258
+  95%   1258
+  98%   1258
+  99%   1258
+ 100%   1258 (longest request)

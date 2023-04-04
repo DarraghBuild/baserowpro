@@ -1,8 +1,18 @@
 #!/usr/bin/env python3
-
+import pathlib
+import argparse
 import subprocess
 import requests
 from django.conf import settings
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--dirname",
+    required=True,
+    action="store",
+    help="Which directory should this test go in?",
+)
 
 
 def get_token(username: str, password: str) -> str:
@@ -15,10 +25,11 @@ def get_token(username: str, password: str) -> str:
 
 
 def generate_filename(operation_name: str, limit: int, concurrency: int) -> str:
-    return f"{operation_name}_spike"
+    return f"{operation_name}_limit_{limit}_concurrency_{concurrency}"
 
 
 def ab(
+    dirname: str,
     access_token: str,
     operation_name: str,
     endpoint: str,
@@ -31,11 +42,13 @@ def ab(
     )
     result = subprocess.run(command, shell=True, capture_output=True)
     filename = generate_filename(operation_name, limit, concurrency)
-    with open(f"results/{filename}.txt", "w") as fs:
+    pathlib.Path(f"results/{dirname}/").mkdir(exist_ok=True)
+    with open(f"results/{dirname}/{filename}.txt", "w") as fs:
         fs.write(result.stdout.decode("utf8"))
 
 
 if __name__ == "__main__":
+    args = parser.parse_args()
     token = get_token("dev@baserow.io", "testpassword")
     cases = [
         {
@@ -53,5 +66,5 @@ if __name__ == "__main__":
         },
     ]
     for case in cases:
-        print(f"Benchmarking operation {case['operation']}")
-        ab(token, case["operation"], case["url"], 10, 5)
+        print(f"Benchmarking operation {case['operation']} in {args.dirname}")
+        ab(args.dirname, token, case["operation"], case["url"], 10, 5)

@@ -13,31 +13,31 @@ Document Path:          /api/database/views/grid/1910/aggregations
 Document Length:        169 bytes
 
 Concurrency Level:      5
-Time taken for tests:   0.083 seconds
+Time taken for tests:   0.100 seconds
 Complete requests:      10
 Failed requests:        0
 Non-2xx responses:      10
 Total transferred:      4020 bytes
 HTML transferred:       1690 bytes
-Requests per second:    120.80 [#/sec] (mean)
-Time per request:       41.391 [ms] (mean)
-Time per request:       8.278 [ms] (mean, across all concurrent requests)
-Transfer rate:          47.42 [Kbytes/sec] received
+Requests per second:    99.76 [#/sec] (mean)
+Time per request:       50.121 [ms] (mean)
+Time per request:       10.024 [ms] (mean, across all concurrent requests)
+Transfer rate:          39.16 [Kbytes/sec] received
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.0      0       0
-Processing:    19   26   8.1     23      41
-Waiting:       19   26   8.1     23      41
-Total:         19   26   8.1     23      41
+Connect:        0    0   0.1      0       0
+Processing:    19   32  13.9     31      50
+Waiting:       19   32  13.9     30      50
+Total:         19   32  13.8     31      50
 
 Percentage of the requests served within a certain time (ms)
-  50%     23
-  66%     31
-  75%     34
-  80%     35
-  90%     41
-  95%     41
-  98%     41
-  99%     41
- 100%     41 (longest request)
+  50%     31
+  66%     41
+  75%     49
+  80%     50
+  90%     50
+  95%     50
+  98%     50
+  99%     50
+ 100%     50 (longest request)
