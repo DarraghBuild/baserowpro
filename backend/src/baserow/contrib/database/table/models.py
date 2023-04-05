@@ -7,6 +7,7 @@ from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 from django.db.models import F, JSONField, Q, QuerySet
+from django.utils.encoding import force_str
 
 from opentelemetry import trace
 
@@ -48,6 +49,8 @@ from baserow.core.utils import split_comma_separated_string
 deconstruct_filter_key_regex = re.compile(
     r"filter__field_([0-9]+|created_on|updated_on)__([a-zA-Z0-9_]*)$"
 )
+RE_SPACE = re.compile(r"[\s]+", re.UNICODE)
+RE_POSTGRES_ESCAPE_CHARS = re.compile(r"[&:(|)!><]", re.UNICODE)
 
 tracer = trace.get_tracer(__name__)
 
@@ -70,7 +73,44 @@ class TableModelQuerySet(models.QuerySet):
             )
         return self
 
-    def search_all_fields(self, search, only_search_by_field_ids=None):
+    def escape_query(self, text, re_escape_chars):
+        """
+        Source: django-watson
+        normalizes the query text to a format that can be consumed
+        by the backend database
+        """
+
+        text = force_str(text)
+        text = RE_SPACE.sub(" ", text)  # Standardize spacing.
+        text = re_escape_chars.sub(" ", text)  # Replace harmful characters with space.
+        text = text.strip()
+        return text
+
+    def escape_postgres_query(self, text):
+        """
+        Source: django-watson
+        Escapes the given text to become a valid ts_query.
+        """
+
+        return " <-> ".join(
+            "$${0}$$:*".format(word)
+            for word in self.escape_query(text, RE_POSTGRES_ESCAPE_CHARS).split()
+        )
+
+    def pg_search(self, input_search: str) -> QuerySet:
+        """
+        Source: django-watson
+        """
+
+        sanitized_search = self.escape_postgres_query(input_search)
+        return self.extra(
+            where=["tsv @@ to_tsquery('pg_catalog.english', %s)"],
+            params=(sanitized_search,),
+        )
+
+    def search_all_fields(
+        self, search, only_search_by_field_ids=None, use_pg_search: bool = True
+    ):
         """
         Performs a very broad search across all supported fields with the given search
         query. If the primary key value matches then that result will be returned
@@ -83,9 +123,13 @@ class TableModelQuerySet(models.QuerySet):
             filtered by the search term. Other fields not in the iterable will be
             ignored and not be filtered.
         :type only_search_by_field_ids: Optional[Iterable[int]]
+        :type use_pg_search: whether to use postgre search.
         :return: The queryset containing the search queries.
         :rtype: QuerySet
         """
+
+        if use_pg_search:
+            return self.pg_search(search)
 
         filter_builder = FilterBuilder(filter_type=FILTER_TYPE_OR).filter(
             Q(id__contains=search)

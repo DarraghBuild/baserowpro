@@ -237,6 +237,8 @@ class GridViewView(APIView):
         """
 
         search = request.GET.get("search")
+        use_pg_search = request.GET.get("search_version", "v2") == "v2"
+
         include_fields = request.GET.get("include_fields")
         exclude_fields = request.GET.get("exclude_fields")
 
@@ -257,7 +259,9 @@ class GridViewView(APIView):
         )
 
         model = view.table.get_model(skip_nested_models_generation=True)
-        queryset = view_handler.get_queryset(view, search, model)
+        queryset = view_handler.get_queryset(
+            view, search, model, use_pg_search=use_pg_search
+        )
 
         if "count" in request.GET:
             return Response({"count": queryset.count()})
@@ -434,6 +438,7 @@ class GridViewFieldAggregationsView(APIView):
         """
 
         search = request.GET.get("search")
+
         view_handler = ViewHandler()
         view = view_handler.get_view(view_id, GridView)
 

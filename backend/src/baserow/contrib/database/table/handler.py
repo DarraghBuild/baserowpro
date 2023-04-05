@@ -3,8 +3,7 @@ from typing import Any, Dict, List, NewType, Optional, Tuple, cast
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.contrib.postgres.search import SearchVector
-from django.db import DatabaseError, ProgrammingError
+from django.db import DatabaseError, ProgrammingError, connection
 from django.db.models import QuerySet, Sum
 from django.utils import timezone, translation
 from django.utils.translation import gettext as _
@@ -652,7 +651,11 @@ class TableHandler(metaclass=baserow_trace_methods(tracer)):
         )
 
     def refresh_tsv(self, table: Table):
-        """ """
+        """
+        Used to fully re-index a table's `tsvector` column.
+        Quick and hacky, but works for this spike.
+        """
+
         vectored_fields = []
         for field_object in table._field_objects.values():
             field_name = field_object["name"]
@@ -660,7 +663,7 @@ class TableHandler(metaclass=baserow_trace_methods(tracer)):
             field_reindex_value = field_object["type"].prepare_reindex_value(
                 field_name, model_field, field_object["field"]
             )
-            print(f"Found: {field_object}")
+            print(f"Found table field: {field_object}")
             vectored_fields.append(field_reindex_value)
 
         vectored_fields_select = " || ' ' || ".join(vectored_fields)
@@ -670,8 +673,6 @@ class TableHandler(metaclass=baserow_trace_methods(tracer)):
             f"SET tsv = to_tsvector((SELECT {vectored_fields_select}))"
         )
         print(sql)
-
-        from django.db import connection
 
         with connection.cursor() as cursor:
             cursor.execute(sql)
