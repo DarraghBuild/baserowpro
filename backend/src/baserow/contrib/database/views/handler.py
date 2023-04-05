@@ -12,6 +12,7 @@ from django.core.exceptions import FieldDoesNotExist, ValidationError
 from django.db import models as django_models
 from django.db.models import Count, F
 from django.db.models.query import QuerySet
+from django.utils.encoding import force_str
 
 import jwt
 from opentelemetry import trace
@@ -125,6 +126,9 @@ FieldOptionsDict = Dict[int, Dict[str, Any]]
 
 
 ending_number_regex = re.compile(r"(.+) (\d+)$")
+RE_SPACE = re.compile(r"[\s]+", re.UNICODE)
+RE_POSTGRES_ESCAPE_CHARS = re.compile(r"[&:(|)!><]", re.UNICODE)
+
 
 tracer = trace.get_tracer(__name__)
 
@@ -1633,6 +1637,24 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
             user=user,
         )
 
+    def escape_query(self, text, re_escape_chars):
+        """
+        normalizes the query text to a format that can be consumed
+        by the backend database
+        """
+        text = force_str(text)
+        text = RE_SPACE.sub(" ", text)  # Standardize spacing.
+        text = re_escape_chars.sub(" ", text)  # Replace harmful characters with space.
+        text = text.strip()
+        return text
+
+    def escape_postgres_query(self, text):
+        """Escapes the given text to become a valid ts_query."""
+        return " <-> ".join(
+            "$${0}$$:*".format(word)
+            for word in self.escape_query(text, RE_POSTGRES_ESCAPE_CHARS).split()
+        )
+
     def get_queryset(
         self,
         view,
@@ -1675,7 +1697,17 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
         if view_type.can_sort:
             queryset = self.apply_sorting(view, queryset, only_sort_by_field_ids)
         if search is not None:
-            queryset = queryset.search_all_fields(search, only_search_by_field_ids)
+            # queryset = queryset.search_all_fields(search, only_search_by_field_ids)
+            # print(queryset.query)
+            if only_search_by_field_ids:
+                queryset = queryset.search_all_fields(search, only_search_by_field_ids)
+            else:
+                sanitized_search = self.escape_postgres_query(search)
+                print(f'Received "{search}" and sanitized "{sanitized_search}"')
+                queryset = queryset.extra(
+                    where=["tsv @@ to_tsquery('pg_catalog.english', %s)"],
+                    params=(sanitized_search,),
+                )
         return queryset
 
     def _get_aggregation_lock_cache_key(self, view: View):

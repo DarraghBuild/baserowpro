@@ -371,6 +371,9 @@ class NumberFieldType(FieldType):
         "_spectacular_annotation": {"exclude_fields": ["number_type"]},
     }
 
+    def prepare_reindex_value(self, field_name: str, model_field, field) -> str:
+        return f"COALESCE({field_name}::text, '')"
+
     def prepare_value_for_db(self, instance, value):
         if value is not None:
             value = Decimal(value)
@@ -848,6 +851,13 @@ class DateFieldType(FieldType):
             return make_aware(fake.date_time())
         else:
             return fake.date_object()
+
+    def prepare_reindex_value(self, field_name: str, model_field, field) -> str:
+        tz = field.date_force_timezone or "UTC"
+        return (
+            f"COALESCE(to_char(timezone('{tz}', {field_name}), "
+            f"'{field.get_psql_format()}'), '')"
+        )
 
     def contains_query(self, field_name, value, model_field, field):
         value = value.strip()

@@ -3,6 +3,8 @@ from typing import Any, Dict, Type, Union
 
 from django.apps import apps
 from django.conf import settings
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 from django.db.models import F, JSONField, Q, QuerySet
 
@@ -516,6 +518,9 @@ class Table(
                         fields=["order", "id"],
                         name=self.get_collision_safe_order_id_idx_name(),
                     ),
+                    GinIndex(
+                        fields=["tsv"], name=self.get_collision_safe_tsv_idx_name()
+                    ),
                 ],
             },
         )
@@ -740,6 +745,10 @@ class Table(
                 verbose_name=field.name,
             )
 
+        # All new tables get a `tsvector` field for this model called `tsv`.
+        # This allows us to perform full-text search against all fields.
+        field_attrs["tsv"] = SearchVectorField()
+
         return field_attrs
 
     # Use our own custom index name as the default models.Index
@@ -747,6 +756,9 @@ class Table(
     # tables.
     def get_collision_safe_order_id_idx_name(self):
         return f"tbl_order_id_{self.id}_idx"
+
+    def get_collision_safe_tsv_idx_name(self):
+        return f"tbl_tsv_{self.id}_idx"
 
 
 class DuplicateTableJob(

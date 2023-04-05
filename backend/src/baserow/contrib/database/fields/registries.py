@@ -249,6 +249,10 @@ class FieldType(
         except Exception:
             return q
 
+    def prepare_reindex_value(self, field_name: str, model_field, field) -> str:
+        """ """
+        return field_name
+
     def contains_query(self, field_name, value, model_field, field):
         """
         Returns a Q or AnnotatedQ filter which performs a contains filter over the

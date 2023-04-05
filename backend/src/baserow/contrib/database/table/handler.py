@@ -3,6 +3,7 @@ from typing import Any, Dict, List, NewType, Optional, Tuple, cast
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.contrib.postgres.search import SearchVector
 from django.db import DatabaseError, ProgrammingError
 from django.db.models import QuerySet, Sum
 from django.utils import timezone, translation
@@ -649,3 +650,28 @@ class TableHandler(metaclass=baserow_trace_methods(tracer)):
             )["row_count__sum"]
             or 0
         )
+
+    def refresh_tsv(self, table: Table):
+        """ """
+        vectored_fields = []
+        for field_object in table._field_objects.values():
+            field_name = field_object["name"]
+            model_field = table._meta.get_field(field_name)
+            field_reindex_value = field_object["type"].prepare_reindex_value(
+                field_name, model_field, field_object["field"]
+            )
+            print(f"Found: {field_object}")
+            vectored_fields.append(field_reindex_value)
+
+        vectored_fields_select = " || ' ' || ".join(vectored_fields)
+
+        sql = (
+            f"UPDATE {table._meta.db_table} "
+            f"SET tsv = to_tsvector((SELECT {vectored_fields_select}))"
+        )
+        print(sql)
+
+        from django.db import connection
+
+        with connection.cursor() as cursor:
+            cursor.execute(sql)
