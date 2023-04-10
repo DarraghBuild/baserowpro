@@ -44,46 +44,39 @@ export default {
         'username',
         () => this.$t('usersAdminTable.username'),
         UsernameField,
-        true,
-        true,
-        false,
-        {},
-        null,
-        200
+        { sortable: true, stickyLeft: true, fixedWidth: 200 }
       ),
       new CrudTableColumn(
         'name',
         () => this.$t('usersAdminTable.name'),
         SimpleField,
-        true,
-        false,
-        false,
-        {}
+        { sortable: true }
       ),
       new CrudTableColumn(
         'workspaces',
         () => this.$t('usersAdminTable.workspaces'),
-        UserWorkspacesField
+        UserWorkspacesField,
+        {}
       ),
       new CrudTableColumn(
         'last_login',
         () => this.$t('usersAdminTable.lastLogin'),
         LocalDateField,
-        true
+        { sortable: true }
       ),
       new CrudTableColumn(
         'date_joined',
         () => this.$t('usersAdminTable.dateJoined'),
         LocalDateField,
-        true
+        { sortable: true }
       ),
       new CrudTableColumn(
         'is_active',
         () => this.$t('premium.user.active'),
         ActiveField,
-        true
+        { sortable: true }
       ),
-      new CrudTableColumn('more', '', MoreField, false, false, true, {}),
+      new CrudTableColumn('more', '', MoreField, { stickyRight: true }),
     ]
     this.service = UserAdminService(this.$client)
     return {

@@ -42,75 +42,61 @@ export default {
         'name',
         () => this.$t('workspacesAdminTable.name'),
         WorkspaceNameField,
-        true,
-        true,
-        false,
-        {},
-        '',
-        null,
-        200
+        { sortable: true, stickyLeft: true, fixedWidth: 200 }
       ),
       new CrudTableColumn(
         'users',
         () => this.$t('workspacesAdminTable.members'),
-        WorkspaceUsersField
+        WorkspaceUsersField,
+        {}
       ),
       new CrudTableColumn(
         'application_count',
         () => this.$t('workspacesAdminTable.applications'),
         SimpleField,
-        true,
-        false,
-        false,
-        {}
+        { sortable: true }
       ),
       new CrudTableColumn(
         'free_users',
         () => this.$t('workspacesAdminTable.freeUsers'),
-        SimpleField
+        SimpleField,
+        {}
       ),
       new CrudTableColumn(
         'seats_taken',
         () => this.$t('workspacesAdminTable.seatsTaken'),
         SimpleField,
-        false,
-        false,
-        false,
-        {},
-        '',
-        this.$t('workspacesAdminTable.usageHelpText')
+        { helpText: this.$t('workspacesAdminTable.usageHelpText') }
       ),
       new CrudTableColumn(
         'row_count',
         () => this.$t('workspacesAdminTable.rowCount'),
         SimpleField,
-        true,
-        false,
-        false,
-        {},
-        '',
-        this.$t('workspacesAdminTable.usageHelpText')
+        {
+          sortable: true,
+          helpText: this.$t('workspacesAdminTable.usageHelpText'),
+        }
       ),
       new CrudTableColumn(
         'storage_usage',
         () => this.$t('workspacesAdminTable.storageUsage'),
         SimpleField,
-        true,
-        false,
-        false,
-        {},
-        this.$t('workspacesAdminTable.usageHelpText')
+        {
+          sortable: true,
+          helpText: this.$t('workspacesAdminTable.usageHelpText'),
+        }
       ),
       new CrudTableColumn(
         'created_on',
         () => this.$t('workspacesAdminTable.created'),
         LocalDateField,
-        true,
-        false,
-        false,
-        {}
+        {
+          sortable: true,
+        }
       ),
-      new CrudTableColumn('more', '', MoreField, false, false, true, {}, 10),
+      new CrudTableColumn('more', '', MoreField, {
+        stickyRight: true,
+      }),
     ]
     this.service = WorkspacesAdminService(this.$client)
     return {

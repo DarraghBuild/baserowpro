@@ -110,33 +110,33 @@ export default {
           'email',
           this.$t('membersSettings.invitesTable.columns.email'),
           SimpleField,
-          true,
-          true,
-          false,
-          {},
-          null,
-          200
+          {
+            sortable: true,
+            stickyLeft: true,
+            fixedWidth: 200,
+          }
         ),
         new CrudTableColumn(
           'message',
           this.$t('membersSettings.invitesTable.columns.message'),
           SimpleField,
-          true
+          {
+            sortable: true,
+          }
         ),
         new CrudTableColumn(
           'permissions',
           this.$t('membersSettings.invitesTable.columns.role'),
           MemberRoleField,
-          false,
-          false,
-          false,
           {
-            roles: this.roles,
-            userId: 0,
-            workspaceId: this.workspace.id,
+            additionalProps: {
+              roles: this.roles,
+              userId: 0,
+              workspaceId: this.workspace.id,
+            },
           }
         ),
-        new CrudTableColumn(null, null, MoreField, false, false, true, {}),
+        new CrudTableColumn(null, null, MoreField, { stickyRight: true }),
       ]
       for (const plugin of this.membersPagePlugins) {
         if (!plugin.isDeactivated(this.workspace.id)) {

@@ -127,32 +127,30 @@ export default {
           'name',
           this.$t('teamsTable.nameColumn'),
           SimpleField,
-          true,
-          true,
-          false,
-          {},
-          '',
-          null,
-          200
+          {
+            sortable: true,
+            stickyLeft: true,
+            fixedWidth: 200,
+          }
         ),
         new CrudTableColumn(
           'default_role',
           this.$t('teamsTable.roleColumn'),
           TeamRoleField,
-          true,
-          false,
-          false,
           {
-            roles: this.roles,
-            workspaceId: this.workspace.id,
-          },
-          this.$t('teamsTable.roleHelpText')
+            sortable: true,
+            additionalProps: {
+              roles: this.roles,
+              workspaceId: this.workspace.id,
+            },
+            helpText: this.$t('teamsTable.roleHelpText'),
+          }
         ),
         new CrudTableColumn(
           'subject_sample',
           this.$t('teamsTable.subjectsColumn'),
           SubjectSampleField,
-          true
+          { sortable: true }
         ),
       ]
 
@@ -169,7 +167,7 @@ export default {
       )
       if (canUpdate || canDelete) {
         columns.push(
-          new CrudTableColumn(null, null, MoreField, false, false, true, {})
+          new CrudTableColumn(null, null, MoreField, { stickyRight: true })
         )
       }
 

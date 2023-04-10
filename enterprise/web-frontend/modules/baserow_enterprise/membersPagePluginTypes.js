@@ -26,24 +26,18 @@ export class EnterpriseMembersPagePluginType extends MembersPagePluginType {
       'highest_role_uid',
       this.app.i18n.t('membersSettings.membersTable.columns.highestRole'),
       HighestPaidRoleField,
-      false,
-      false,
-      false,
-      { workspaceId: context.workspace.id },
-      20,
-      this.app.i18n.t(
-        'membersSettings.membersTable.columns.highestRoleHelpText'
-      )
+      {
+        additionalProps: { workspaceId: context.workspace.id },
+        helpText: this.app.i18n.t(
+          'membersSettings.membersTable.columns.highestRoleHelpText'
+        ),
+      }
     )
     const teamsColumn = new CrudTableColumn(
       'teams',
       this.app.i18n.t('membersSettings.membersTable.columns.teams'),
       UserTeamsField,
-      false,
-      false,
-      false,
-      {},
-      20
+      {}
     )
     columns.splice(roleColumnIndex, 0, highestRoleColumn)
     columns.splice(roleColumnIndex, 0, teamsColumn)

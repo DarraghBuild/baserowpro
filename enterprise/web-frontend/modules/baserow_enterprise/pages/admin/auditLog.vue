@@ -110,62 +110,49 @@ export default {
   middleware: 'staff',
   data() {
     this.columns = [
-      new CrudTableColumn(
-        'user',
-        () => this.$t('auditLog.user'),
-        SimpleField,
-        true,
-        true,
-        false,
-        {},
-        null,
-        200
-      ),
+      new CrudTableColumn('user', () => this.$t('auditLog.user'), SimpleField, {
+        sortable: true,
+        stickyLeft: true,
+        fixedWidth: 200,
+      }),
       new CrudTableColumn(
         'workspace',
         () => this.$t('auditLog.workspace'),
         SimpleField,
-        true,
-        false,
-        false,
-        {}
+        {
+          sortable: true,
+        }
       ),
       new CrudTableColumn(
         'type',
         () => this.$t('auditLog.actionType'),
         SimpleField,
-        true,
-        false,
-        false,
-        {}
+        {
+          sortable: true,
+        }
       ),
       new CrudTableColumn(
         'description',
         () => this.$t('auditLog.description'),
         LongTextField,
-        false,
-        false,
-        false,
-        {},
-        null
+        {}
       ),
       new CrudTableColumn(
         'timestamp',
         () => this.$t('auditLog.timestamp'),
         LocalDateField,
-        true,
-        false,
-        false,
-        { dateTimeFormat: 'L LTS' }
+        {
+          sortable: true,
+          additionalProps: { dateTimeFormat: 'L LTS' },
+        }
       ),
       new CrudTableColumn(
         'ip_address',
         () => this.$t('auditLog.ip_address'),
         SimpleField,
-        true,
-        false,
-        false,
-        {}
+        {
+          sortable: true,
+        }
       ),
     ]
     this.service = AuditLogAdminService(this.$client)

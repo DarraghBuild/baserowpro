@@ -21,12 +21,14 @@ export default class CrudTableColumn {
     key,
     header,
     cellComponent,
-    sortable = false,
-    stickyLeft = false,
-    stickyRight = false,
-    additionalProps = {},
-    helpText = null,
-    fixedWidth = null
+    {
+      sortable = false,
+      stickyLeft = false,
+      stickyRight = false,
+      additionalProps = {},
+      helpText = null,
+      fixedWidth = null,
+    }
   ) {
     this.key = key
     this._header = header
