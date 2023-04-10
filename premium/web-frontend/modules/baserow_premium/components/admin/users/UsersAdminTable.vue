@@ -58,8 +58,7 @@ export default {
         true,
         false,
         false,
-        {},
-        20
+        {}
       ),
       new CrudTableColumn(
         'workspaces',
@@ -84,7 +83,7 @@ export default {
         ActiveField,
         true
       ),
-      new CrudTableColumn('more', '', MoreField, false, false, true, {}, 10),
+      new CrudTableColumn('more', '', MoreField, false, false, true, {}),
     ]
     this.service = UserAdminService(this.$client)
     return {

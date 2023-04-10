@@ -114,7 +114,6 @@ export default {
           true,
           false,
           {},
-          '',
           null,
           200
         ),
@@ -137,7 +136,7 @@ export default {
             workspaceId: this.workspace.id,
           }
         ),
-        new CrudTableColumn(null, null, MoreField, false, false, true, {}, 10),
+        new CrudTableColumn(null, null, MoreField, false, false, true, {}),
       ]
       for (const plugin of this.membersPagePlugins) {
         if (!plugin.isDeactivated(this.workspace.id)) {

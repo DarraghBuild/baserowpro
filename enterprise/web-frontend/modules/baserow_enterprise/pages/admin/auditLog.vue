@@ -115,10 +115,11 @@ export default {
         () => this.$t('auditLog.user'),
         SimpleField,
         true,
-        false,
+        true,
         false,
         {},
-        '15'
+        null,
+        200
       ),
       new CrudTableColumn(
         'workspace',
@@ -127,8 +128,7 @@ export default {
         true,
         false,
         false,
-        {},
-        '15'
+        {}
       ),
       new CrudTableColumn(
         'type',
@@ -137,8 +137,7 @@ export default {
         true,
         false,
         false,
-        {},
-        '10'
+        {}
       ),
       new CrudTableColumn(
         'description',
@@ -148,7 +147,7 @@ export default {
         false,
         false,
         {},
-        '40'
+        null
       ),
       new CrudTableColumn(
         'timestamp',
@@ -157,8 +156,7 @@ export default {
         true,
         false,
         false,
-        { dateTimeFormat: 'L LTS' },
-        '10'
+        { dateTimeFormat: 'L LTS' }
       ),
       new CrudTableColumn(
         'ip_address',
@@ -167,8 +165,7 @@ export default {
         true,
         false,
         false,
-        {},
-        '10'
+        {}
       ),
     ]
     this.service = AuditLogAdminService(this.$client)

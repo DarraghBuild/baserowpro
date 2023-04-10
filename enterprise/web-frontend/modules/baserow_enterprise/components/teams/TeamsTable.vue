@@ -169,7 +169,7 @@ export default {
       )
       if (canUpdate || canDelete) {
         columns.push(
-          new CrudTableColumn(null, null, MoreField, false, false, true, {}, 10)
+          new CrudTableColumn(null, null, MoreField, false, false, true, {})
         )
       }
 

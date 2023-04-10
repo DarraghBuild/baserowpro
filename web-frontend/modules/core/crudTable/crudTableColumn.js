@@ -25,7 +25,6 @@ export default class CrudTableColumn {
     stickyLeft = false,
     stickyRight = false,
     additionalProps = {},
-    widthPerc = '',
     helpText = null,
     fixedWidth = null
   ) {
@@ -36,7 +35,6 @@ export default class CrudTableColumn {
     this.stickyLeft = stickyLeft
     this.stickyRight = stickyRight
     this.additionalProps = additionalProps
-    this.widthPerc = widthPerc
     this.helpText = helpText
     this.fixedWidth = fixedWidth
   }

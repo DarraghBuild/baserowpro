@@ -62,8 +62,7 @@ export default {
         true,
         false,
         false,
-        {},
-        10
+        {}
       ),
       new CrudTableColumn(
         'free_users',
@@ -100,7 +99,6 @@ export default {
         false,
         false,
         {},
-        '',
         this.$t('workspacesAdminTable.usageHelpText')
       ),
       new CrudTableColumn(
@@ -110,8 +108,7 @@ export default {
         true,
         false,
         false,
-        {},
-        10
+        {}
       ),
       new CrudTableColumn('more', '', MoreField, false, false, true, {}, 10),
     ]
