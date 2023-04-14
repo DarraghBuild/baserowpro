@@ -79,6 +79,8 @@ INSTALLED_APPS = [
     "health_check.cache",
     "health_check.contrib.migrations",
     "health_check.contrib.redis",
+    "health_check.contrib.celery_ping",
+    "health_check.contrib.psutil",
     "baserow.core",
     "baserow.api",
     "baserow.ws",
