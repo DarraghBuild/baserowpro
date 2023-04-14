@@ -371,6 +371,9 @@ class NumberFieldType(FieldType):
         "_spectacular_annotation": {"exclude_fields": ["number_type"]},
     }
 
+    def prepare_reindex_value(self, field_name: str, model_field, field) -> str:
+        return f"COALESCE({field_name}::text, '')"
+
     def prepare_value_for_db(self, instance, value):
         if value is not None:
             value = Decimal(value)
@@ -699,6 +702,13 @@ class DateFieldType(FieldType):
         DateForceTimezoneOffsetValueError: ERROR_DATE_FORCE_TIMEZONE_OFFSET_ERROR
     }
     can_represent_date = True
+
+    def prepare_reindex_value(self, field_name: str, model_field, field) -> str:
+        tz = field.date_force_timezone or "UTC"
+        return (
+            f"COALESCE(to_char(timezone('{tz}', {field_name}), "
+            f"'{field.get_psql_format()}'), '')"
+        )
 
     def get_request_kwargs_to_backup(self, field, kwargs) -> Dict[str, Any]:
         date_force_timezone_offset = kwargs.get("date_force_timezone_offset", None)

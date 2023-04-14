@@ -82,6 +82,9 @@ class Field(
     polymorphic content type to store these settings in another table.
     """
 
+    # Whether this field can be indexed and searched against.
+    searchable: bool = True
+
     table = models.ForeignKey("database.Table", on_delete=models.CASCADE)
     order = models.PositiveIntegerField(help_text="Lowest first.")
     name = models.CharField(max_length=255, db_index=True)
@@ -286,7 +289,7 @@ class RatingField(Field):
 
 
 class BooleanField(Field):
-    pass
+    searchable = False
 
 
 class DateField(Field, BaseDateMixin):
@@ -302,6 +305,7 @@ class CreatedOnField(Field, BaseDateMixin):
 
 
 class LinkRowField(Field):
+    searchable = False
     THROUGH_DATABASE_TABLE_PREFIX = "database_relation_"
     link_row_table = models.ForeignKey(
         "database.Table",
@@ -379,6 +383,7 @@ class PhoneNumberField(Field):
 
 
 class FormulaField(Field):
+    searchable = False
     formula = models.TextField()
     internal_formula = models.TextField()
     version = models.IntegerField()
@@ -517,6 +522,7 @@ class FormulaField(Field):
 
 
 class LookupField(FormulaField):
+    searchable = False
     through_field = models.ForeignKey(
         Field,
         on_delete=models.SET_NULL,

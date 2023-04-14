@@ -25,6 +25,7 @@ from baserow.core.action.registries import (
     UndoableActionCustomCleanupMixin,
     UndoableActionType,
 )
+from baserow.core.search.handler import SearchHandler
 from baserow.core.trash.handler import TrashHandler
 from baserow.core.utils import ChildProgressBuilder
 

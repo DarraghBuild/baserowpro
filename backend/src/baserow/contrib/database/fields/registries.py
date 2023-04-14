@@ -249,6 +249,15 @@ class FieldType(
         except Exception:
             return q
 
+    def prepare_reindex_value(self, field_name: str, model_field, field) -> str:
+        """
+        The value which `SearchHandler.update_vector_row` will use when a field's
+        `tsvector` column needs to be refreshed. Some field types will need to
+        implement their own `prepare_reindex_value` to return their indexable value.
+        """
+
+        return field_name
+
     def contains_query(self, field_name, value, model_field, field):
         """
         Returns a Q or AnnotatedQ filter which performs a contains filter over the

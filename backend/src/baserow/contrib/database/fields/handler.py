@@ -49,6 +49,7 @@ from baserow.contrib.database.table.models import Table
 from baserow.contrib.database.views.handler import ViewHandler
 from baserow.core.handler import CoreHandler
 from baserow.core.models import TrashEntry
+from baserow.core.search.handler import SearchHandler
 from baserow.core.telemetry.utils import baserow_trace_methods
 from baserow.core.trash.exceptions import RelatedTableTrashedException
 from baserow.core.trash.handler import TrashHandler
@@ -225,6 +226,7 @@ class FieldHandler(metaclass=baserow_trace_methods(tracer)):
         do_schema_change=True,
         return_updated_fields=False,
         primary_key=None,
+        create_tsvector: bool = True,
         **kwargs,
     ) -> Union[Field, Tuple[Field, List[Field]]]:
         """
@@ -243,6 +245,9 @@ class FieldHandler(metaclass=baserow_trace_methods(tracer)):
         :param kwargs: The field values that need to be set upon creation.
         :type kwargs: object
         :param primary_key: The id of the field.
+        :param create_tsvector: Indicates whether we should create a `tsvector`
+            column to allow this field to be indexed and searched.
+        :type create_tsvector: bool
         :raises PrimaryFieldAlreadyExists: When we try to create a primary field,
             but one already exists.
         :raises MaxFieldLimitExceeded: When we try to create a field,
@@ -349,6 +354,10 @@ class FieldHandler(metaclass=baserow_trace_methods(tracer)):
         )
         update_collector.send_additional_field_updated_signals()
 
+        if create_tsvector:
+            # Create the corresponding `tsvector` column.
+            SearchHandler().create_vector_column(table, instance)
+
         if return_updated_fields:
             return instance, updated_fields
         else:
@@ -392,6 +401,8 @@ class FieldHandler(metaclass=baserow_trace_methods(tracer)):
         :return: A data class containing information on all the changes made as a result
             of the field update.
         """
+
+        print(f"update_field called with kwargs={kwargs}")
 
         if not isinstance(field, Field):
             raise ValueError("The field is not an instance of Field.")

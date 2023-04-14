@@ -32,6 +32,7 @@ from baserow.contrib.database.views.handler import ViewHandler
 from baserow.contrib.database.views.view_types import GridViewType
 from baserow.core.handler import CoreHandler
 from baserow.core.registries import application_type_registry
+from baserow.core.search.handler import SearchHandler
 from baserow.core.telemetry.utils import baserow_trace_methods
 from baserow.core.trash.handler import TrashHandler
 from baserow.core.utils import ChildProgressBuilder, Progress, find_unused_name
@@ -220,18 +221,21 @@ class TableHandler(metaclass=baserow_trace_methods(tracer)):
         # Let's create the fields before creating the model so that the whole
         # table schema is created right away.
         field_options_dict = {}
+        generated_fields: List[Field] = []
         for index, (name, field_type_name, field_config) in enumerate(fields):
             field_options = field_config.pop("field_options", None)
             field_type = field_type_registry.get(field_type_name)
             FieldModel = field_type.model_class
 
-            fields[index] = FieldModel.objects.create(
+            field = FieldModel.objects.create(
                 table=table,
                 order=index,
                 primary=index == 0,
                 name=name,
                 **field_config,
             )
+            fields[index] = field
+            generated_fields.append(field)
             if field_options:
                 field_options_dict[fields[index].id] = field_options
 
@@ -252,11 +256,16 @@ class TableHandler(metaclass=baserow_trace_methods(tracer)):
                 fields=fields,
             )
 
-        # Create the table schema in the database database.
+        # Create the table schema in the database.
         with safe_django_schema_editor() as schema_editor:
             # Django only creates indexes when the model is managed.
             model = table.get_model(managed=True)
             schema_editor.create_model(model)
+
+        # Create all the tsvector columns.
+        for field in generated_fields:
+            if field.searchable:
+                SearchHandler().create_vector_column(table, field)
 
         return table
 

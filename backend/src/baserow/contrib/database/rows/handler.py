@@ -23,7 +23,7 @@ from baserow.contrib.database.fields.field_filters import (
     AnnotatedQ,
     FilterBuilder,
 )
-from baserow.contrib.database.fields.models import LinkRowField
+from baserow.contrib.database.fields.models import Field, LinkRowField
 from baserow.contrib.database.fields.registries import FieldType, field_type_registry
 from baserow.contrib.database.table.models import GeneratedTableModel, Table
 from baserow.contrib.database.table.operations import (
@@ -38,6 +38,7 @@ from baserow.core.db import (
 )
 from baserow.core.exceptions import CannotCalculateIntermediateOrder
 from baserow.core.handler import CoreHandler
+from baserow.core.search.handler import SearchHandler
 from baserow.core.telemetry.utils import baserow_trace_methods
 from baserow.core.trash.handler import TrashHandler
 from baserow.core.utils import Progress, get_non_unique_values, grouper
@@ -819,6 +820,8 @@ class RowHandler(metaclass=baserow_trace_methods(tracer)):
         :return: The updated row instance.
         """
 
+        print(f"Updating with row={row.id} values={values}")
+
         workspace = table.database.workspace
         CoreHandler().check_permissions(
             user,
@@ -922,6 +925,12 @@ class RowHandler(metaclass=baserow_trace_methods(tracer)):
             before_return=before_return,
             updated_field_ids=updated_field_ids,
         )
+
+        # Update the row's `tsvector`.
+        value_field_map: Dict[str, Field] = {}
+        for field_name in values.keys():
+            value_field_map[field_name] = updated_fields_by_name[field_name]
+        SearchHandler().update_vector_row(table, value_field_map)
 
         return row
 
