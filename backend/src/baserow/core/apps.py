@@ -246,10 +246,24 @@ class CoreConfig(AppConfig):
 
         auth_provider_type_registry.register(PasswordAuthProviderType())
 
+        self._setup_health_checks()
+
         # Clear the key after migration so we will trigger a new template sync.
         post_migrate.connect(start_sync_templates_task_after_migrate, sender=self)
         # Create all operations from registry
         post_migrate.connect(sync_operations_after_migrate, sender=self)
+
+    def _setup_health_checks(self):
+        from health_check.contrib.s3boto_storage.backends import (
+            S3BotoStorageHealthCheck,
+        )
+        from health_check.plugins import plugin_dir
+        from health_check.storage.backends import DefaultFileStorageHealthCheck
+
+        if settings.DEFAULT_FILE_STORAGE == "storages.backends.s3boto3.S3Boto3Storage":
+            plugin_dir.register(S3BotoStorageHealthCheck)
+        else:
+            plugin_dir.register(DefaultFileStorageHealthCheck)
 
 
 # noinspection PyPep8Naming
