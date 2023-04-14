@@ -260,6 +260,15 @@ class CoreConfig(AppConfig):
         from health_check.plugins import plugin_dir
         from health_check.storage.backends import DefaultFileStorageHealthCheck
 
+        from .health.custom_health_checks import (
+            DebugModeHealthCheck,
+            HerokuExternalFileStorageConfiguredHealthCheck,
+        )
+
+        plugin_dir.register(DebugModeHealthCheck)
+        if getattr(settings, "HEROKU_ENABLED", False):
+            plugin_dir.register(HerokuExternalFileStorageConfiguredHealthCheck)
+
         if settings.DEFAULT_FILE_STORAGE == "storages.backends.s3boto3.S3Boto3Storage":
             plugin_dir.register(S3BotoStorageHealthCheck)
         else:
