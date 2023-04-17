@@ -253,9 +253,26 @@ def optional_atomic(atomic=True):
 
 class SafeBaserowPostgresSchemaEditor:
     """
+    Overrides the add/remove_field methods so that we can consistently create
+    and remove `tsvector` columns when fields are added and removed.
+
     Overrides the create/delete_model methods to work with our link_row fields which
     link back to the same table.
     """
+
+    def add_field(self, model, field):
+        with BaseDatabaseSchemaEditor(connection) as base_schema_editor:
+            base_schema_editor.add_field(model, field)
+        from baserow.core.search.handler import SearchHandler
+
+        SearchHandler().create_vector_column(model.baserow_table, field.name)
+
+    def remove_field(self, model, field):
+        with BaseDatabaseSchemaEditor(connection) as base_schema_editor:
+            base_schema_editor.remove_field(model, field)
+        from baserow.core.search.handler import SearchHandler
+
+        SearchHandler().remove_vector_column(model.baserow_table, field.name)
 
     def create_model(self, model):
         """

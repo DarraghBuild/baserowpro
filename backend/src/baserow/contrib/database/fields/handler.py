@@ -354,10 +354,6 @@ class FieldHandler(metaclass=baserow_trace_methods(tracer)):
         )
         update_collector.send_additional_field_updated_signals()
 
-        if create_tsvector:
-            # Create the corresponding `tsvector` column.
-            SearchHandler().create_vector_column(table, instance)
-
         if return_updated_fields:
             return instance, updated_fields
         else:

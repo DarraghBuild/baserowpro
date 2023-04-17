@@ -2,12 +2,13 @@ import re
 from typing import TYPE_CHECKING, Dict
 
 from django.contrib.postgres.indexes import GinIndex
-from django.contrib.postgres.search import SearchVector, SearchVectorField
+from django.contrib.postgres.search import SearchVector
 from django.db import connection
 
 from psycopg2 import sql
 
 from baserow.contrib.database.fields.models import Field
+from baserow.contrib.database.table.cache import invalidate_table_in_model_cache
 
 if TYPE_CHECKING:
     from baserow.contrib.database.table.models import Table
@@ -49,7 +50,7 @@ class SearchHandler:
         model.objects.update(**vector_updates)
         print(f"Updated tsvector columns {', '.join(vector_updates.keys())}")
 
-    def create_vector_column(self, table: "Table", field: Field) -> None:
+    def create_vector_column(self, table: "Table", source_field_name: str) -> None:
         """
         Responsible for creating a `tsvector` for field that was created.
         """
@@ -61,8 +62,7 @@ class SearchHandler:
             CREATE INDEX {tsv_index}
             ON {source_table} USING GIN ({tsv_column});
         """
-        tsv_db_column: str = get_vector_column_name(field.db_column)
-        print(f"Creating tsvector {tsv_db_column}")
+        tsv_db_column: str = get_vector_column_name(source_field_name)
         tsv_index = table.get_collision_safe_field_tsv_idx_name(tsv_db_column)
         with connection.cursor() as cursor:
             cursor.execute(
@@ -70,19 +70,25 @@ class SearchHandler:
                     tsv_index=sql.Identifier(tsv_index),
                     tsv_column=sql.Identifier(tsv_db_column),
                     source_table=sql.Identifier(table.get_database_table_name()),
-                    source_column=sql.Identifier(field.db_column),
+                    source_column=sql.Identifier(source_field_name),
                 )
             )
+        invalidate_table_in_model_cache(table.id)
+        print(f"Creating tsvector {tsv_db_column}")
 
-    def remove_vector_column(self, table: "Table", field: Field):
+    def remove_vector_column(self, table: "Table", source_field_name: str):
         """
         Responsible for removing a `tsvector` field when its corresponding
         field has been dropped.
         """
         with connection.schema_editor() as schema_editor:
             table_model = table.get_model()
-            tsv_db_column: str = get_vector_column_name(field.db_column)
-            tsv_index: str = get_vector_index_name(table, field)
-            tsvector = SearchVectorField(db_column=tsv_db_column)
-            schema_editor.remove_field(table_model, tsvector)
-            schema_editor.remove_index(table_model, GinIndex(fields=[tsv_index]))
+            tsv_db_column = get_vector_column_name(source_field_name)
+            tsv_index = table.get_collision_safe_field_tsv_idx_name(tsv_db_column)
+            tsvector_field = table_model._meta.get_field(tsv_db_column)
+            schema_editor.remove_field(table_model, tsvector_field)
+            schema_editor.remove_index(
+                table_model, GinIndex(name=tsv_index, fields=[tsv_db_column])
+            )
+        invalidate_table_in_model_cache(table.id)
+        print(f"Removing tsvector {tsv_db_column}")
