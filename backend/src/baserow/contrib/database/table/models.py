@@ -1,12 +1,12 @@
 import operator
 import re
 from functools import reduce
-from typing import Any, Dict, List, Type, Union
+from typing import Any, Dict, List, Optional, Type, Union
 
 from django.apps import apps
 from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
-from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.search import SearchQuery, SearchVector, SearchVectorField
 from django.db import models
 from django.db.models import F, JSONField, Q, QuerySet
 from django.utils.encoding import force_str
@@ -88,17 +88,16 @@ class TableModelQuerySet(models.QuerySet):
     def pg_search(self, input_search: str) -> QuerySet:
         """ """
 
-        where_tsv_columns: List[str] = []
         sanitized_search = self.escape_postgres_query(input_search)
 
-        for field_id, field_object in self.model._field_objects.items():
-            if field_object["field"].searchable:
-                name = f"field_{field_id}"
-                tsv_column = get_vector_column_name(name)
-                where_tsv_columns.append(f"{tsv_column} @@ to_tsquery(%s)")
-
-        params: List[str] = [sanitized_search for _ in where_tsv_columns]
-        return self.extra(where=[" OR ".join(where_tsv_columns)], params=params)
+        tsvector_fields = self.model.collect_tsvector_columns()
+        combined_search_vector = reduce(
+            operator.add,
+            [SearchVector(tsvector_field) for tsvector_field in tsvector_fields],
+        )
+        return self.annotate(search=combined_search_vector).filter(
+            search=SearchQuery(sanitized_search, search_type="raw")
+        )
 
     def enhance_by_fields(self):
         """
@@ -440,6 +439,19 @@ class GeneratedTableModel(HierarchicalModelMixin, models.Model):
             f.attname
             for f in cls._meta.fields
             if getattr(f, "requires_refresh_after_update", False)
+        ]
+
+    @classmethod
+    def collect_tsvector_columns(cls) -> List[str]:
+        """
+        Returns a list of tsvector column names in this generated
+        table model. TODO: add the ability to narrow down to searchable
+        fields by its field type.
+        """
+        return [
+            field.name
+            for field in cls._meta.fields
+            if isinstance(field, SearchVectorField)
         ]
 
     class Meta:
