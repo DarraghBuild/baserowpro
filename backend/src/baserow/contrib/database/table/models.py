@@ -5,7 +5,8 @@ from typing import Any, Dict, List, Type, Union
 
 from django.apps import apps
 from django.conf import settings
-from django.contrib.postgres.search import SearchVector
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 from django.db.models import F, JSONField, Q, QuerySet
 from django.utils.encoding import force_str
@@ -635,6 +636,23 @@ class Table(
                 filtered,
             )
 
+            # If we've added `tsvector` columns, then we need
+            # corresponding GIN indices to go with them.
+            tsvector_fields = [
+                field_name
+                for field_name, field_type in field_attrs.items()
+                if isinstance(field_type, SearchVectorField)
+            ]
+            indexes = getattr(attrs["Meta"], "indexes", [])
+            for tsvector_field in tsvector_fields:
+                indexes.append(
+                    GinIndex(
+                        fields=[tsvector_field],
+                        name=self.get_collision_safe_field_tsv_idx_name(tsvector_field),
+                    )
+                )
+            setattr(attrs["Meta"], "indexes", indexes)
+
             if use_cache:
                 set_cached_model_field_attrs(self, field_attrs)
 
@@ -789,6 +807,10 @@ class Table(
                 verbose_name=field.name,
             )
 
+            # Automatically add the `tsvector` column.
+            # TODO: be more granular about when it's applied.
+            field_attrs[get_vector_column_name(field_name)] = SearchVectorField()
+
         return field_attrs
 
     # Use our own custom index name as the default models.Index
@@ -796,6 +818,10 @@ class Table(
     # tables.
     def get_collision_safe_order_id_idx_name(self):
         return f"tbl_order_id_{self.id}_idx"
+
+    # Responsible for generating the GIN index name.
+    def get_collision_safe_field_tsv_idx_name(self, tsv_field_name: str) -> str:
+        return f"tbl_{self.id}_{tsv_field_name}_idx"
 
 
 class DuplicateTableJob(
