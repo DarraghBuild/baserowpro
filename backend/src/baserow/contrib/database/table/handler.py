@@ -168,10 +168,7 @@ class TableHandler(metaclass=baserow_trace_methods(tracer)):
             progress.increment(0, state=TABLE_CREATION)
 
         if data is not None:
-            (
-                fields,
-                data,
-            ) = self.normalize_initial_table_data(
+            (fields, data,) = self.normalize_initial_table_data(
                 data, first_row_header=first_row_header
             )
         else:
@@ -261,11 +258,6 @@ class TableHandler(metaclass=baserow_trace_methods(tracer)):
             # Django only creates indexes when the model is managed.
             model = table.get_model(managed=True)
             schema_editor.create_model(model)
-
-        # Create all the tsvector columns.
-        for field in generated_fields:
-            if field.searchable:
-                SearchHandler().create_vector_column(table, field)
 
         return table
 

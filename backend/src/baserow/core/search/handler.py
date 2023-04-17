@@ -2,7 +2,7 @@ import re
 from typing import TYPE_CHECKING, Dict
 
 from django.contrib.postgres.indexes import GinIndex
-from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.search import SearchVector, SearchVectorField
 from django.db import connection
 
 from psycopg2 import sql
@@ -20,9 +20,9 @@ def get_vector_column_name(source_field_db_column: str) -> str:
     return f"{source_field_db_column}_tsv"
 
 
-def get_vector_index_name(table: "Table", field: Field) -> str:
+def get_vector_index_name(table: "Table", source_field_name: str) -> str:
     source_table = table.get_database_table_name()
-    tsv_db_column: str = get_vector_column_name(field.db_column)
+    tsv_db_column: str = get_vector_column_name(source_field_name)
     return f"tbl_{source_table}_{tsv_db_column}_idx"
 
 
@@ -34,24 +34,20 @@ class SearchHandler:
     ) -> None:
         """ """
 
+        model = table.get_model()
+
+        vector_updates = {}
         for field_name, field_model in value_field_map.items():
             if not field_model.searchable:
                 print(f"Field {field_model.db_column} is not searchable, skipping it.")
                 continue
 
-            tsv_db_column: str = get_vector_column_name(field_name)
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    sql.SQL(
-                        "UPDATE {source_table} "
-                        "SET {tsv_column} = to_tsvector({source_column})"
-                    ).format(
-                        tsv_column=sql.Identifier(tsv_db_column),
-                        source_column=sql.Identifier(field_name),
-                        source_table=sql.Identifier(table.get_database_table_name()),
-                    )
-                )
-            print(f"Updated tsvector column {tsv_db_column}")
+            vector_updates[get_vector_column_name(field_name)] = SearchVector(
+                field_name
+            )
+
+        model.objects.update(**vector_updates)
+        print(f"Updated tsvector columns {', '.join(vector_updates.keys())}")
 
     def create_vector_column(self, table: "Table", field: Field) -> None:
         """
@@ -67,7 +63,7 @@ class SearchHandler:
         """
         tsv_db_column: str = get_vector_column_name(field.db_column)
         print(f"Creating tsvector {tsv_db_column}")
-        tsv_index: str = get_vector_index_name(table, field)
+        tsv_index = table.get_collision_safe_field_tsv_idx_name(tsv_db_column)
         with connection.cursor() as cursor:
             cursor.execute(
                 sql.SQL(raw_sql).format(
