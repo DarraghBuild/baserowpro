@@ -87,5 +87,7 @@ function setupVue(Vue) {
     })
   }
 }
+
 setupVue(Vue)
-export default setupVue
+
+export { setupVue }
