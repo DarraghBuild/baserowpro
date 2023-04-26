@@ -48,10 +48,6 @@ COPY --chown=$UID:$GID ./premium/web-frontend /baserow/premium/web-frontend/
 COPY --chown=$UID:$GID ./enterprise/web-frontend /baserow/enterprise/web-frontend/
 COPY --chown=$UID:$GID ./deploy/plugins/*.sh /baserow/plugins/
 
-# Create symlinks for jest tests
-RUN ln -s /baserow/web-frontend/node_modules/ /baserow/premium/web-frontend/node_modules \
- && ln -s /baserow/web-frontend/node_modules/ /baserow/enterprise/web-frontend/node_modules
-
 RUN dos2unix /baserow/web-frontend/docker/docker-entrypoint.sh && \
     chmod a+x /baserow/web-frontend/docker/docker-entrypoint.sh
 
@@ -62,6 +58,10 @@ HEALTHCHECK --interval=60s CMD ["curl", "-f", "http://localhost:3000/_health/"]
 EXPOSE 3000
 
 FROM base as dev
+
+# Create symlinks for jest tests
+RUN ln -s /baserow/web-frontend/node_modules/ /baserow/premium/web-frontend/node_modules \
+ && ln -s /baserow/web-frontend/node_modules/ /baserow/enterprise/web-frontend/node_modules
 
 # We don't bother running build-local in dev mode as it pre-compiles nuxt which won't
 # be used when running the nuxt dev server.
