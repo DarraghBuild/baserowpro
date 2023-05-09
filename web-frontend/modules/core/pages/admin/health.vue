@@ -12,28 +12,28 @@
           <div
             v-for="(status, checkName) in healthChecks"
             :key="status"
-            class="admin-health-check__item"
+            class="admin-health__check-item"
           >
-            <div class="admin-health-check__item-label">
-              <div class="admin-health-check__item-name">
+            <div class="admin-health__check-item-label">
+              <div class="admin-health__check-item-name">
                 {{ camelCaseToSpaceSeparated(checkName) }}
               </div>
             </div>
             <div
-              class="admin-health-check__icon"
+              class="admin-health__icon"
               :class="status !== 'working' ? 'warning' : ''"
             >
               <i
                 class="fas"
                 :class="
                   status === 'working'
-                    ? 'fa-check admin-health-check__success'
-                    : 'fa-times admin-health-check__fail'
+                    ? 'fa-check admin-health__icon--success'
+                    : 'fa-times admin-health__icon--fail'
                 "
               ></i>
               <div
                 v-if="status !== 'working'"
-                class="admin-health-check__item-description"
+                class="admin-health__check-item-description"
               >
                 {{ status }}
               </div>

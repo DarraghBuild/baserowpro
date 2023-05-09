@@ -20,7 +20,7 @@
   margin-bottom: 20px;
 }
 
-.admin-health-check__item {
+.admin-health__check-item {
   display: flex;
 
   &:not(:last-child) {
@@ -28,36 +28,36 @@
   }
 }
 
-.admin-health-check__item-label {
+.admin-health__check-item-label {
   flex: 0 0 50%;
   margin-right: 40px;
 }
 
-.admin-health-check__item-name {
+.admin-health__check-item-name {
   font-size: 14px;
   font-weight: 700;
   margin-bottom: 12px;
 }
 
-.admin-health-check__item-description {
+.admin-health__check-item-description {
   font-size: 13px;
   color: $color-warning-600;
   line-height: 160%;
 }
 
-.admin-health-check__success {
-  color: $color-success-500;
-}
-
-.admin-health-check__fail {
-  color: $color-error-500;
-}
-
-.admin-health-check__icon {
+.admin-health__icon {
   min-width: 0;
 
   .warning {
     max-width: 500px;
     line-height: 18px;
   }
+}
+
+.admin-health__icon--success {
+  color: $color-success-500;
+}
+
+.admin-health__icon--fail {
+  color: $color-error-500;
 }
