@@ -14,6 +14,8 @@ tool gives you the powers of a developer without leaving your browser.
 * Uses popular frameworks and tools like [Django](https://www.djangoproject.com/),
   [Vue.js](https://vuejs.org/) and [PostgreSQL](https://www.postgresql.org/).
 
+![](https://static.scarf.sh/a.png?x-pxid=5d547f68-2fee-4936-ae1e-9da6be9c959c)
+
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/bram2w/baserow/tree/master)
 
 ```bash
