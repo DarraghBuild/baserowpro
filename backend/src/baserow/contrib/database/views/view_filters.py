@@ -534,6 +534,20 @@ class DateAfterViewFilterType(TimezoneAwareDateViewFilterType):
         return {f"{field_name}__gt": aware_filter_date}
 
 
+class DateAfterOrEqualViewFilterType(TimezoneAwareDateViewFilterType):
+    """
+    This filter parses the provided value as date and checks if the field value
+    is after or equal.
+    """
+
+    type = "date_after_or_equal"
+
+    def get_filter_query_dict(
+        self, field_name: str, aware_filter_date: Union[date, datetime], now: datetime
+    ) -> Dict[str, Any]:
+        return {f"{field_name}__gte": aware_filter_date}
+
+
 class DateEqualsDayOfMonthViewFilterType(TimezoneAwareDateViewFilterType):
     """
     The day of month filter checks if the field number value

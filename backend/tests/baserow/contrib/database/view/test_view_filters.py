@@ -5932,3 +5932,71 @@ def test_before_or_equal_date_view_filter(data_fixture):
         view_filter.value = "Pacific/Honolulu?2021-01-01"
         view_filter.save()
         assert get_filtered_row_ids() == [rows[0].id, rows[1].id]
+
+
+@pytest.mark.django_db
+def test_after_or_equal_datetime_view_filter(data_fixture):
+    dates = [
+        datetime(2020, 12, 1, 12, 30, 0, 0, tzinfo=pytz.UTC),  # 0
+        datetime(2021, 1, 1, 14, 30, 0, 0, tzinfo=pytz.UTC),  # 0
+        datetime(2021, 1, 2, 3, 30, 0, 0, tzinfo=pytz.UTC),  # 0
+    ]
+
+    with rows_with_datetimes(data_fixture, dates, "date_after_or_equal") as (
+        rows,
+        view_filter,
+        get_filtered_row_ids,
+    ):
+        assert len(get_filtered_row_ids()) == len(dates)
+
+        view_filter.value = "2020-12-01"
+        view_filter.save()
+
+        assert len(get_filtered_row_ids()) == len(dates)
+
+        view_filter.value = "Europe/Rome?2020-12-01"
+        view_filter.save()
+
+        assert get_filtered_row_ids() == [rows[0].id, rows[1].id, rows[2].id]
+
+        view_filter.value = "Australia/Melbourne?2021-01-02"
+        view_filter.save()
+        assert get_filtered_row_ids() == [rows[1].id, rows[2].id]
+
+        view_filter.value = "Pacific/Honolulu?2021-01-02"
+        view_filter.save()
+        assert get_filtered_row_ids() == []
+
+
+@pytest.mark.django_db
+def test_after_or_equal_date_view_filter(data_fixture):
+    dates = [
+        date(2020, 12, 1),  # 0
+        date(2021, 1, 1),  # 1
+        date(2021, 1, 2),  # 2
+    ]
+
+    with rows_with_dates(data_fixture, dates, "date_after_or_equal") as (
+        rows,
+        view_filter,
+        get_filtered_row_ids,
+    ):
+        assert len(get_filtered_row_ids()) == len(dates)
+
+        view_filter.value = "2020-12-01"
+        view_filter.save()
+
+        assert len(get_filtered_row_ids()) == len(dates)
+
+        view_filter.value = "Europe/Rome?2020-12-01"
+        view_filter.save()
+
+        assert get_filtered_row_ids() == [rows[0].id, rows[1].id, rows[2].id]
+
+        view_filter.value = "Australia/Melbourne?2021-01-01"
+        view_filter.save()
+        assert get_filtered_row_ids() == [rows[1].id, rows[2].id]
+
+        view_filter.value = "Pacific/Honolulu?2021-01-01"
+        view_filter.save()
+        assert get_filtered_row_ids() == [rows[1].id, rows[2].id]
