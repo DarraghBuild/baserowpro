@@ -505,6 +505,20 @@ class DateBeforeViewFilterType(TimezoneAwareDateViewFilterType):
         return {f"{field_name}__lt": aware_filter_date}
 
 
+class DateBeforeOrEqualViewFilterType(TimezoneAwareDateViewFilterType):
+    """
+    This filter parses the provided value as date and checks if the field value
+    is before or equal.
+    """
+
+    type = "date_before_or_equal"
+
+    def get_filter_query_dict(
+        self, field_name: str, aware_filter_date: Union[date, datetime], now: datetime
+    ) -> Dict[str, Any]:
+        return {f"{field_name}__lte": aware_filter_date}
+
+
 class DateAfterViewFilterType(TimezoneAwareDateViewFilterType):
     """
     The after date filter parses the provided filter value as date and checks if

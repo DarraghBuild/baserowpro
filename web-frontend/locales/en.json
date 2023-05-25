@@ -146,6 +146,7 @@
         "isDate": "is date",
         "isDayOfMonth": "day of month is",
         "isBeforeDate": "is before date",
+        "isBeforeOrEqualDate": "is before or same date",
         "isAfterDate": "is after date",
         "isNotDate": "is not date",
         "isToday": "is today",
