@@ -30,8 +30,8 @@
         <i
           class="fas"
           :class="{
-            'fa-angle-double-right': collapsed,
-            'fa-angle-double-left': !collapsed,
+            'iconoir-fast-arrow-right': collapsed,
+            'iconoir-fast-arrow-left': !collapsed,
           }"
         ></i>
       </a>

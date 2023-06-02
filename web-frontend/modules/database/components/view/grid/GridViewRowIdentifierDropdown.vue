@@ -1,12 +1,10 @@
 <template>
-  <div>
-    <a
+  <div class="grid-view__head-row-identifier">
+    <i
       ref="contextAnchor"
-      class="grid-view__head-row-identifier-dropdown"
+      class="grid-view__head-row-identifier-dropdown iconoir-numbered-list-left"
       @click.prevent="toggle"
-    >
-      <i class="fas fa-list-ol"></i>
-    </a>
+    ></i>
 
     <Context
       ref="context"
@@ -25,6 +23,11 @@
               {{ $t(`gridViewIdentifierOptions.${option}`) }}
             </span>
           </a>
+
+          <i
+            v-if="option === rowIdentifierTypeSelected"
+            class="select__item-active-icon iconoir-check-circle"
+          ></i>
         </li>
       </ul>
     </Context>

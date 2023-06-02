@@ -16,14 +16,12 @@
           {{ $t('premiumModal.description', { name }) }}
         </p>
         <PremiumFeatures class="margin-bottom-3"></PremiumFeatures>
-        <div>
-          <a
-            href="https://baserow.io/pricing"
-            target="_blank"
-            class="button button--primary button--large"
-            >{{ $t('premiumModal.viewPricing') }}</a
-          >
-        </div>
+        <Button
+          href="https://baserow.io/pricing"
+          target="_blank"
+          type="secondary"
+          >{{ $t('premiumModal.viewPricing') }}</Button
+        >
       </div>
     </template>
   </Modal>

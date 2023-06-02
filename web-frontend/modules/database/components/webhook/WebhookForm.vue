@@ -109,28 +109,35 @@
           <Radio v-model="values.include_all_events" :value="true">{{
             $t('webhookForm.radio.allEvents')
           }}</Radio>
+        </div>
+      </div>
+      <div class="control">
+        <div class="control__elements">
           <Radio v-model="values.include_all_events" :value="false">
             {{ $t('webhookForm.radio.customEvents') }}
           </Radio>
-          <div v-if="!values.include_all_events" class="webhook__types">
-            <Checkbox
-              v-for="webhookEvent in webhookEventTypes"
-              :key="webhookEvent.type"
-              :value="values.events.includes(webhookEvent.type)"
-              class="webhook__type"
-              @input="
-                $event
-                  ? values.events.push(webhookEvent.type)
-                  : values.events.splice(
-                      values.events.indexOf(webhookEvent.type),
-                      1
-                    )
-              "
-              >{{ webhookEvent.getName() }}</Checkbox
-            >
-          </div>
         </div>
       </div>
+      <div class="control">
+        <div v-if="!values.include_all_events" class="webhook__types">
+          <Checkbox
+            v-for="webhookEvent in webhookEventTypes"
+            :key="webhookEvent.type"
+            :checked="values.events.includes(webhookEvent.type)"
+            class="webhook__type"
+            @input="
+              $event
+                ? values.events.push(webhookEvent.type)
+                : values.events.splice(
+                    values.events.indexOf(webhookEvent.type),
+                    1
+                  )
+            "
+            >{{ webhookEvent.getName() }}</Checkbox
+          >
+        </div>
+      </div>
+
       <div class="control">
         <div class="control__label">
           {{ $t('webhookForm.inputLabels.headers') }}
@@ -180,7 +187,7 @@
                 class="button button--error webhook__header-delete"
                 @click="removeHeader(index)"
               >
-                <i class="fas fa-trash button__icon"></i>
+                <i class="iconoir-trash button__icon"></i>
               </a>
             </div>
           </div>
@@ -225,7 +232,7 @@
     <div v-else>
       <div class="alert alert--error alert--has-icon">
         <div class="alert__icon">
-          <i class="fas fa-exclamation"></i>
+          <i class="iconoir-chat-bubble-warning"></i>
         </div>
         <div class="alert__title">
           {{ $t('webhookForm.deprecatedEventType.title') }}

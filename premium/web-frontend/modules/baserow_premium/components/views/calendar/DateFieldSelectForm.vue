@@ -65,7 +65,7 @@ export default {
   methods: {
     fieldIcon(type) {
       const ft = this.$registry.get('field', type)
-      return ft?.getIconClass() || 'calendar-alt'
+      return ft?.getIconClass() || 'calendar'
     },
   },
   validations: {

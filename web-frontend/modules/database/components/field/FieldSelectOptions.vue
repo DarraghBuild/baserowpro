@@ -22,7 +22,7 @@
           :class="'select-options__color' + ' background-color--' + item.color"
           @click="openColor(index)"
         >
-          <i class="fas fa-caret-down"></i>
+          <i class="iconoir-nav-arrow-down"></i>
         </a>
         <input
           ref="inputs"
@@ -38,7 +38,7 @@
       </div>
     </div>
     <a class="add" @click="add()">
-      <i class="fas fa-plus add__icon"></i>
+      <i class="iconoir-plus add__icon"></i>
       {{ $t('fieldSelectOptions.add') }}
     </a>
     <ColorSelectContext

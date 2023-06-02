@@ -22,7 +22,7 @@
         class="choose-select-field__link margin-right-auto"
         @click="$refs.createFieldContext.toggle($refs.createFieldContextLink)"
       >
-        <i class="fas fa-plus"></i>
+        <i class="iconoir-plus"></i>
         {{ $t('chooseSingleSelectField.addSelectField') }}
       </a>
       <CreateFieldContext

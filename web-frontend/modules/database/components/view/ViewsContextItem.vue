@@ -11,12 +11,12 @@
     <a class="select__item-link" @click="select(view)">
       <div class="select__item-name">
         <i
-          class="select__item-icon fas fa-fw"
-          :class="view._.type.colorClass + ' fa-' + view._.type.iconClass"
+          class="select__item-icon"
+          :class="view._.type.colorClass + ' iconoir-' + view._.type.iconClass"
         ></i>
         <EditableViewName ref="rename" :view="view"></EditableViewName>
         <div v-if="deactivated" class="deactivated-label">
-          <i class="fas fa-lock"></i>
+          <i class="iconoir-lock"></i>
         </div>
       </div>
     </a>
@@ -34,8 +34,12 @@
         @click="$refs.context.toggle($refs.contextLink, 'bottom', 'right', 0)"
         @mousedown.stop
       >
-        <i class="fas fa-ellipsis-v"></i>
+        <i class="iconoir-more-vert-circle"></i>
       </a>
+      <i
+        v-if="view._.selected && !view._.loading"
+        class="select__item-active-icon iconoir-check-circle"
+      ></i>
       <ViewContext
         ref="context"
         :database="database"

@@ -10,18 +10,16 @@
         {{ $t('importFromAirtable.airtableShareLinkBeta') }}
       </p>
       <div class="control__elements">
-        <input
+        <FormInput
+          id="airtableUrl"
           ref="airtableUrl"
           v-model="airtableUrl"
-          :class="{ 'input--error': $v.airtableUrl.$error }"
-          type="text"
-          class="input input--large"
           :placeholder="$t('importFromAirtable.airtableShareLinkPaste')"
+          :error="
+            $v.airtableUrl.$error ? $t('importFromAirtable.linkError') : null
+          "
           @blur="$v.airtableUrl.$touch()"
-        />
-        <div v-if="$v.airtableUrl.$error" class="error">
-          {{ $t(importFromAirtable.linkError) }}
-        </div>
+        ></FormInput>
       </div>
     </div>
     <Error :error="error"></Error>

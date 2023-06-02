@@ -12,31 +12,45 @@
         <div class="control__description">
           {{ $t('emailNotifications.description') }}
         </div>
-        <div class="control__elements">
-          <Radio
-            v-model="values.email_notification_frequency"
-            :value="EMAIL_NOTIFICATIONS_FREQUENCY_OPTIONS.INSTANT"
-          >
-            {{ $t('emailNotifications.instant') }}
-          </Radio>
-          <Radio
-            v-model="values.email_notification_frequency"
-            :value="EMAIL_NOTIFICATIONS_FREQUENCY_OPTIONS.DAILY"
-          >
-            {{ $t('emailNotifications.daily') }}
-          </Radio>
-          <Radio
-            v-model="values.email_notification_frequency"
-            :value="EMAIL_NOTIFICATIONS_FREQUENCY_OPTIONS.WEEKLY"
-          >
-            {{ $t('emailNotifications.weekly') }}
-          </Radio>
-          <Radio
-            v-model="values.email_notification_frequency"
-            :value="EMAIL_NOTIFICATIONS_FREQUENCY_OPTIONS.NEVER"
-          >
-            {{ $t('emailNotifications.never') }}
-          </Radio>
+        <div class="control">
+          <div class="control__elements">
+            <Radio
+              v-model="values.email_notification_frequency"
+              :value="EMAIL_NOTIFICATIONS_FREQUENCY_OPTIONS.INSTANT"
+            >
+              {{ $t('emailNotifications.instant') }}
+            </Radio>
+          </div>
+        </div>
+        <div class="control">
+          <div class="control__elements">
+            <Radio
+              v-model="values.email_notification_frequency"
+              :value="EMAIL_NOTIFICATIONS_FREQUENCY_OPTIONS.DAILY"
+            >
+              {{ $t('emailNotifications.daily') }}
+            </Radio>
+          </div>
+        </div>
+        <div class="control">
+          <div class="control__elements">
+            <Radio
+              v-model="values.email_notification_frequency"
+              :value="EMAIL_NOTIFICATIONS_FREQUENCY_OPTIONS.WEEKLY"
+            >
+              {{ $t('emailNotifications.weekly') }}
+            </Radio>
+          </div>
+        </div>
+        <div class="control">
+          <div class="control__elements">
+            <Radio
+              v-model="values.email_notification_frequency"
+              :value="EMAIL_NOTIFICATIONS_FREQUENCY_OPTIONS.NEVER"
+            >
+              {{ $t('emailNotifications.never') }}
+            </Radio>
+          </div>
         </div>
       </FormElement>
       <div class="actions actions--right">

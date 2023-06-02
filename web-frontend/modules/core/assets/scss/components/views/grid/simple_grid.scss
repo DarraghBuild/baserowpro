@@ -79,7 +79,7 @@
 
   .simple-grid__cell,
   .grid-view__cell {
-    background-color: $color-primary-100;
+    background-color: $color-blue-50;
   }
 }
 
@@ -95,9 +95,10 @@
 .simple-grid__add-row {
   display: block;
   line-height: 33px;
-  color: $color-neutral-900;
+  color: $color-neutral-1100;
   background-color: $white;
   padding-left: 8px;
+  font-size: 16px;
 }
 
 .simple-grid__foot {
@@ -114,7 +115,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-right: solid 1px $color-neutral-300;
+  border-right: solid 1px $color-neutral-600;
 
   .simple-grid__cell,
   .simple-grid__field {

@@ -29,7 +29,7 @@
           ref="updateContextLink"
           @click="$refs.updateContext.toggle($refs.updateContextLink)"
         >
-          <i class="context__menu-icon fas fa-fw fa-pen"></i>
+          <i class="context__menu-icon iconoir-edit-pencil"></i>
           {{ $t('kanbanViewStackContext.editStack') }}
         </a>
         <KanbanViewUpdateStackContext
@@ -51,7 +51,7 @@
         "
       >
         <a @click="$refs.deleteModal.show()">
-          <i class="context__menu-icon fas fa-fw fa-trash-alt"></i>
+          <i class="context__menu-icon iconoir-trash-alt"></i>
           {{ $t('kanbanViewStackContext.deleteStack') }}
         </a>
       </li>

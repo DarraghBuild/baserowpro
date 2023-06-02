@@ -22,19 +22,19 @@
 }
 
 .color-primary {
-  color: $color-primary-500 !important;
+  color: $color-blue-500 !important;
 }
 
 .color-success {
-  color: $color-success-500 !important;
+  color: $color-green-500 !important;
 }
 
 .color-warning {
-  color: $color-warning-500 !important;
+  color: $color-yellow-500 !important;
 }
 
 .color-error {
-  color: $color-error-500 !important;
+  color: $color-yellow-500 !important;
 }
 
 .color-neutral {
@@ -144,20 +144,6 @@
 
 .prevent-scroll {
   overflow: hidden !important;
-}
-
-.whitespace-pre-wrap {
-  white-space: pre-wrap;
-}
-
-.remove-number-input-controls {
-  -moz-appearance: textfield !important;
-
-  &::-webkit-outer-spin-button,
-  &::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
 }
 
 @keyframes spin {

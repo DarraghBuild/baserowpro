@@ -31,7 +31,7 @@
           @click.prevent="openRowCommentContext"
         >
           <i
-            class="fas fa-ellipsis-h"
+            class="iconoir-more-horiz-circle"
             :class="{ pending: operationPending }"
           ></i>
         </a>

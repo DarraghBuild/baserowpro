@@ -13,7 +13,7 @@ exports[`Dropdown component Test slots 1`] = `
     </p>
      
     <i
-      class="dropdown__toggle-icon fas fa-caret-down"
+      class="dropdown__toggle-icon iconoir-nav-arrow-down"
     />
   </a>
    
@@ -24,7 +24,7 @@ exports[`Dropdown component Test slots 1`] = `
       class="select__search"
     >
       <i
-        class="select__search-icon fas fa-search"
+        class="select__search-icon iconoir-search"
       />
        
       <input
@@ -75,7 +75,7 @@ exports[`Dropdown component With items 1`] = `
         action.makeChoice
        
     <i
-      class="dropdown__toggle-icon fas fa-caret-down"
+      class="dropdown__toggle-icon iconoir-nav-arrow-down"
     />
   </a>
    
@@ -86,7 +86,7 @@ exports[`Dropdown component With items 1`] = `
       class="select__search"
     >
       <i
-        class="select__search-icon fas fa-search"
+        class="select__search-icon iconoir-search"
       />
        
       <input
@@ -149,7 +149,7 @@ exports[`Dropdown component With items 2`] = `
         A
        
     <i
-      class="dropdown__toggle-icon fas fa-caret-down"
+      class="dropdown__toggle-icon iconoir-nav-arrow-down"
     />
   </a>
    
@@ -160,7 +160,7 @@ exports[`Dropdown component With items 2`] = `
       class="select__search"
     >
       <i
-        class="select__search-icon fas fa-search"
+        class="select__search-icon iconoir-search"
       />
        
       <input
@@ -330,7 +330,7 @@ exports[`Dropdown component With items 3`] = `
       class="select__search"
     >
       <i
-        class="select__search-icon fas fa-search"
+        class="select__search-icon iconoir-search"
       />
        
       <input
@@ -415,7 +415,7 @@ exports[`Dropdown component basics 1`] = `
         action.makeChoice
        
     <i
-      class="dropdown__toggle-icon fas fa-caret-down"
+      class="dropdown__toggle-icon iconoir-nav-arrow-down"
     />
   </a>
    
@@ -426,7 +426,7 @@ exports[`Dropdown component basics 1`] = `
       class="select__search"
     >
       <i
-        class="select__search-icon fas fa-search"
+        class="select__search-icon iconoir-search"
       />
        
       <input
@@ -461,7 +461,7 @@ exports[`Dropdown component basics 2`] = `
         action.makeChoice
        
     <i
-      class="dropdown__toggle-icon fas fa-caret-down"
+      class="dropdown__toggle-icon iconoir-nav-arrow-down"
     />
   </a>
    
@@ -494,7 +494,7 @@ exports[`Dropdown component basics 3`] = `
         action.makeChoice
        
     <i
-      class="dropdown__toggle-icon fas fa-caret-down"
+      class="dropdown__toggle-icon iconoir-nav-arrow-down"
     />
   </a>
    
@@ -505,7 +505,7 @@ exports[`Dropdown component basics 3`] = `
       class="select__search"
     >
       <i
-        class="select__search-icon fas fa-search"
+        class="select__search-icon iconoir-search"
       />
        
       <input
@@ -543,7 +543,7 @@ exports[`Dropdown component change value prop 1`] = `
         B
        
     <i
-      class="dropdown__toggle-icon fas fa-caret-down"
+      class="dropdown__toggle-icon iconoir-nav-arrow-down"
     />
   </a>
    
@@ -554,7 +554,7 @@ exports[`Dropdown component change value prop 1`] = `
       class="select__search"
     >
       <i
-        class="select__search-icon fas fa-search"
+        class="select__search-icon iconoir-search"
       />
        
       <input
@@ -642,7 +642,7 @@ exports[`Dropdown component test focus 1`] = `
         A
        
     <i
-      class="dropdown__toggle-icon fas fa-caret-down"
+      class="dropdown__toggle-icon iconoir-nav-arrow-down"
     />
   </a>
    
@@ -653,7 +653,7 @@ exports[`Dropdown component test focus 1`] = `
       class="select__search"
     >
       <i
-        class="select__search-icon fas fa-search"
+        class="select__search-icon iconoir-search"
       />
        
       <input
@@ -716,7 +716,7 @@ exports[`Dropdown component test focus 2`] = `
         A
        
     <i
-      class="dropdown__toggle-icon fas fa-caret-down"
+      class="dropdown__toggle-icon iconoir-nav-arrow-down"
     />
   </a>
    
@@ -727,7 +727,7 @@ exports[`Dropdown component test focus 2`] = `
       class="select__search"
     >
       <i
-        class="select__search-icon fas fa-search"
+        class="select__search-icon iconoir-search"
       />
        
       <input
@@ -790,7 +790,7 @@ exports[`Dropdown component test interactions 1`] = `
         A
        
     <i
-      class="dropdown__toggle-icon fas fa-caret-down"
+      class="dropdown__toggle-icon iconoir-nav-arrow-down"
     />
   </a>
    
@@ -801,7 +801,7 @@ exports[`Dropdown component test interactions 1`] = `
       class="select__search"
     >
       <i
-        class="select__search-icon fas fa-search"
+        class="select__search-icon iconoir-search"
       />
        
       <input
@@ -889,7 +889,7 @@ exports[`Dropdown component test interactions 2`] = `
         B
        
     <i
-      class="dropdown__toggle-icon fas fa-caret-down"
+      class="dropdown__toggle-icon iconoir-nav-arrow-down"
     />
   </a>
    
@@ -900,7 +900,7 @@ exports[`Dropdown component test interactions 2`] = `
       class="select__search"
     >
       <i
-        class="select__search-icon fas fa-search"
+        class="select__search-icon iconoir-search"
       />
        
       <input

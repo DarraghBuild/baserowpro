@@ -24,7 +24,7 @@
       </div>
       <div class="placeholder__action">
         <a class="button button--large" @click="$refs.registerModal.show()">
-          <i class="fas fa-plus"></i>
+          <i class="iconoir-plus"></i>
           {{ $t('licenses.registerLicense') }}
         </a>
         <RedirectToBaserowModal
@@ -59,7 +59,7 @@
             class="button button--primary margin-right-1"
             @click="$refs.registerModal.show()"
           >
-            <i class="fas fa-plus"></i>
+            <i class="iconoir-plus"></i>
             {{ $t('licenses.registerLicense') }}
           </a>
           <RedirectToBaserowModal

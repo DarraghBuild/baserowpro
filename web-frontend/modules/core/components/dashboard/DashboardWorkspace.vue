@@ -15,7 +15,7 @@
           class="dashboard__group-title-options"
           @click="$refs.context.toggle($refs.contextLink, 'bottom', 'right', 0)"
         >
-          <i class="dashboard__group-title-icon fas fa-caret-down"></i>
+          <i class="dashboard__group-title-icon iconoir-nav-arrow-down"></i>
         </a>
       </div>
       <WorkspaceContext
@@ -47,38 +47,32 @@
         :key="application.id"
         class="dashboard__group-item"
       >
-        <a
-          class="dashboard__group-item-link"
+        <button
+          class="dashboard__group-item-button"
           @click="selectApplication(application)"
         >
-          <div class="dashboard__group-item-icon">
-            <i class="fas" :class="'fa-' + application._.type.iconClass"></i>
-          </div>
+          <IconButton :icon="application._.type.iconClass"></IconButton>
           <div class="dashboard__group-item-name">
             {{ application.name }}
           </div>
-        </a>
+        </button>
       </li>
       <li class="dashboard__group-item">
-        <a
+        <button
           ref="createApplicationContextLink"
-          class="dashboard__group-item-link"
+          class="dashboard__group-item-button"
           @click="
             $refs.createApplicationContext.toggle(
               $refs.createApplicationContextLink
             )
           "
         >
-          <div
-            class="dashboard__group-item-icon dashboard__group-item-icon--add"
-          >
-            <i class="fas fa-plus"></i>
-          </div>
+          <IconButton icon="plus"></IconButton>
 
           <div class="dashboard__group-item-name">
             {{ $t('dashboardWorkspace.createApplication') }}
           </div>
-        </a>
+        </button>
         <CreateApplicationContext
           ref="createApplicationContext"
           :workspace="workspace"

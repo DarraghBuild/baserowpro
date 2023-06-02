@@ -106,10 +106,10 @@ import _ from 'lodash'
 
 export class FieldType extends Registerable {
   /**
-   * The font awesome 5 icon name that is used as convenience for the user to
-   * recognize certain field types. If you for example want the database
+   * The Iconoir icon name that is used as convenience for the user to
+   * recognize certain application types. If you for example want the database
    * icon, you must return 'database' here. This will result in the classname
-   * 'fas fa-database'.
+   * 'iconoir-database'.
    */
   getIconClass() {
     return null
@@ -330,9 +330,9 @@ export class FieldType extends Registerable {
   /**
    * Should return a visualisation of how the sort function is going to work. For
    * example ['text', 'A', 'Z'] will result in 'A -> Z' as ascending and 'Z -> A'
-   * descending visualisation for the user. It is also possible to use a Font Awesome
+   * descending visualisation for the user. It is also possible to use a Iconoir
    * icon here by changing the first value to 'icon'. For example
-   * ['icon', 'square', 'check-square'].
+   * ['icon', 'square', 'security-pass'].
    */
   getSortIndicator() {
     return ['text', 'A', 'Z']
@@ -631,7 +631,7 @@ export class TextFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'font'
+    return 'text'
   }
 
   getName() {
@@ -790,7 +790,7 @@ export class LinkRowFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'plug'
+    return 'ev-plug'
   }
 
   getName() {
@@ -984,7 +984,7 @@ export class NumberFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'hashtag'
+    return 'control-slider'
   }
 
   getName() {
@@ -1303,7 +1303,7 @@ export class BooleanFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'check-square'
+    return 'security-pass'
   }
 
   getName() {
@@ -1332,7 +1332,7 @@ export class BooleanFieldType extends FieldType {
   }
 
   getSortIndicator() {
-    return ['icon', 'square', 'check-square']
+    return ['icon', 'square', 'security-pass']
   }
 
   getSort(name, order) {
@@ -1390,7 +1390,7 @@ export class BooleanFieldType extends FieldType {
 
 class BaseDateFieldType extends FieldType {
   getIconClass() {
-    return 'calendar-alt'
+    return 'calendar'
   }
 
   getSortIndicator() {
@@ -1827,7 +1827,7 @@ export class EmailFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'at'
+    return 'mail'
   }
 
   getName() {
@@ -1926,7 +1926,7 @@ export class FileFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'file'
+    return 'empty-page'
   }
 
   getName() {
@@ -2103,7 +2103,7 @@ export class SingleSelectFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'chevron-circle-down'
+    return 'down-round-arrow'
   }
 
   getName() {
@@ -2644,7 +2644,7 @@ export class FormulaFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'square-root-alt'
+    return 'sigma-function'
   }
 
   getName() {
@@ -2807,7 +2807,7 @@ export class RollupFieldType extends FormulaFieldType {
   }
 
   getIconClass() {
-    return 'box-open'
+    return 'box-iso'
   }
 
   getName() {
@@ -2834,7 +2834,7 @@ export class LookupFieldType extends FormulaFieldType {
   }
 
   getIconClass() {
-    return 'binoculars'
+    return 'binocular'
   }
 
   getName() {
@@ -2861,7 +2861,7 @@ export class MultipleCollaboratorsFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'user-friends'
+    return 'group'
   }
 
   getName() {

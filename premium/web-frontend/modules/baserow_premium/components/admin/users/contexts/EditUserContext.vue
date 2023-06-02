@@ -5,7 +5,7 @@
       <ul class="context__menu">
         <li>
           <a @click.prevent="showEditModal">
-            <i class="context__menu-icon fas fa-fw fa-pen"></i>
+            <i class="context__menu-icon iconoir-edit-pencil"></i>
             {{ $t('action.edit') }}
           </a>
         </li>
@@ -33,7 +33,7 @@
             }"
             @click.prevent="activate"
           >
-            <i class="context__menu-icon fas fa-fw fa-check"></i>
+            <i class="context__menu-icon iconoir-check-circle"></i>
             {{ $t('action.activate') }}
           </a>
         </li>
@@ -50,7 +50,7 @@
         </li>
         <li>
           <a @click.prevent="showDeleteModal">
-            <i class="context__menu-icon fas fa-fw fa-trash-alt"></i>
+            <i class="context__menu-icon iconoir-trash-alt"></i>
             {{ $t('editUserContext.delete') }}
           </a>
         </li>

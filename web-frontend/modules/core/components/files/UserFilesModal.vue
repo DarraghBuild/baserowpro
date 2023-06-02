@@ -14,8 +14,8 @@
             @click="setPage(upload.type)"
           >
             <i
-              class="fas modal-sidebar__nav-icon"
-              :class="'fa-' + upload.iconClass"
+              class="modal-sidebar__nav-icon"
+              :class="'iconoir-' + upload.iconClass"
             ></i>
             {{ upload.getName() }}
           </a>

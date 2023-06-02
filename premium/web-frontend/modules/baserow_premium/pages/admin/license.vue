@@ -120,7 +120,7 @@
             </div>
             <div class="license-detail__item-value">
               <i
-                class="fas fa-check"
+                class="iconoir-check"
                 :class="{
                   'fa-check license-yes': feature.enabled,
                   'fa-times license-no': !feature.enabled,

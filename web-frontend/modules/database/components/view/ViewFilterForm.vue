@@ -23,13 +23,14 @@
       @selectOperator="updateView(view, { filter_type: $event })"
     />
     <div v-if="!disableFilter" class="filters_footer">
-      <a class="filters__add" @click.prevent="addFilter()">
-        <i class="fas fa-plus"></i>
-        {{ $t('viewFilterContext.addFilter') }}</a
+      <ButtonText icon="plus" @click.prevent="addFilter()">
+        {{ $t('viewFilterContext.addFilter') }}</ButtonText
       >
+
       <div v-if="view.filters.length > 0">
         <SwitchInput
-          :value="view.filters_disabled"
+          :checked="view.filters_disabled"
+          small
           @input="updateView(view, { filters_disabled: $event })"
           >{{ $t('viewFilterContext.disableAllFilters') }}</SwitchInput
         >

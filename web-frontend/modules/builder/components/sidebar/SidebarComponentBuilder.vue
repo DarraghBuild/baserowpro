@@ -52,7 +52,8 @@
           >
           </component>
         </ul>
-        <a
+
+        <ButtonText
           v-if="
             $hasPermission(
               'builder.create_page',
@@ -60,12 +61,13 @@
               application.workspace.id
             )
           "
-          class="tree__sub-add"
+          icon="plus"
+          size="small"
           @click="$refs.createPageModal.show()"
         >
-          <i class="fas fa-plus"></i>
-          {{ $t('sidebarComponentBuilder.createPage') }}
-        </a>
+          {{ $t('sidebarComponentBuilder.createPage') }}</ButtonText
+        >
+
         <CreatePageModal
           ref="createPageModal"
           :builder="application"

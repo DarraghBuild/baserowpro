@@ -21,7 +21,7 @@
           >{{ $t('forgotPassword.disabledMessage') }}</Alert
         >
         <nuxt-link :to="{ name: 'login' }" class="button button--full-width">
-          <i class="fas fa-arrow-left"></i>
+          <i class="iconoir-arrow-left"></i>
           {{ $t('action.backToLogin') }}
         </nuxt-link>
       </template>
@@ -85,7 +85,7 @@
         {{ $t('forgotPassword.confirmation') }}
       </p>
       <nuxt-link :to="{ name: 'login' }" class="button button--large">
-        <i class="fas fa-arrow-left"></i>
+        <i class="iconoir-arrow-left"></i>
         {{ $t('action.backToLogin') }}
       </nuxt-link>
     </div>

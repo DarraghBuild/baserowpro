@@ -43,10 +43,9 @@
             @click="collapseSidebar"
           >
             <i
-              class="fas"
               :class="{
-                'fa-angle-double-right': !sidebarCollapsed,
-                'fa-angle-double-left': sidebarCollapsed,
+                'iconoir-fast-arrow-right': !sidebarCollapsed,
+                'iconoir-fast-arrow-left': sidebarCollapsed,
               }"
             ></i>
           </a>

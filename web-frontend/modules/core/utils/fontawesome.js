@@ -1,6 +1,7 @@
 // Original file at
 // https://github.com/LoicMahieu/mimetype-to-fontawesome/blob/master/index.js
 
+// ToDo: Find right iconoir icon
 const mapping = [
   ['file-image', /^image\//],
   ['file-audio', /^audio\//],

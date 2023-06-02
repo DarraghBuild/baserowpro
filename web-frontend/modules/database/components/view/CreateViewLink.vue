@@ -6,13 +6,15 @@
     @click="select"
   >
     <i
-      class="select__footer-create-icon fas"
-      :class="'fa-' + viewType.iconClass"
+      class="select__footer-create-icon"
+      :class="'iconoir-' + viewType.iconClass"
     ></i>
-    {{ viewType.getName() }}
+    <span>{{ viewType.getName() }}</span>
     <div v-if="deactivated" class="deactivated-label">
-      <i class="fas fa-lock"></i>
+      <i class="iconoir-lock"></i>
     </div>
+
+    <i class="iconoir-plus select__footer-create-icon--plus"></i>
     <CreateViewModal
       ref="createModal"
       :table="table"

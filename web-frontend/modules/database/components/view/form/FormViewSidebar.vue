@@ -60,7 +60,7 @@
           ref="createFieldContextLink"
           @click="$refs.createFieldContext.toggle($refs.createFieldContextLink)"
         >
-          <i class="fas fa-plus"></i>
+          <i class="iconoir-plus"></i>
           {{ $t('formSidebar.actions.addField') }}
         </a>
         <CreateFieldContext
@@ -72,7 +72,7 @@
     </div>
     <div class="form-view__sidebar-prefill-or-hide-link">
       <a @click="showFormPrefillOrHideModal">
-        <i class="fas fa-question-circle"></i>
+        <i class="iconoir-chat-bubble-question"></i>
         {{ $t('formSidebar.prefillOrHideInfoLink') }}
       </a>
       <FormPrefillOrHideModal

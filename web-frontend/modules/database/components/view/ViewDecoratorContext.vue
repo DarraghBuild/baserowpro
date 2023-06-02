@@ -95,7 +95,7 @@
             )
           "
         >
-          <i class="fas fa-plus" />
+          <i class="iconoir-plus" />
           {{ $t('viewDecoratorContext.addDecorator') }}
         </a>
         <SelectViewDecoratorContext

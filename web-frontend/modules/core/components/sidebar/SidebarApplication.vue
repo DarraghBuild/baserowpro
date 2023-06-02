@@ -13,8 +13,8 @@
         @click="$emit('selected', application)"
       >
         <i
-          class="tree__icon tree__icon--type fas"
-          :class="'fa-' + application._.type.iconClass"
+          class="tree__icon tree__icon--type"
+          :class="'iconoir-' + application._.type.iconClass"
         ></i>
         <Editable
           ref="rename"
@@ -57,7 +57,7 @@
             "
           >
             <a @click="enableRename()">
-              <i class="context__menu-icon fas fa-fw fa-pen"></i>
+              <i class="context__menu-icon iconoir-edit-pencil"></i>
               {{
                 $t('sidebarApplication.rename', {
                   type: application._.type.name.toLowerCase(),
@@ -125,7 +125,7 @@
               :class="{ 'context__menu-item--loading': deleting }"
               @click="deleteApplication()"
             >
-              <i class="context__menu-icon fas fa-fw fa-trash"></i>
+              <i class="context__menu-icon iconoir-trash"></i>
               {{
                 $t('sidebarApplication.delete', {
                   type: application._.type.name.toLowerCase(),

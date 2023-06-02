@@ -3,7 +3,6 @@
     class="tabs"
     :class="{
       'tabs--full-height': fullHeight,
-      'tabs--no-separation': noSeparation,
       'tabs--large': large,
     }"
   >
@@ -43,11 +42,6 @@ export default {
       default: 0,
     },
     fullHeight: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    noSeparation: {
       type: Boolean,
       required: false,
       default: false,
@@ -109,10 +103,10 @@ export default {
     },
     selectTab(i) {
       if (this.navigation) {
-        this.$emit('update:selected-index', i)
+        this.$emit('update:selectedIndex', i)
         this.$router.push(this.tabs[i].to)
       } else {
-        this.$emit('update:selected-index', i)
+        this.$emit('update:selectedIndex', i)
         this.internalSelectedIndex = i
       }
       this.tabs.forEach((tab, index) => {

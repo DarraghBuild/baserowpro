@@ -2,7 +2,7 @@
   <div>
     <div class="modal-sidebar__head">
       <div class="modal-sidebar__head-icon-and-name">
-        <i class="modal-sidebar__head-icon-and-name-icon fas fa-trash"></i>
+        <i class="modal-sidebar__head-icon-and-name-icon iconoir-trash"></i>
         {{ $t('trashSidebar.title') }}
       </div>
     </div>

@@ -101,7 +101,7 @@
             class="file-field-modal__action"
             @click="remove(selected)"
           >
-            <i class="fas fa-trash"></i>
+            <i class="iconoir-trash"></i>
           </a>
         </ul>
       </div>

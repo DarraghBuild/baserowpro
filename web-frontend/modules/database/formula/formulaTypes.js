@@ -148,7 +148,7 @@ export class BaserowFormulaTextType extends BaserowFormulaTypeDefinition {
   }
 
   getIconClass() {
-    return 'font'
+    return 'text'
   }
 
   getRowEditFieldComponent() {
@@ -182,7 +182,7 @@ export class BaserowFormulaCharType extends BaserowFormulaTypeDefinition {
   }
 
   getIconClass() {
-    return 'font'
+    return 'text'
   }
 
   getRowEditFieldComponent() {
@@ -238,7 +238,7 @@ export class BaserowFormulaBooleanType extends BaserowFormulaTypeDefinition {
   }
 
   getIconClass() {
-    return 'check-square'
+    return 'security-pass'
   }
 
   getRowEditFieldComponent() {
@@ -268,7 +268,7 @@ export class BaserowFormulaDateType extends BaserowFormulaTypeDefinition {
   }
 
   getIconClass() {
-    return 'calendar-alt'
+    return 'calendar'
   }
 
   getRowEditFieldComponent() {

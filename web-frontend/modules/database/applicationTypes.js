@@ -33,7 +33,7 @@ export class DatabaseApplicationType extends ApplicationType {
   }
 
   getIconClass() {
-    return 'database'
+    return 'db'
   }
 
   getName() {

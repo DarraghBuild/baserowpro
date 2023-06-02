@@ -40,7 +40,7 @@
         </div>
       </div>
       <div class="hidings__search">
-        <i class="hidings__search-icon fas fa-search"></i>
+        <i class="hidings__search-icon iconoir-search"></i>
         <input
           ref="search"
           v-model="query"
@@ -65,38 +65,34 @@
           <a class="hidings__item-handle" data-field-handle></a>
           <SwitchInput
             v-if="allowHidingFields"
-            :value="!isHidden(field.id)"
+            small
+            :checked="!isHidden(field.id)"
             @input="updateFieldOptionsOfField(field, { hidden: !$event })"
           >
-            <i
-              class="fas fa-fw switch__icon"
-              :class="'fa-' + field._.type.iconClass"
-            ></i>
+            <i :class="'iconoir-' + field._.type.iconClass"></i>
             <span>{{ field.name }}</span>
           </SwitchInput>
           <div v-else class="hidings__item-name">
-            <i
-              class="fas fa-fw switch__icon"
-              :class="'fa-' + field._.type.iconClass"
-            ></i>
+            <i :class="'iconoir-' + field._.type.iconClass"></i>
             <span>{{ field.name }}</span>
           </div>
         </li>
       </ul>
     </div>
     <div v-if="allowHidingFields" v-show="query === ''" class="hidings__footer">
-      <button
-        class="button button--ghost hidings__footer-button"
+      <Button
+        type="secondary"
         @click="!noneSelected && updateAllFieldOptions({ hidden: true })"
       >
-        {{ $t('viewFieldsContext.hideAll') }}
-      </button>
-      <button
-        class="button button--ghost"
+        {{ $t('viewFieldsContext.hideAll') }}</Button
+      >
+
+      <Button
+        type="secondary"
         @click="!allSelected && updateAllFieldOptions({ hidden: false })"
       >
-        {{ $t('viewFieldsContext.showAll') }}
-      </button>
+        {{ $t('viewFieldsContext.showAll') }}</Button
+      >
     </div>
   </Context>
 </template>

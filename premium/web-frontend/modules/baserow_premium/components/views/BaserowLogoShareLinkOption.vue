@@ -5,21 +5,18 @@
     @click="click"
   >
     <SwitchInput
-      large
+      small
       :value="!view.show_logo"
       :disabled="!hasPremiumFeatures"
       @input="update"
-    ></SwitchInput>
-    <div v-tooltip="tooltipText" class="margin-left-2">
-      <img
-        src="@baserow/modules/core/static/img/baserow-icon.svg"
-        class="margin-right-1"
-      />
+      v-tooltip="tooltipText"
+    >
+      <img src="@baserow/modules/core/static/img/baserow-icon.svg" />
       <span>
         {{ $t('shareLinkOptions.baserowLogo.label') }}
-      </span>
-      <i v-if="!hasPremiumFeatures" class="deactivated-label fas fa-lock"></i>
-    </div>
+      </span> </SwitchInput
+    ><i v-if="!hasPremiumFeatures" class="deactivated-label iconoir-lock"></i>
+
     <PremiumModal
       v-if="!hasPremiumFeatures"
       ref="premiumModal"

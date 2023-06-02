@@ -172,7 +172,7 @@ exports[`Public View Page Tests Can see a publicly shared grid view 1`] = `
                 class="header__filter-link"
               >
                 <i
-                  class="header__search-icon fas fa-search"
+                  class="header__search-icon iconoir-search"
                 />
                 
     
@@ -413,7 +413,7 @@ exports[`Public View Page Tests Can see a publicly shared grid view 1`] = `
                       class="grid-view__description-icon"
                     >
                       <i
-                        class="fas fa-check-square"
+                        class="iconoir-check-square"
                       />
                     </div>
                      

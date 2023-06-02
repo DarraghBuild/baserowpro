@@ -4,58 +4,57 @@
     <p class="dashboard__help-description">
       {{ $t('dashboard.alertText') }}
     </p>
-    <a
+
+    <Button
+      icon="gitlab-full"
       href="https://gitlab.com/baserow/baserow"
-      target="_blank"
       rel="noopener noreferrer"
-      class="button button--primary dashboard__help-button"
+      target="_blank"
     >
       {{ $t('dashboard.starOnGitlab') }}
-      <i class="fab fa-gitlab"></i>
-    </a>
-    <a
+    </Button>
+    <Button
       v-tooltip="$t('dashboard.shareOnTwitter')"
+      icon="twitter"
       :href="
         'https://twitter.com/intent/tweet?url=https://baserow.io' +
         '&hashtags=opensource,nocode,database,baserow&text=' +
         encodeURI($t('dashboard.tweetContent'))
       "
-      target="_blank"
       rel="noopener noreferrer"
-      class="button button--primary dashboard__help-button"
+      target="_blank"
     >
-      <i class="fab fa-twitter"></i>
-    </a>
-    <a
+    </Button>
+
+    <Button
       v-tooltip="$t('dashboard.shareOnReddit')"
+      icon="reddit"
       :href="
         'https://www.reddit.com/submit?url=https://baserow.io&title=' +
         encodeURI($t('dashboard.redditTitle'))
       "
-      target="_blank"
       rel="noopener noreferrer"
-      class="button button--primary dashboard__help-button"
+      target="_blank"
     >
-      <i class="fab fa-reddit"></i>
-    </a>
-    <a
+    </Button>
+
+    <Button
       v-tooltip="$t('dashboard.shareOnFacebook')"
+      icon="facebook"
       href="https://www.facebook.com/sharer/sharer.php?u=https://baserow.io"
-      target="_blank"
       rel="noopener noreferrer"
-      class="button button--primary dashboard__help-button"
+      target="_blank"
     >
-      <i class="fab fa-facebook"></i>
-    </a>
-    <a
+    </Button>
+
+    <Button
       v-tooltip="$t('dashboard.shareOnLinkedIn')"
+      icon="linkedin"
       href="https://www.linkedin.com/sharing/share-offsite/?url=https://baserow.io"
-      target="_blank"
       rel="noopener noreferrer"
-      class="button button--primary dashboard__help-button"
+      target="_blank"
     >
-      <i class="fab fa-linkedin"></i>
-    </a>
+    </Button>
   </div>
 </template>
 

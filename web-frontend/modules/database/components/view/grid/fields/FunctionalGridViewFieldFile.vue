@@ -11,7 +11,7 @@
       class="grid-field-file__dragging"
     >
       <div>
-        <i class="grid-field-file__drop-icon fas fa-cloud-upload-alt"></i>
+        <i class="grid-field-file__drop-icon iconoir-cloud-upload"></i>
         Drop here
       </div>
     </div>

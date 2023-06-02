@@ -2,7 +2,6 @@
   display: flex;
   flex-wrap: wrap;
   list-style: none;
-  margin: 0 0 -18px 0;
   padding: 0;
   width: 100%;
 
@@ -36,12 +35,18 @@
   @extend %ellipsis;
 
   position: relative;
-  display: block;
+  display: flex;
+  align-items: center;
   padding: 0 48px 0 20px;
   line-height: 44px;
   font-size: 14px;
-  color: $color-neutral-600;
+  color: $color-neutral-800;
   border-radius: 3px;
+  gap: 5px;
+
+  i {
+    font-size: 18px;
+  }
 
   &:hover {
     text-decoration: none;
@@ -49,11 +54,11 @@
 
   &:not(.disabled):not(.active):hover {
     background-color: $color-neutral-100;
-    color: $color-primary-900;
+    color: $color-neutral-1100;
   }
 
   &.disabled {
-    color: $color-neutral-400;
+    color: $color-neutral-600;
 
     &:hover {
       cursor: inherit;
@@ -61,20 +66,15 @@
   }
 
   &.active {
-    color: $color-primary-900;
-    background-color: $color-primary-100;
+    color: $color-neutral-1100;
+    background-color: $color-blue-50;
 
-    &::after {
-      @extend .fas;
-
-      content: fa-content($fa-var-check-circle);
-      width: 32px;
-      line-height: 20px;
-      text-align: center;
-      color: $color-success-500;
-      margin-top: -10px;
-
-      @include absolute(50%, 10px, auto, auto);
+    .iconoir-check-circle {
+      position: absolute;
+      color: $color-green-600;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
     }
   }
 }

@@ -2,7 +2,7 @@
   <div :class="[data.staticClass, data.class]" v-on="listeners">
     <div v-if="props.row[props.column.key]">
       <i
-        class="fas fa-fw fa-check user-admin-active__icon user-admin-active__icon--activated"
+        class="iconoir-check-circle user-admin-active__icon user-admin-active__icon--activated"
       ></i>
       {{ parent.$t('premium.user.active') }}
     </div>

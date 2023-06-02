@@ -22,9 +22,13 @@ import Tab from '@baserow/modules/core/components/Tab'
 import List from '@baserow/modules/core/components/List'
 import HelpIcon from '@baserow/modules/core/components/HelpIcon'
 import Button from '@baserow/modules/core/components/Button'
+import ButtonText from '@baserow/modules/core/components/ButtonText'
+import FloatingButton from '@baserow/modules/core/components/FloatingButton'
+import IconButton from '@baserow/modules/core/components/IconButton'
 import Avatar from '@baserow/modules/core/components/Avatar'
 import Presentation from '@baserow/modules/core/components/Presentation'
 import FormInput from '@baserow/modules/core/components/FormInput'
+import FormTextarea from '@baserow/modules/core/components/FormTextarea'
 
 import lowercase from '@baserow/modules/core/filters/lowercase'
 import uppercase from '@baserow/modules/core/filters/uppercase'
@@ -68,11 +72,15 @@ function setupVue(Vue) {
   Vue.component('Badge', Badge)
   Vue.component('ExpandableCard', ExpandableCard)
   Vue.component('Button', Button)
+  Vue.component('FloatingButton', FloatingButton)
+  Vue.component('IconButton', IconButton)
+  Vue.component('ButtonText', ButtonText)
   Vue.component('RadioButton', RadioButton)
   Vue.component('Thumbnail', Thumbnail)
   Vue.component('Avatar', Avatar)
   Vue.component('Presentation', Presentation)
   Vue.component('FormInput', FormInput)
+  Vue.component('FormTextarea', FormTextarea)
 
   Vue.filter('lowercase', lowercase)
   Vue.filter('uppercase', uppercase)

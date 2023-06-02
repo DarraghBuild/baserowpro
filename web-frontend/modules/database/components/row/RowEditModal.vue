@@ -82,7 +82,7 @@
           ref="createFieldContextLink"
           @click="$refs.createFieldContext.toggle($refs.createFieldContextLink)"
         >
-          <i class="fas fa-plus"></i>
+          <i class="iconoir-plus"></i>
           {{ $t('rowEditModal.addField') }}
         </a>
         <CreateFieldContext

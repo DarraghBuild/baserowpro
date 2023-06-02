@@ -372,7 +372,7 @@
                       class="select__footer-button"
                       @click="$refs.IntegrationCreateEditModal.show()"
                     >
-                      <i class="fas fa-plus"></i>
+                      <i class="iconoir-plus"></i>
                       Add item
                     </a>
                   </template>
@@ -699,19 +699,19 @@
             <ul class="context__menu">
               <li>
                 <a href="#">
-                  <i class="context__menu-icon fas fa-fw fa-pen"></i>
+                  <i class="context__menu-icon iconoir-edit-pencil"></i>
                   Rename database
                 </a>
               </li>
               <li>
                 <a href="#">
-                  <i class="context__menu-icon fas fa-fw fa-trash"></i>
+                  <i class="context__menu-icon iconoir-trash"></i>
                   Delete table
                 </a>
               </li>
               <li>
                 <a href="#" class="context__menu-item--loading">
-                  <i class="context__menu-icon fas fa-fw fa-trash"></i>
+                  <i class="context__menu-icon iconoir-trash"></i>
                   Loading
                 </a>
               </li>
@@ -745,7 +745,7 @@
           </div>
           <div class="select">
             <div class="select__search">
-              <i class="select__search-icon fas fa-search"></i>
+              <i class="select__search-icon iconoir-search"></i>
               <input
                 type="text"
                 class="select__search-input"
@@ -788,7 +788,7 @@
             </ul>
             <div class="select__footer">
               <a href="#" class="select__footer-button">
-                <i class="fas fa-plus"></i>
+                <i class="iconoir-plus"></i>
                 Do something
               </a>
             </div>
@@ -797,7 +797,7 @@
         <div class="margin-bottom-3 style-guide__contexts">
           <div class="select">
             <div class="select__search">
-              <i class="select__search-icon fas fa-search"></i>
+              <i class="select__search-icon iconoir-search"></i>
               <input
                 type="text"
                 class="select__search-input"
@@ -865,16 +865,18 @@
             <div class="select__footer">
               <div class="select__footer-create">
                 <a class="select__footer-create-link"
-                  ><i class="select__footer-create-icon fas fa-bars"></i>
+                  ><i class="select__footer-create-icon iconoir-menu"></i>
                   Grid </a
                 ><a class="select__footer-create-link"
-                  ><i class="select__footer-create-icon fas fa-th-large"></i>
+                  ><i class="select__footer-create-icon iconoir-2x2-cell"></i>
                   Gallery </a
                 ><a class="select__footer-create-link"
-                  ><i class="select__footer-create-icon fas fa-edit"></i>
+                  ><i class="select__footer-create-icon iconoir-page-edit"></i>
                   Form </a
                 ><a class="select__footer-create-link"
-                  ><i class="select__footer-create-icon fas fa-trello fab"></i>
+                  ><i
+                    class="select__footer-create-icon iconoir-kanban-board"
+                  ></i>
                   Kanban
                 </a>
               </div>
@@ -944,7 +946,7 @@
                 </li>
                 <li class="formula-field__item">
                   <a href="#" class="formula-field__item-link">
-                    <i class="fas fa-check-square formula-field__item-icon" />
+                    <i class="iconoir-check-square formula-field__item-icon" />
                     Checkbox
                   </a>
                 </li>
@@ -965,13 +967,13 @@
                 </li>
                 <li class="formula-field__item">
                   <a href="#" class="formula-field__item-link">
-                    <i class="fas fa-check-square formula-field__item-icon" />
+                    <i class="iconoir-check-square formula-field__item-icon" />
                     true
                   </a>
                 </li>
                 <li class="formula-field__item">
                   <a href="#" class="formula-field__item-link">
-                    <i class="fas fa-check-square formula-field__item-icon" />
+                    <i class="iconoir-check-square formula-field__item-icon" />
                     false
                   </a>
                 </li>
@@ -1072,7 +1074,7 @@
             <ul class="context__menu">
               <li>
                 <a href="#">
-                  <i class="context__menu-icon fas fa-fw fa-pen"></i>
+                  <i class="context__menu-icon iconoir-edit-pencil"></i>
                   This does nothing
                 </a>
               </li>
@@ -1085,7 +1087,7 @@
                   <ul class="context__menu">
                     <li>
                       <a @click="$refs.modal1.show()">
-                        <i class="context__menu-icon fas fa-fw fa-pen"></i>
+                        <i class="context__menu-icon iconoir-edit-pencil"></i>
                         Click to open modal
                       </a>
                     </li>
@@ -1102,7 +1104,7 @@
                           <li>
                             <a href="#">
                               <i
-                                class="context__menu-icon fas fa-fw fa-pen"
+                                class="context__menu-icon iconoir-edit-pencil"
                               ></i>
                               This does nothing
                             </a>
@@ -1117,9 +1119,7 @@
                           </li>
                           <li>
                             <a href="#">
-                              <i
-                                class="context__menu-icon fas fa-fw fa-trash"
-                              ></i>
+                              <i class="context__menu-icon iconoir-trash"></i>
                               This does nothing
                             </a>
                           </li>
@@ -1131,7 +1131,7 @@
               </li>
               <li>
                 <a href="#">
-                  <i class="context__menu-icon fas fa-fw fa-trash"></i>
+                  <i class="context__menu-icon iconoir-trash"></i>
                   This does nothing
                 </a>
               </li>
@@ -1220,7 +1220,7 @@
             <div class="delete-section">
               <div class="delete-section__label">
                 <div class="delete-section__label-icon">
-                  <i class="fas fa-exclamation"></i>
+                  <i class="iconoir-chat-bubble-warning"></i>
                 </div>
                 Will also be permanently deleted
               </div>
@@ -1249,7 +1249,7 @@
           </div>
           <div class="modal__box modal__box--with-sidebar">
             <a class="modal__close">
-              <i class="fas fa-times"></i>
+              <i class="iconoir-cancel"></i>
             </a>
             <div
               class="modal__box-sidebar modal__box-sidebar--left modal__box-sidebar--scrollable"
@@ -1373,7 +1373,7 @@
                 <div class="card__field-name">Boolean</div>
                 <div class="card__field-value">
                   <div class="card-boolean">
-                    <i class="fas fa-check"></i>
+                    <i class="iconoir-check"></i>
                   </div>
                 </div>
               </div>
@@ -1501,7 +1501,7 @@
                     placeholder="Find member..."
                     class="input input--large"
                   />
-                  <i class="fas fa-search"></i>
+                  <i class="iconoir-search"></i>
                 </div>
                 <Button href="#" size="large" class="margin-left-2">
                   Invite member
@@ -1530,7 +1530,7 @@
                           >Name</a
                         >
                         <div>
-                          <i class="fas fa-sort-down"></i>
+                          <i class="iconoir-sort-down"></i>
                           0
                         </div>
                       </div>
@@ -1609,7 +1609,7 @@
                       <div class="data-table__table-cell-content">
                         <div class="data-table__more-wrapper">
                           <a href="#" class="data-table__more">
-                            <i class="fas fa-ellipsis-h"></i>
+                            <i class="iconoir-more-horiz-circle"></i>
                           </a>
                         </div>
                       </div>

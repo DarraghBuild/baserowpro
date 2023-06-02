@@ -27,7 +27,7 @@
     </div>
     <div class="control">
       <div class="control__elements">
-        <Checkbox v-model="values.date_include_time">{{
+        <Checkbox v-model="values.date_include_time" class="margin-bottom-1">{{
           $t('fieldDateSubForm.includeTimeLabel')
         }}</Checkbox>
         <div v-show="values.date_include_time" class="control margin-top-2">
@@ -52,7 +52,8 @@
         </div>
         <Checkbox
           v-show="values.date_include_time"
-          :value="values.date_force_timezone !== null"
+          :checked="values.date_force_timezone !== null"
+          class="margin-bottom-1"
           @input="toggleForceTimezone()"
           >{{ $t('fieldDateSubForm.forceTimezoneLabel') }}</Checkbox
         >
@@ -84,7 +85,7 @@
             values.date_include_time &&
             utcOffsetDiff !== 0
           "
-          :value="values.date_force_timezone_offset !== null"
+          :checked="values.date_force_timezone_offset !== null"
           @input="toggleForceTimezoneOffset()"
           >{{
             $t(

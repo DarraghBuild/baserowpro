@@ -31,14 +31,14 @@
               @workspace-updated="workspaceUpdated($event)"
             ></DashboardWorkspace>
             <div>
-              <a
+              <ButtonText
                 v-if="$hasPermission('create_workspace')"
-                class="dashboard__create-link"
+                icon="plus"
+                type="secondary"
                 @click="$refs.createWorkspaceModal.show()"
               >
-                <i class="fas fa-plus"></i>
-                {{ $t('dashboard.createWorkspace') }}
-              </a>
+                {{ $t('dashboard.createWorkspace') }}</ButtonText
+              >
             </div>
           </template>
         </div>

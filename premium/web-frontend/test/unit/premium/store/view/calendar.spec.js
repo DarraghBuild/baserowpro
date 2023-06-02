@@ -39,7 +39,7 @@ const fields = [
     _: {
       type: {
         type: 'date',
-        iconClass: 'calendar-alt',
+        iconClass: 'calendar',
         name: 'Date',
         isReadOnly: false,
         canImport: true,
@@ -63,7 +63,7 @@ const fields = [
     _: {
       type: {
         type: 'date',
-        iconClass: 'calendar-alt',
+        iconClass: 'calendar',
         name: 'Date',
         isReadOnly: false,
         canImport: true,
@@ -87,7 +87,7 @@ const fields = [
     _: {
       type: {
         type: 'date',
-        iconClass: 'calendar-alt',
+        iconClass: 'calendar',
         name: 'Date',
         isReadOnly: false,
         canImport: true,
@@ -111,7 +111,7 @@ const fields = [
     _: {
       type: {
         type: 'date',
-        iconClass: 'calendar-alt',
+        iconClass: 'calendar',
         name: 'Date',
         isReadOnly: false,
         canImport: true,

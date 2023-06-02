@@ -1,40 +1,40 @@
 <template>
   <ul class="premium-features">
     <li class="premium-features__feature">
-      <i class="fas fa-fw fa-check premium-features__feature-icon"></i>
-      {{ $t('premiumFeatures.rowComments') }}
+      <i class="iconoir-check-circle premium-features__feature-icon"></i>
+      <span>{{ $t('premiumFeatures.rowComments') }}</span>
     </li>
     <li class="premium-features__feature">
-      <i class="fas fa-fw fa-check premium-features__feature-icon"></i>
-      {{ $t('premiumFeatures.kanbanView') }}
+      <i class="iconoir-check-circle premium-features__feature-icon"></i>
+      <span>{{ $t('premiumFeatures.kanbanView') }}</span>
     </li>
     <li class="premium-features__feature">
-      <i class="fas fa-fw fa-check premium-features__feature-icon"></i>
-      {{ $t('premiumFeatures.calendarView') }}
+      <i class="iconoir-check-circle premium-features__feature-icon"></i>
+      <span>{{ $t('premiumFeatures.calendarView') }}</span>
     </li>
     <li class="premium-features__feature">
-      <i class="fas fa-fw fa-check premium-features__feature-icon"></i>
-      {{ $t('premiumFeatures.exports') }}
+      <i class="iconoir-check-circle premium-features__feature-icon"></i>
+      <span>{{ $t('premiumFeatures.exports') }}</span>
     </li>
     <li class="premium-features__feature">
-      <i class="fas fa-fw fa-check premium-features__feature-icon"></i>
-      {{ $t('premiumFeatures.admin') }}
+      <i class="iconoir-check-circle premium-features__feature-icon"></i>
+      <span>{{ $t('premiumFeatures.admin') }}</span>
     </li>
     <li class="premium-features__feature">
-      <i class="fas fa-fw fa-check premium-features__feature-icon"></i>
-      {{ $t('premiumFeatures.rowColoring') }}
+      <i class="iconoir-check-circle premium-features__feature-icon"></i>
+      <span>{{ $t('premiumFeatures.rowColoring') }}</span>
     </li>
     <li class="premium-features__feature">
-      <i class="fas fa-fw fa-check premium-features__feature-icon"></i>
-      {{ $t('premiumFeatures.surveyForm') }}
+      <i class="iconoir-check-circle premium-features__feature-icon"></i>
+      <span>{{ $t('premiumFeatures.surveyForm') }}</span>
     </li>
     <li class="premium-features__feature">
-      <i class="fas fa-fw fa-check premium-features__feature-icon"></i>
-      {{ $t('premiumFeatures.publicLogoRemoval') }}
+      <i class="iconoir-check-circle premium-features__feature-icon"></i>
+      <span>{{ $t('premiumFeatures.publicLogoRemoval') }}</span>
     </li>
     <li class="premium-features__feature">
-      <i class="fas fa-fw fa-check premium-features__feature-icon"></i>
-      {{ $t('premiumFeatures.personalViews') }}
+      <i class="iconoir-check-circle premium-features__feature-icon"></i>
+      <span>{{ $t('premiumFeatures.personalViews') }}</span>
     </li>
   </ul>
 </template>

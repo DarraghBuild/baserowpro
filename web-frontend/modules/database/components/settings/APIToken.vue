@@ -23,7 +23,7 @@
               $refs.context.toggle($refs.contextLink, 'bottom', 'right', 4)
             "
           >
-            <i class="fas fa-ellipsis-h"></i>
+            <i class="iconoir-more-horiz-circle"></i>
           </a>
           <Context
             ref="context"
@@ -79,7 +79,7 @@
               </li>
               <li>
                 <a @click="enableRename()">
-                  <i class="context__menu-icon fas fa-fw fa-pen"></i>
+                  <i class="context__menu-icon iconoir-edit-pencil"></i>
                   {{ $t('action.rename') }}
                 </a>
               </li>
@@ -90,7 +90,7 @@
                   }"
                   @click.prevent="deleteToken(token)"
                 >
-                  <i class="context__menu-icon fas fa-fw fa-trash"></i>
+                  <i class="context__menu-icon iconoir-trash"></i>
                   {{ $t('action.delete') }}
                 </a>
               </li>

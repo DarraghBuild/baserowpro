@@ -48,7 +48,7 @@
 
   z-index: 3;
   width: 4px;
-  border-left: 1px solid $color-neutral-300;
+  border-left: 1px solid $color-neutral-600;
   overflow: hidden;
   pointer-events: none;
 
@@ -88,7 +88,7 @@
 
   &:hover::before,
   &.dragging::before {
-    background-color: $color-primary-500;
+    background-color: $color-blue-500;
   }
 }
 
@@ -101,15 +101,22 @@
   border-bottom: 1px solid $color-neutral-200;
 }
 
+.grid-view__head-row-identifier {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
 .grid-view__head-row-identifier-dropdown {
   position: relative;
-  line-height: 32px;
   z-index: 1;
   padding-left: 10px;
-  color: $color-neutral-600;
+  font-size: 16px;
+  color: $color-neutral-800;
+  cursor: pointer;
 
   &:hover {
-    color: $color-neutral-900;
+    color: $color-neutral-1100;
   }
 }
 
@@ -219,7 +226,7 @@
 
     content: '';
     z-index: 2;
-    border: 2px solid $color-warning-500;
+    border: 2px solid $color-yellow-500;
     pointer-events: none;
   }
 }
@@ -229,7 +236,7 @@
   @include fixed-height(20px, 12px);
 
   z-index: 1;
-  background-color: $color-warning-500;
+  background-color: $color-yellow-500;
   color: $white;
   padding: 0 4px;
 }
@@ -237,6 +244,7 @@
 // Because the width of a column can be adjusted it is specified in the html file.
 .grid-view__column {
   position: relative;
+  display: flex;
   height: 32px + 1px;
   border-right: 1px solid $color-neutral-200;
   border-bottom: 1px solid $color-neutral-200;
@@ -264,11 +272,11 @@
   }
 
   &.grid-view__column--sorted::after {
-    background-color: rgba($color-warning-100, 0.8);
+    background-color: $color-yellow-50;
   }
 
   &.grid-view__column--filtered::after {
-    background-color: rgba($color-success-100, 0.5);
+    background-color: $color-green-50;
   }
 }
 
@@ -278,7 +286,7 @@
   line-height: 32px;
 
   &.grid-view__row-info--matches-search {
-    background-color: $color-primary-100;
+    background-color: $color-blue-50;
   }
 }
 
@@ -335,7 +343,7 @@
 .grid-view__row-more {
   @include center-text(18px, 11px);
 
-  color: $color-neutral-400;
+  color: $color-neutral-600;
   border-radius: 3px;
   visibility: hidden;
 
@@ -346,8 +354,8 @@
   }
 
   &:hover {
-    background-color: $color-primary-100;
-    color: $color-primary-800;
+    background-color: $color-blue-50;
+    color: $color-blue-800;
   }
 }
 
@@ -360,17 +368,17 @@
     @include absolute(-2px);
 
     z-index: 2;
-    border: 2px solid $color-primary-500;
+    border: 2px solid $color-blue-500;
     border-radius: 2px;
 
     &.editing {
       @include absolute(-3px);
 
-      border: 3px solid $color-primary-600;
+      border: 3px solid $color-blue-600;
     }
 
     &.invalid {
-      border: 3px solid $color-error-400;
+      border: 3px solid $color-red-400;
       border-bottom: 0;
       border-bottom-left-radius: 0;
       border-bottom-right-radius: 0;
@@ -378,7 +386,7 @@
   }
 
   &.cell-error {
-    background-color: $color-error-100;
+    background-color: $color-red-100;
     color: $color-neutral-500;
   }
 
@@ -388,48 +396,48 @@
     }
 
     &.cell-error {
-      background-color: $color-error-100;
+      background-color: $color-red-100;
     }
   }
 
   .grid-view__column--matches-search & {
-    background-color: $color-primary-100;
+    background-color: $color-blue-50;
 
     &.active {
-      background-color: $color-primary-100;
+      background-color: $color-blue-50;
     }
   }
 
   .grid-view__column--multi-select & {
-    background-color: $color-primary-100;
+    background-color: $color-blue-50;
 
     &.active {
-      background-color: $color-primary-100;
+      background-color: $color-blue-50;
     }
   }
 
   .grid-view__column--multi-select-top & {
     top: -2px;
     z-index: 2;
-    border-top: 2px solid $color-primary-500;
+    border-top: 2px solid $color-blue-500;
   }
 
   .grid-view__column--multi-select-right & {
     right: -2px;
     z-index: 2;
-    border-right: 2px solid $color-primary-500;
+    border-right: 2px solid $color-blue-500;
   }
 
   .grid-view__column--multi-select-bottom & {
     bottom: -2px;
     z-index: 2;
-    border-bottom: 2px solid $color-primary-500;
+    border-bottom: 2px solid $color-blue-500;
   }
 
   .grid-view__column--multi-select-left & {
     left: -2px;
     z-index: 2;
-    border-left: 2px solid $color-primary-500;
+    border-left: 2px solid $color-blue-500;
   }
 
   .grid-view__cell--error {
@@ -437,10 +445,10 @@
 
     @include absolute(100%, -3px, auto, -3px);
 
-    border: 3px solid $color-error-400;
+    border: 3px solid $color-red-400;
     border-top: 0;
-    background-color: $color-error-100;
-    color: $color-error-900;
+    background-color: $color-red-100;
+    color: $color-red-900;
     padding: 0 6px;
     line-height: 34px;
     height: 34px;
@@ -449,14 +457,14 @@
   }
 
   &.active-by {
-    border-color: $color-success-500;
+    border-color: $color-green-500;
   }
 
   .grid-view__cell--active-by {
     @include absolute(-8px, 0, auto, auto);
     @include fixed-height(18px, 12px);
 
-    background-color: $color-success-500;
+    background-color: $color-green-500;
     color: $white;
     border-radius: 3px;
     padding: 0 3px;
@@ -470,22 +478,18 @@
 
 .grid-view__description {
   position: relative;
+  display: flex;
+  gap: 5px;
+  align-items: center;
   z-index: 1;
-  padding: 0 30px;
-  line-height: 32px;
+  padding: 0 10px;
+  width: 100%;
 
   .grid-view__description-icon,
   .grid-view__description-options {
     line-height: inherit;
-    width: 30px;
-    color: $color-neutral-600;
-  }
-
-  .grid-view__description-icon {
-    @include absolute(0, auto, 0, 0);
-
-    padding-left: 10px;
-    text-align: left;
+    color: $color-neutral-800;
+    font-size: 16px;
   }
 
   .grid-view__description-icon-error {
@@ -493,19 +497,16 @@
 
     line-height: inherit;
     width: 30px;
-    color: $color-error-400;
+    color: $color-red-400;
     padding-right: 45px;
     text-align: right;
   }
 
   .grid-view__description-options {
-    @include absolute(0, 4px, 0, auto);
-
-    text-align: center;
-    display: block;
-
+    margin-left: auto;
+    cursor: pointer;
     &:hover {
-      color: $color-neutral-900;
+      color: $color-neutral-1100;
     }
   }
 
@@ -525,7 +526,7 @@
 
     &:hover::before,
     &.dragging::before {
-      background-color: $color-primary-500;
+      background-color: $color-blue-500;
     }
   }
 
@@ -551,13 +552,16 @@
 }
 
 .grid-view__add-column {
-  display: block;
-  line-height: 32px;
-  text-align: center;
-  color: $color-neutral-900;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  color: #515258;
+  font-size: 18px;
+  cursor: pointer;
 
   &:hover {
-    background-color: $color-primary-100;
+    background-color: $color-blue-50;
   }
 }
 
@@ -572,8 +576,9 @@
 .grid-view__add-row {
   display: block;
   line-height: 32px;
+  width: 100%;
   height: 32px;
-  color: $color-neutral-900;
+  color: $color-neutral-1100;
   background-color: $white;
 
   &:hover {
@@ -581,7 +586,7 @@
   }
 
   &.hover {
-    background-color: $color-primary-100;
+    background-color: $color-blue-50;
   }
 
   .grid-view__left & {
@@ -600,7 +605,7 @@
   @include absolute(0, auto, 48px, auto);
 
   z-index: 5;
-  border-left: solid 1px $color-primary-900;
+  border-left: solid 1px $color-neutral-1100;
 }
 
 .grid-view__row-dragging-container {
@@ -621,5 +626,5 @@
 .grid-view__row-target {
   @include absolute(auto, auto, auto, 0);
 
-  border-top: solid 1px $color-primary-900;
+  border-top: solid 1px $color-neutral-1100;
 }

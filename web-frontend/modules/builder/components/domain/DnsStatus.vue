@@ -22,7 +22,9 @@
           <td class="dns-status__table-cell">@</td>
           <td class="dns-status__table-cell">127.0.01</td>
           <td class="dns-status__table-cell">
-            <i class="fas fa-exclamation-triangle color--deep-dark-orange" />
+            <i
+              class="iconoir-chat-bubble-warning-triangle color--deep-dark-orange"
+            />
           </td>
         </tr>
         <tr class="dns-status__table-row">
@@ -30,7 +32,7 @@
           <td class="dns-status__table-cell">www</td>
           <td class="dns-status__table-cell">{{ domain.domain_name }}</td>
           <td class="dns-status__table-cell">
-            <i class="fas fa-check fa-fw color--deep-dark-green" />
+            <i class="iconoir-check fa-fw color--deep-dark-green" />
           </td>
         </tr>
       </tbody>

@@ -12,7 +12,7 @@
           })
       "
     >
-      <i class="fas fa-ellipsis-h"></i>
+      <i class="iconoir-more-horiz-circle"></i>
     </a>
   </div>
 </template>

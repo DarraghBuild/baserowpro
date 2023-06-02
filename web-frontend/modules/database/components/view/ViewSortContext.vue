@@ -23,7 +23,7 @@
           class="sortings__remove"
           @click.stop="deleteSort(sort)"
         >
-          <i class="fas fa-times"></i>
+          <i class="iconoir-cancel"></i>
         </a>
         <div class="sortings__description">
           <template v-if="index === 0">{{
@@ -58,74 +58,68 @@
             :class="{ active: sort.order === 'ASC' }"
             @click="updateSort(sort, { order: 'ASC' })"
           >
-            <div>
-              <template v-if="getSortIndicator(field, 0) === 'text'">{{
-                getSortIndicator(field, 1)
-              }}</template>
-              <i
-                v-if="getSortIndicator(field, 0) === 'icon'"
-                class="fa"
-                :class="'fa-' + getSortIndicator(field, 1)"
-              ></i>
-            </div>
-            <div>
-              <i class="fas fa-long-arrow-alt-right"></i>
-            </div>
-            <div>
-              <template v-if="getSortIndicator(field, 0) === 'text'">{{
-                getSortIndicator(field, 2)
-              }}</template>
-              <i
-                v-if="getSortIndicator(field, 0) === 'icon'"
-                class="fa"
-                :class="'fa-' + getSortIndicator(field, 2)"
-              ></i>
-            </div>
+            <template v-if="getSortIndicator(field, 0) === 'text'">
+              <span>{{ getSortIndicator(field, 1) }}</span></template
+            >
+            <i
+              v-if="getSortIndicator(field, 0) === 'icon'"
+              :class="'iconoir-' + getSortIndicator(field, 1)"
+            ></i>
+
+            <i class="iconoir-arrow-right"></i>
+
+            <template v-if="getSortIndicator(field, 0) === 'text'">
+              <span>{{ getSortIndicator(field, 2) }}</span></template
+            >
+            <i
+              v-if="getSortIndicator(field, 0) === 'icon'"
+              :class="'iconoir-' + getSortIndicator(field, 2)"
+            ></i>
           </a>
           <a
             class="sortings__order-item"
             :class="{ active: sort.order === 'DESC' }"
             @click="updateSort(sort, { order: 'DESC' })"
           >
-            <div>
-              <template v-if="getSortIndicator(field, 0) === 'text'">{{
-                getSortIndicator(field, 2)
-              }}</template>
-              <i
-                v-if="getSortIndicator(field, 0) === 'icon'"
-                class="fa"
-                :class="'fa-' + getSortIndicator(field, 2)"
-              ></i>
-            </div>
-            <div>
-              <i class="fas fa-long-arrow-alt-right"></i>
-            </div>
-            <div>
-              <template v-if="getSortIndicator(field, 0) === 'text'">{{
-                getSortIndicator(field, 1)
-              }}</template>
-              <i
-                v-if="getSortIndicator(field, 0) === 'icon'"
-                class="fa"
-                :class="'fa-' + getSortIndicator(field, 1)"
-              ></i>
-            </div>
+            <template v-if="getSortIndicator(field, 0) === 'text'"
+              ><span>{{ getSortIndicator(field, 2) }}</span></template
+            >
+            <i
+              v-if="getSortIndicator(field, 0) === 'icon'"
+              :class="'iconoir-' + getSortIndicator(field, 2)"
+            ></i>
+
+            <i class="iconoir-arrow-right"></i>
+
+            <template v-if="getSortIndicator(field, 0) === 'text'">
+              <span>{{ getSortIndicator(field, 1) }}</span></template
+            >
+            <i
+              v-if="getSortIndicator(field, 0) === 'icon'"
+              :class="'iconoir-' + getSortIndicator(field, 1)"
+            ></i>
           </a>
         </div>
       </div>
       <template
         v-if="view.sortings.length < availableFieldsLength && !disableSort"
       >
-        <a
-          ref="addContextToggle"
-          class="sortings__add"
-          @click="
-            $refs.addContext.toggle($refs.addContextToggle, 'bottom', 'left', 4)
-          "
-        >
-          <i class="fas fa-plus"></i>
-          {{ $t('viewSortContext.addSort') }}
-        </a>
+        <span ref="addContextToggle">
+          <ButtonText
+            icon="plus"
+            @click="
+              $refs.addContext.toggle(
+                $refs.addContextToggle,
+                'bottom',
+                'left',
+                4
+              )
+            "
+          >
+            {{ $t('viewSortContext.addSort') }}</ButtonText
+          >
+        </span>
+
         <Context ref="addContext" class="sortings__add-context">
           <ul ref="items" class="context__menu">
             <li
@@ -135,8 +129,8 @@
             >
               <a @click="addSort(field)">
                 <i
-                  class="context__menu-icon fas fa-fw"
-                  :class="'fa-' + field._.type.iconClass"
+                  class="context__menu-icon"
+                  :class="'iconoir-' + field._.type.iconClass"
                 ></i>
                 {{ field.name }}
               </a>

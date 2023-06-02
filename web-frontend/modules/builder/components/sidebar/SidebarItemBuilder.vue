@@ -31,7 +31,7 @@
           "
         >
           <a @click="enableRename()">
-            <i class="context__menu-icon fas fa-fw fa-pen"></i>
+            <i class="context__menu-icon iconoir-edit-pencil"></i>
             {{ $t('action.rename') }}
           </a>
         </li>
@@ -60,7 +60,7 @@
             :class="{ 'context__menu-item--loading': deleteLoading }"
             @click="deletePage()"
           >
-            <i class="context__menu-icon fas fa-fw fa-trash"></i>
+            <i class="context__menu-icon iconoir-trash"></i>
             {{ $t('action.delete') }}
           </a>
         </li>

@@ -44,7 +44,7 @@
         class="field-file__action"
         @click="$emit('delete')"
       >
-        <i class="fas fa-trash"></i>
+        <i class="iconoir-trash"></i>
       </a>
     </div>
   </div>

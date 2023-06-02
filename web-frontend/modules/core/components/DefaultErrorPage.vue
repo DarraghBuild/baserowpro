@@ -28,11 +28,11 @@
         :to="{ name: 'dashboard' }"
         class="button button--large"
       >
-        <i class="fas fa-arrow-left"></i>
+        <i class="iconoir-arrow-left"></i>
         {{ $t('errorLayout.backDashboard') }}
       </nuxt-link>
       <nuxt-link v-else :to="{ name: 'login' }" class="button button--large">
-        <i class="fas fa-arrow-left"></i>
+        <i class="iconoir-arrow-left"></i>
         {{ $t('errorLayout.backLogin') }}
       </nuxt-link>
     </div>

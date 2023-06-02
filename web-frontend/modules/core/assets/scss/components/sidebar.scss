@@ -2,7 +2,7 @@
   @include absolute(0);
 
   overflow-y: auto;
-  background-color: $color-neutral-10;
+  background-color: $color-neutral-25;
   border-right: solid 1px $color-neutral-200;
   height: 100%;
 
@@ -42,7 +42,7 @@
   flex: 0 0 36px;
   font-weight: bold;
   color: $white;
-  background-color: $color-primary-500;
+  background-color: $color-blue-500;
   border-radius: 100%;
   margin-right: 12px;
 
@@ -68,8 +68,9 @@
 .sidebar__user-info-top {
   display: flex;
   width: 100%;
-  justify-items: center;
+  align-items: center;
   margin-bottom: 4px;
+  gap: 5px;
 }
 
 .sidebar__user-name {
@@ -77,14 +78,13 @@
 
   min-width: 0;
   line-height: 22px;
-  color: $color-primary-900;
+  color: $color-neutral-1100;
 }
 
 .sidebar__user-icon {
-  flex: 0 0 20px;
   text-align: center;
   font-size: 12px;
-  color: $color-primary-900;
+  color: $color-neutral-1100;
 }
 
 .sidebar__user-email {
@@ -92,7 +92,7 @@
 
   font-size: 12px;
   line-height: 1.25;
-  color: $color-neutral-600;
+  color: $color-neutral-800;
 }
 
 .sidebar__nav {
@@ -109,7 +109,7 @@
 
 .sidebar__new {
   font-size: 13px;
-  color: $color-neutral-300;
+  color: $color-neutral-600;
   margin-left: 6px;
 
   &:hover {
@@ -152,10 +152,10 @@
 
 .sidebar__foot-link {
   position: relative;
-  color: $color-neutral-700;
+  color: $color-neutral-1100;
   border-radius: 3px;
 
-  @include center-text(20px, 12px);
+  @include center-text(20px, 18px);
 
   &:hover {
     display: inline-block;
@@ -203,12 +203,8 @@
       text-align: center;
     }
 
-    .tree__icon {
-      margin-right: 0;
-    }
-
     .sidebar__item-name {
-      background-color: $color-neutral-900;
+      background-color: $color-neutral-1100;
       color: $white;
       border-radius: 3px;
       padding: 0 4px;
@@ -240,5 +236,9 @@
   width: 8px;
   height: 8px;
   border-radius: 100%;
-  background-color: $color-primary-500;
+  background-color: $color-blue-500;
+}
+
+.sidebar__collapse-link {
+  font-size: 18px;
 }

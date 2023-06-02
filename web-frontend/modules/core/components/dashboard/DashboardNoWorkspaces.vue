@@ -16,7 +16,7 @@
         class="button button--large"
         @click="$emit('create-clicked')"
       >
-        <i class="fas fa-plus"></i>
+        <i class="iconoir-plus"></i>
         {{ $t('dashboard.createWorkspace') }}
       </a>
     </div>

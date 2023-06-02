@@ -15,7 +15,7 @@
     <ul v-else class="context__menu">
       <li v-if="$hasPermission('workspace.update', workspace, workspace.id)">
         <a @click="$emit('rename')">
-          <i class="context__menu-icon fas fa-fw fa-pen"></i>
+          <i class="context__menu-icon iconoir-edit-pencil"></i>
           {{ $t('workspaceContext.renameWorkspace') }}
         </a>
       </li>
@@ -54,7 +54,7 @@
           :class="{ 'context__menu-item--loading': loading }"
           @click="deleteWorkspace"
         >
-          <i class="context__menu-icon fas fa-fw fa-trash"></i>
+          <i class="context__menu-icon iconoir-trash"></i>
           {{ $t('workspaceContext.deleteWorkspace') }}
         </a>
       </li>

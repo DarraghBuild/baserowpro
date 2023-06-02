@@ -46,7 +46,7 @@
             )
           "
         >
-          <i class="fas fa-ellipsis-h"></i>
+          <i class="iconoir-more-horiz-circle"></i>
         </a>
         <KanbanViewStackContext
           v-if="!readOnly && showStackContextMenu"
@@ -117,7 +117,7 @@
           :disabled="draggingRow !== null"
           @click="!readOnly && $emit('create-row', { option })"
         >
-          <i class="fas fa-plus"></i>
+          <i class="iconoir-plus"></i>
           {{ $t('kanbanViewStack.new') }}
         </a>
       </div>

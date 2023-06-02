@@ -25,10 +25,12 @@
         })
     "
   >
-    {{
-      $options.methods.roleName(props.column.additionalProps.roles, props.row)
-    }}
-    <i class="fas fa-chevron-down"></i>
+    <span>
+      {{
+        $options.methods.roleName(props.column.additionalProps.roles, props.row)
+      }}
+    </span>
+    <i class="iconoir-nav-arrow-down"></i>
   </a>
 </template>
 

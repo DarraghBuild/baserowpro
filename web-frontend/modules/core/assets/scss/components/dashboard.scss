@@ -15,7 +15,7 @@
 .dashboard__help-description {
   margin: 0 0 16px;
   font-size: 13px;
-  color: $color-primary-900;
+  color: $color-neutral-1100;
 }
 
 .dashboard__alert-button {
@@ -45,7 +45,7 @@
 .dashboard__sidebar-title {
   font-size: 14px;
   font-weight: 600;
-  color: $color-neutral-400;
+  color: $color-neutral-600;
   padding-bottom: 6px;
 }
 
@@ -54,9 +54,15 @@
 
   position: relative;
   z-index: 1;
-  display: block;
+  display: flex;
   line-height: 28px;
-  color: $color-primary-900;
+  gap: 5px;
+  align-items: center;
+  color: $color-neutral-1100;
+
+  i {
+    font-size: 16px;
+  }
 
   &:hover {
     text-decoration: none;
@@ -96,7 +102,7 @@
   line-height: 1.25;
   font-weight: 700;
   max-width: 100%;
-  color: $color-primary-900;
+  color: $color-neutral-1100;
   min-width: 0;
 
   &:hover {
@@ -112,7 +118,7 @@
 }
 
 .dashboard__group-title-options {
-  color: $color-primary-900;
+  color: $color-neutral-1100;
 
   .dashboard__group-title--loading & {
     visibility: hidden;
@@ -150,53 +156,26 @@
   }
 }
 
-.dashboard__group-item-link {
+.dashboard__group-item-button {
   position: relative;
   display: flex;
-  margin-right: 20px;
+  gap: 15px;
+  border-radius: 3px;
+  padding: 5px;
+  border: none;
+  background: none;
+  cursor: pointer;
 
   &:hover {
     text-decoration: none;
-
-    &::before {
-      @include absolute(-8px);
-
-      content: '';
-      background-color: $color-neutral-100;
-      border-radius: 3px;
-      z-index: -1;
-    }
-  }
-}
-
-.dashboard__group-item-icon {
-  @include center-text(32px, 14px);
-
-  flex: 0 0 32px;
-  background-color: $color-primary-500;
-  border-radius: 3px;
-  color: $white;
-  font-size: 14px;
-  margin-right: 12px;
-
-  &.dashboard__group-item-icon--add {
-    background-color: $color-success-500;
+    background-color: $color-neutral-100;
   }
 }
 
 .dashboard__group-item-name {
   @extend %ellipsis;
 
-  color: $color-primary-900;
+  color: $color-neutral-1100;
   width: 100%;
   line-height: 32px;
-}
-
-.dashboard__create-link {
-  color: $color-neutral-500;
-
-  &:hover {
-    text-decoration: none;
-    color: $color-neutral-900;
-  }
 }

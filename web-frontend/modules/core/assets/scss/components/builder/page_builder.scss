@@ -33,9 +33,9 @@
 
   display: block;
   border-radius: 100%;
-  border: solid 1px $color-neutral-300;
+  border: solid 1px $color-neutral-600;
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.16);
-  color: $color-primary-900;
+  color: $color-neutral-1100;
   background-color: $white;
 
   &:hover {
@@ -49,7 +49,7 @@
   flex-direction: column;
   flex-wrap: nowrap;
   width: 26px;
-  border: solid 1px $color-neutral-400;
+  border: solid 1px $color-neutral-600;
   border-radius: 3px;
 }
 
@@ -57,7 +57,7 @@
   @include absolute(2px, 30px, auto, auto);
 
   display: none;
-  background-color: $color-neutral-900;
+  background-color: $color-neutral-1100;
   font-size: 11px;
   color: $white;
   line-height: 20px;
@@ -71,7 +71,7 @@
 
   position: relative;
   background-color: $white;
-  color: $color-primary-900;
+  color: $color-neutral-1100;
 
   &:hover {
     background-color: $color-neutral-100;
@@ -121,7 +121,7 @@
       @include absolute(0, 0, 0, 0);
 
       content: '';
-      border: solid 1px $color-primary-500;
+      border: solid 1px $color-blue-500;
       pointer-events: none;
     }
 
@@ -181,7 +181,7 @@
   position: relative;
   display: block;
   line-height: 42px;
-  color: $color-primary-900;
+  color: $color-neutral-1100;
 
   &::after {
     @include absolute(auto, 0, -1px, 0);
@@ -194,12 +194,12 @@
     text-decoration: none;
 
     &::after {
-      border-bottom-color: $color-neutral-400;
+      border-bottom-color: $color-neutral-600;
     }
   }
 
   &.page-builder__sidebar-tab-link--active::after {
-    border-bottom-color: $color-primary-500;
+    border-bottom-color: $color-blue-500;
   }
 }
 

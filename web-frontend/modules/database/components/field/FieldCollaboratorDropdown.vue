@@ -18,11 +18,14 @@
       <div v-if="hasValue()" class="select-options__dropdown-option">
         {{ selectedName }}
       </div>
-      <i v-if="!disabled" class="dropdown__toggle-icon fas fa-caret-down"></i>
+      <i
+        v-if="!disabled"
+        class="dropdown__toggle-icon iconoir-nav-arrow-down"
+      ></i>
     </a>
     <div class="dropdown__items" :class="{ hidden: !open }">
       <div v-if="showSearch" class="select__search">
-        <i class="select__search-icon fas fa-search"></i>
+        <i class="select__search-icon iconoir-search"></i>
         <input
           ref="search"
           v-model="query"

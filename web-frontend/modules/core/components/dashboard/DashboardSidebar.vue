@@ -9,19 +9,19 @@
           class="dashboard__sidebar-link"
           @click="$emit('workspace-selected', workspace)"
         >
-          <i class="fas fa-fw fa-layer-group"></i>
-          {{ workspace.name }}
+          <i class="iconoir-book-stack"></i>
+          <span>{{ workspace.name }}</span>
         </a>
       </li>
       <li>
-        <a
+        <ButtonText
           v-if="$hasPermission('create_workspace')"
-          class="dashboard__sidebar-link dashboard__sidebar-link--light"
+          icon="plus"
+          type="secondary"
           @click="$emit('create-workspace-clicked')"
         >
-          <i class="fas fa-fw fa-plus"></i>
-          {{ $t('dashboard.createWorkspace') }}
-        </a>
+          {{ $t('dashboard.createWorkspace') }}</ButtonText
+        >
       </li>
     </ul>
     <ul class="dashboard__sidebar-group">
@@ -39,8 +39,8 @@
           href="https://baserow.io/user-docs"
           target="_blank"
         >
-          <i class="fas fa-fw fa-question-circle"></i>
-          {{ $t('dashboardSidebar.knowledgeBase') }}
+          <i class="iconoir-chat-bubble-question"></i>
+          <span>{{ $t('dashboardSidebar.knowledgeBase') }}</span>
         </a>
       </li>
       <li>
@@ -49,26 +49,26 @@
           href="https://baserow.io/blog/category/tutorials"
           target="_blank"
         >
-          <i class="fas fa-fw fa-graduation-cap"></i>
-          {{ $t('dashboardSidebar.tutorials') }}
+          <i class="iconoir-graduation-cap"></i>
+          <span>{{ $t('dashboardSidebar.tutorials') }}</span>
         </a>
       </li>
       <li>
         <a class="dashboard__sidebar-link" @click="$refs.settingsModal.show()">
-          <i class="fas fa-fw fa-cogs"></i>
-          {{ $t('dashboardSidebar.userSettings') }}
+          <i class="iconoir-settings"></i>
+          <span>{{ $t('dashboardSidebar.userSettings') }}</span>
         </a>
       </li>
       <li>
         <a class="dashboard__sidebar-link" @click="$refs.trashModal.show()">
-          <i class="fas fa-fw fa-trash"></i>
-          {{ $t('dashboardSidebar.trash') }}
+          <i class="iconoir-trash"></i>
+          <span>{{ $t('dashboardSidebar.trash') }}</span>
         </a>
       </li>
       <li>
         <a class="dashboard__sidebar-link" @click="logoff()">
-          <i class="fas fa-fw fa-sign-out-alt"></i>
-          {{ $t('dashboardSidebar.logoff') }}
+          <i class="iconoir-log-out"></i>
+          <span>{{ $t('dashboardSidebar.logoff') }}</span>
         </a>
       </li>
     </ul>

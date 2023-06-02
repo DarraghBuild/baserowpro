@@ -1,9 +1,13 @@
 .deactivated-label {
-  display: inline-block;
-  background-color: $color-primary-200;
+  background-color: $color-blue-200;
   border-radius: 3px;
-  color: $color-primary-500;
-  margin: 0 4px;
+  color: $color-blue-500;
+  padding: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  @include center-text(14px, 9px);
+  i {
+    font-size: 14px;
+  }
 }

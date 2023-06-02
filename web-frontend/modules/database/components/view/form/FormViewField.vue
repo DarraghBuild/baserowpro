@@ -22,7 +22,7 @@
           class="form-view__field-head-hide"
           @click="$emit('hide', field)"
         >
-          <i class="fas fa-eye-slash"></i>
+          <i class="iconoir-eye-off"></i>
         </a>
       </div>
       <div class="form-view__field-inner">
@@ -109,7 +109,7 @@
               class="form-view__add-condition"
               @click="addCondition(fieldOptions.conditions)"
             >
-              <i class="fas fa-plus"></i>
+              <i class="iconoir-plus"></i>
               {{ $t('formViewField.addCondition') }}
             </a>
           </div>

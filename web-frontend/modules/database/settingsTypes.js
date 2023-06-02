@@ -7,7 +7,7 @@ export class APITokenSettingsType extends SettingsType {
   }
 
   getIconClass() {
-    return 'key'
+    return 'key-alt-plus'
   }
 
   getName() {

@@ -18,7 +18,7 @@
           $refs.modeContext.toggle($refs.modeContextLink, 'bottom', 'left', 4)
         "
       >
-        <i class="header__filter-icon fas fa-palette"></i>
+        <i class="header__filter-icon iconoir-palette"></i>
         <span class="header__filter-name">{{ $t('formViewHeader.mode') }}</span>
       </a>
       <FormViewModeContext

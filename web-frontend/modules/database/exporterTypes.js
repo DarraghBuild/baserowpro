@@ -4,7 +4,7 @@ import TableCSVExporter from '@baserow/modules/database/components/export/TableC
 
 export class TableExporterType extends Registerable {
   /**
-   * Should return a font awesome class name related to the icon that must be displayed
+   * Should return a iconoir class name related to the icon that must be displayed
    * to the user.
    */
   getIconClass() {

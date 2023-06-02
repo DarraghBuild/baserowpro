@@ -9,21 +9,22 @@
 .select__search {
   flex: 0 0;
   position: relative;
+  display: flex;
+  align-items: center;
   border-bottom: 1px solid $color-neutral-200;
 }
 
 .select__search-icon {
-  color: $color-neutral-300;
-
-  @include absolute(0, auto, auto, 0);
-  @include center-text(32px, 14px, 36px);
+  color: $color-neutral-800;
+  padding: 0 12px;
+  font-size: 18px;
 }
 
 .select__search-input {
   display: block;
   width: 100%;
   border: none;
-  padding: 0 12px 0 36px;
+  padding: 0 12px 0 0px;
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
 
@@ -116,7 +117,7 @@
   }
 
   &--selected {
-    background-color: $color-primary-100;
+    background-color: $color-blue-50;
   }
 
   &--indented {
@@ -131,22 +132,12 @@
   }
 
   &.active {
-    background-color: $color-primary-100;
+    background-color: $color-blue-50;
 
-    &:not(.select__item--loading)::after {
-      @extend .fas;
-      @extend %select__item-size;
-
-      content: fa-content($fa-var-check-circle);
-      width: 32px;
-      text-align: center;
-      color: $color-success-500;
-
-      @include absolute(0, 0, auto, auto);
-    }
-
-    &:not(.select__item--no-options):hover::after {
-      display: none;
+    &:not(.select__item--no-options):hover {
+      .select__item-active-icon {
+        display: none;
+      }
     }
   }
 
@@ -161,14 +152,14 @@
 
 .select__item-link {
   display: block;
-  color: $color-primary-900;
+  color: $color-neutral-1100;
 
   &:hover {
     text-decoration: none;
   }
 
   .select__item.disabled & {
-    color: $color-neutral-400;
+    color: $color-neutral-600;
 
     &:hover {
       cursor: inherit;
@@ -176,9 +167,22 @@
   }
 }
 
+.select__item-active-icon {
+  @extend .fas;
+  @extend %select__item-size;
+
+  width: 32px;
+  text-align: center;
+  color: $color-green-500;
+  font-size: 16px;
+
+  @include absolute(8px, -7px, auto, auto);
+}
+
 .select__item-name {
   display: flex;
   align-items: center;
+  gap: 5px;
 
   @extend %ellipsis;
   @extend %select__item-size;
@@ -193,7 +197,7 @@
 }
 
 .select__item-icon {
-  margin-right: 6px;
+  font-size: 16px;
 }
 
 .select__item-image {
@@ -206,7 +210,7 @@
   font-size: 11px;
   margin-right: -32px;
   line-height: 140%;
-  color: $color-neutral-600;
+  color: $color-neutral-800;
   padding-bottom: 6px;
   padding-right: 10px;
   white-space: normal;
@@ -218,9 +222,10 @@
   display: none;
   text-align: center;
   width: 32px;
-  color: $color-neutral-300;
+  color: $color-neutral-800;
+  font-size: 16px;
 
-  @include absolute(0, 0, auto, auto);
+  @include absolute(2px, 0, auto, auto);
 
   &:hover {
     color: $color-neutral-700;
@@ -276,13 +281,16 @@
   position: relative;
   flex: 0 0 calc(50% - 10px);
   width: calc(50% - 10px);
-  color: $color-primary-900;
+  color: $color-neutral-1100;
   border-radius: 3px;
-  padding: 0 32px 0 10px;
+  padding: 0 0px 0 5px;
   margin-bottom: 4px;
   min-width: 0;
   line-height: 26px;
   font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 
   &:only-child {
     width: 100%;
@@ -299,25 +307,22 @@
     text-decoration: none;
   }
 
-  &::after {
-    @extend .fas;
-
-    content: fa-content($fa-var-plus);
-    color: $color-neutral-200;
-    margin-top: -6.5px;
-    line-height: 13px;
-    font-size: 13px;
-
-    @include absolute(50%, 8px, auto, auto);
-  }
-
   &:not(.select__footer-create-link--disabled):hover {
     text-decoration: none;
     background-color: $color-neutral-100;
   }
+
+  > i {
+    font-size: 14px;
+  }
+}
+
+.select__footer-create-icon--plus {
+  margin-left: auto;
+  color: $color-neutral-600;
 }
 
 .select__footer-create-icon {
-  color: $color-neutral-300;
+  color: $color-neutral-800;
   margin-right: 4px;
 }

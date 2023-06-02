@@ -52,7 +52,7 @@ exports[`Preview exportTableModal Modal with no view 1`] = `
         exportTableDropdown.exportEntireTable
        
                   <i
-                    class="dropdown__toggle-icon fas fa-caret-down"
+                    class="dropdown__toggle-icon iconoir-nav-arrow-down"
                   />
                 </a>
                  
@@ -63,7 +63,7 @@ exports[`Preview exportTableModal Modal with no view 1`] = `
                     class="select__search"
                   >
                     <i
-                      class="select__search-icon fas fa-search"
+                      class="select__search-icon iconoir-search"
                     />
                      
                     <input
@@ -212,7 +212,7 @@ exports[`Preview exportTableModal Modal with no view 1`] = `
         ,
        
                     <i
-                      class="dropdown__toggle-icon fas fa-caret-down"
+                      class="dropdown__toggle-icon iconoir-nav-arrow-down"
                     />
                   </a>
                    
@@ -223,7 +223,7 @@ exports[`Preview exportTableModal Modal with no view 1`] = `
                       class="select__search"
                     >
                       <i
-                        class="select__search-icon fas fa-search"
+                        class="select__search-icon iconoir-search"
                       />
                        
                       <input
@@ -427,7 +427,7 @@ exports[`Preview exportTableModal Modal with no view 1`] = `
         Unicode (UTF-8)
        
                     <i
-                      class="dropdown__toggle-icon fas fa-caret-down"
+                      class="dropdown__toggle-icon iconoir-nav-arrow-down"
                     />
                   </a>
                    
@@ -438,7 +438,7 @@ exports[`Preview exportTableModal Modal with no view 1`] = `
                       class="select__search"
                     >
                       <i
-                        class="select__search-icon fas fa-search"
+                        class="select__search-icon iconoir-search"
                       />
                        
                       <input
@@ -1398,7 +1398,7 @@ exports[`Preview exportTableModal Modal with view 1`] = `
         mock_view_1
        
                   <i
-                    class="dropdown__toggle-icon fas fa-caret-down"
+                    class="dropdown__toggle-icon iconoir-nav-arrow-down"
                   />
                 </a>
                  
@@ -1409,7 +1409,7 @@ exports[`Preview exportTableModal Modal with view 1`] = `
                     class="select__search"
                   >
                     <i
-                      class="select__search-icon fas fa-search"
+                      class="select__search-icon iconoir-search"
                     />
                      
                     <input
@@ -1558,7 +1558,7 @@ exports[`Preview exportTableModal Modal with view 1`] = `
         ,
        
                     <i
-                      class="dropdown__toggle-icon fas fa-caret-down"
+                      class="dropdown__toggle-icon iconoir-nav-arrow-down"
                     />
                   </a>
                    
@@ -1569,7 +1569,7 @@ exports[`Preview exportTableModal Modal with view 1`] = `
                       class="select__search"
                     >
                       <i
-                        class="select__search-icon fas fa-search"
+                        class="select__search-icon iconoir-search"
                       />
                        
                       <input
@@ -1773,7 +1773,7 @@ exports[`Preview exportTableModal Modal with view 1`] = `
         Unicode (UTF-8)
        
                     <i
-                      class="dropdown__toggle-icon fas fa-caret-down"
+                      class="dropdown__toggle-icon iconoir-nav-arrow-down"
                     />
                   </a>
                    
@@ -1784,7 +1784,7 @@ exports[`Preview exportTableModal Modal with view 1`] = `
                       class="select__search"
                     >
                       <i
-                        class="select__search-icon fas fa-search"
+                        class="select__search-icon iconoir-search"
                       />
                        
                       <input

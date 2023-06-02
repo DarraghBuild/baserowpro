@@ -49,7 +49,8 @@
         >
         </component>
       </ul>
-      <a
+
+      <ButtonText
         v-if="
           $hasPermission(
             'database.create_table',
@@ -57,12 +58,12 @@
             application.workspace.id
           )
         "
-        class="tree__sub-add"
+        icon="plus"
+        size="small"
         @click="$refs.importFileModal.show()"
       >
-        <i class="fas fa-plus"></i>
-        {{ $t('sidebar.createTable') }}
-      </a>
+        {{ $t('sidebar.createTable') }}</ButtonText
+      >
       <ImportFileModal ref="importFileModal" :database="application" />
     </template>
   </SidebarApplication>

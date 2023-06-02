@@ -7,7 +7,7 @@
       <ul class="context__menu">
         <li>
           <a @click.prevent="showDeleteModal">
-            <i class="context__menu-icon fas fa-fw fa-trash-alt"></i>
+            <i class="context__menu-icon iconoir-trash-alt"></i>
             {{ $t('editWorkspaceContext.delete') }}
           </a>
         </li>

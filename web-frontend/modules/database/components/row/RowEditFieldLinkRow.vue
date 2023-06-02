@@ -27,7 +27,7 @@
       </li>
     </ul>
     <a v-if="!readOnly" class="add" @click.prevent="$refs.selectModal.show()">
-      <i class="fas fa-plus add__icon"></i>
+      <i class="iconoir-plus add__icon"></i>
       {{ $t('rowEditFieldLinkRow.addLink') }}
     </a>
     <div v-show="touched && !valid" class="error">

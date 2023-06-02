@@ -6,10 +6,14 @@
 .grid-field-boolean__checkbox {
   margin: auto;
   border-radius: 3px;
-  color: $color-success-600;
+  color: $color-green-800;
   cursor: pointer;
-
-  @include center-text(18px, 11px);
+  display: flex;
+  align-items: center;
+  width: 18px;
+  height: 18px;
+  justify-content: center;
+  font-size: 18px;
 
   &.grid-field-boolean__checkbox--read-only {
     cursor: initial;
@@ -20,7 +24,7 @@
   }
 
   .grid-view__cell.active & {
-    border: 1px solid $color-neutral-300;
+    border: 1px solid $color-neutral-600;
   }
 
   .grid-field-boolean__checkbox-icon {

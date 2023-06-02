@@ -16,8 +16,12 @@
                   view.submit_action !== 'MESSAGE' &&
                   $emit('updated-form', { submit_action: 'MESSAGE' })
               "
-              >Show a message</a
-            >
+              >Show a message
+              <i
+                v-if="view.submit_action === 'MESSAGE'"
+                class="choice-items__icon iconoir-check-circle"
+              ></i>
+            </a>
           </li>
           <li>
             <a
@@ -31,8 +35,12 @@
                   view.submit_action !== 'REDIRECT' &&
                   $emit('updated-form', { submit_action: 'REDIRECT' })
               "
-              >Redirect to URL</a
-            >
+              >Redirect to URL
+              <i
+                v-if="view.submit_action === 'REDIRECT'"
+                class="choice-items__icon iconoir-check-circle"
+              ></i
+            ></a>
           </li>
         </ul>
       </div>

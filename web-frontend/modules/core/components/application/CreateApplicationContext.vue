@@ -18,8 +18,8 @@
           @click="toggleCreateApplicationModal(type)"
         >
           <i
-            class="context__menu-icon fas fa-fw"
-            :class="'fa-' + applicationType.iconClass"
+            class="context__menu-icon"
+            :class="'iconoir-' + applicationType.iconClass"
           ></i>
           {{ applicationType.getName() }}
         </a>
@@ -37,7 +37,7 @@
           }"
           @click="openTemplateModal()"
         >
-          <i class="context__menu-icon fas fa-fw fa-file-alt"></i>
+          <i class="context__menu-icon iconoir-page"></i>
           {{ $t('createApplicationContext.fromTemplate') }}
         </a>
         <TemplateModal

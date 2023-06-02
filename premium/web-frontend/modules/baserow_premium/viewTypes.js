@@ -30,7 +30,7 @@ export class KanbanViewType extends PremiumViewType {
   }
 
   getIconClass() {
-    return 'trello fab'
+    return 'kanban-board'
   }
 
   getColorClass() {

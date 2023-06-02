@@ -94,8 +94,8 @@
 }
 
 .form-view-survey__pagination-button {
-  color: $color-primary-900;
-  border: solid 1px $color-neutral-400;
+  color: $color-neutral-1100;
+  border: solid 1px $color-neutral-600;
   margin-left: -1px;
   background-color: $white;
 
@@ -113,7 +113,7 @@
   }
 
   &.form-view-survey__pagination-button--disabled {
-    color: $color-neutral-400;
+    color: $color-neutral-600;
 
     &:hover {
       cursor: inherit;

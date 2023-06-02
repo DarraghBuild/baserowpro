@@ -16,7 +16,7 @@
         class="control__context"
         @click="$refs.context.toggle($refs.contextLink, 'bottom', 'left', 0)"
       >
-        <i class="fas fa-caret-down"></i>
+        <i class="iconoir-nav-arrow-down"></i>
       </a>
     </label>
     <FieldContext

@@ -1,11 +1,11 @@
 .view-sharing__create-link {
-  display: block;
-  line-height: 56px;
+  display: flex;
   font-size: 14px;
   font-weight: 600;
-  padding: 0 20px;
-  color: $color-primary-900;
+  padding: 20px;
+  color: $color-neutral-1100;
   border-radius: 6px;
+  align-items: center;
 
   &:hover {
     text-decoration: none;
@@ -24,7 +24,8 @@
 
 .view-sharing__create-link-icon {
   margin-right: 20px;
-  color: $color-warning-500;
+  color: $color-yellow-500;
+  font-size: 18px;
 
   .view-sharing__create-link--disabled & {
     color: $color-neutral-500;
@@ -65,7 +66,7 @@
   width: 32px;
   margin-left: 8px;
   line-height: 32px;
-  color: $color-primary-900;
+  color: $color-neutral-1100;
   font-size: 12px;
   text-align: center;
   border-radius: 3px;
@@ -90,7 +91,7 @@
   }
 
   &.view-sharing__shared-link-action--disabled {
-    color: $color-primary-900;
+    color: $color-neutral-1100;
     background-color: transparent;
 
     &:hover {
@@ -105,17 +106,27 @@
 }
 
 .view-sharing__shared-link-disable {
-  color: $color-error-500;
+  color: $color-red-600;
+  display: flex;
+  align-items: center;
+
+  i {
+    font-size: 16px;
+  }
 }
 
 .view-sharing__shared-link-options {
   margin-top: 10px;
   margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .view-sharing__option {
   display: flex;
   align-items: center;
+  gap: 5px;
 
   &--disabled {
     cursor: pointer;
@@ -132,7 +143,7 @@ p.box__description {
 
   &:hover {
     text-decoration: none;
-    color: $color-primary-900;
+    color: $color-neutral-1100;
   }
 
   i {

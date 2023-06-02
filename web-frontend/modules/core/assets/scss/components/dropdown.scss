@@ -7,12 +7,14 @@
   @extend %ellipsis;
 
   position: relative;
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 5px;
   width: 100%;
-  border: 1px solid $color-neutral-400;
+  border: 1px solid $color-neutral-600;
   border-radius: 3px;
   padding: 0 32px 0 12px;
-  color: $color-primary-900;
+  color: $color-neutral-1100;
 
   @include fixed-height(36px, 13px);
 
@@ -22,7 +24,7 @@
   }
 
   .dropdown--error & {
-    border-color: $color-error-500;
+    border-color: $color-red-800;
   }
 
   .dropdown--tiny & {
@@ -36,14 +38,14 @@
     cursor: not-allowed;
 
     &:hover {
-      border-color: $color-neutral-400;
+      border-color: $color-neutral-600;
     }
   }
 }
 
 .dropdown__selected-icon {
-  margin-right: 4px;
-  color: $color-neutral-600;
+  color: $color-neutral-800;
+  font-size: 16px;
 }
 
 .dropdown__selected-image {
@@ -53,12 +55,15 @@
 }
 
 .dropdown__toggle-icon {
-  @include absolute(0, 0, 0, auto);
-  @include center-text(32px, 14px);
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  font-size: 14px;
+  bottom: 0;
 }
 
 .dropdown__items {
-  border: 1px solid $color-primary-500;
+  border: 1px solid $color-blue-500;
   border-radius: 3px;
   background-color: $white;
   box-shadow: 0 2px 6px 0 rgba($black, 0.16);
@@ -80,7 +85,7 @@
   }
 
   .select__item.active {
-    background-color: $color-primary-100;
+    background-color: $color-blue-50;
   }
 
   .select__item.active:hover::after {

@@ -255,8 +255,8 @@ export default {
     sortIcon(column) {
       const i = this.sortIndex(column)
       return this.columnSorts[i].direction === 'desc'
-        ? 'fa-sort-down'
-        : 'fa-sort-up'
+        ? 'iconoir-sort-down'
+        : 'iconoir-sort-up'
     },
     sorted(column) {
       return this.sortIndex(column) !== -1

@@ -17,8 +17,8 @@
         "
       >
         <a @click="exportView()">
-          <i class="context__menu-icon fas fa-fw fa-file-export"></i>
-          {{ $t('viewContext.exportView') }}
+          <i class="context__menu-icon iconoir-share-ios"></i>
+          <span>{{ $t('viewContext.exportView') }}</span>
         </a>
       </li>
       <li
@@ -31,8 +31,8 @@
         "
       >
         <a @click="importFile()">
-          <i class="context__menu-icon fas fa-fw fa-file-import"></i>
-          {{ $t('viewContext.importFile') }}
+          <i class="context__menu-icon iconoir-import"></i>
+          <span>{{ $t('viewContext.importFile') }}</span>
         </a>
       </li>
       <li
@@ -45,8 +45,8 @@
         "
       >
         <a @click="duplicateView()">
-          <i class="context__menu-icon fas fa-fw fa-clone"></i>
-          {{ $t('viewContext.duplicateView') }}
+          <i class="context__menu-icon iconoir-copy"></i>
+          <span>{{ $t('viewContext.duplicateView') }}</span>
         </a>
       </li>
       <li
@@ -59,8 +59,8 @@
         "
       >
         <a @click="openWebhookModal()">
-          <i class="context__menu-icon fas fa-fw fa-globe"></i>
-          {{ $t('viewContext.webhooks') }}
+          <i class="context__menu-icon iconoir-globe"></i>
+          <span>{{ $t('viewContext.webhooks') }}</span>
         </a>
       </li>
       <li
@@ -73,8 +73,8 @@
         "
       >
         <a @click="enableRename()">
-          <i class="context__menu-icon fas fa-fw fa-pen"></i>
-          {{ $t('viewContext.renameView') }}
+          <i class="context__menu-icon iconoir-edit-pencil"></i>
+          <span>{{ $t('viewContext.renameView') }}</span>
         </a>
       </li>
       <li
@@ -87,8 +87,8 @@
         "
       >
         <a @click="deleteView()">
-          <i class="context__menu-icon fas fa-fw fa-trash"></i>
-          {{ $t('viewContext.deleteView') }}
+          <i class="context__menu-icon iconoir-trash"></i>
+          <span>{{ $t('viewContext.deleteView') }}</span>
         </a>
       </li>
     </ul>

@@ -1,34 +1,34 @@
 <template>
-  <FormElement
-    :error="hasError"
-    class="control"
-    :class="{
-      'control--horizontal': horizontal,
-    }"
-  >
+  <FormElement :error="hasError" class="control">
     <label
       v-if="label"
+      :for="id"
       class="control__label"
       :class="{ 'control__label--small': smallLabel }"
     >
-      {{ label }}
+      <span class="control__label-label">{{ label }} </span>
+      <span v-if="!required" class="control__required">Optional</span>
     </label>
     <div class="control__elements">
       <div
         :class="{
           'form-input': true,
-          'form-input--with-icon': hasIcon,
-          'form-input--with-icon-left': iconLeft,
-          'form-input--with-icon-right': iconRight,
           'form-input--error': hasError,
-          'form-input--large': large,
           'form-input--monospace': monospace,
+          'form-input--icon-left': iconLeft,
+          'form-input--icon-right': iconLeft,
           'form-input--loading': loading,
           'form-input--disabled': disabled,
         }"
       >
+        <i
+          v-if="iconLeft"
+          class="form-input__icon form-input__icon-left"
+          :class="[`iconoir-${iconLeft}`]"
+        />
         <input
-          ref="base_url"
+          :id="id"
+          ref="input"
           class="form-input__input"
           :value="fromValue(value)"
           :disabled="disabled"
@@ -39,14 +39,19 @@
         />
 
         <i
-          v-if="hasIcon"
-          class="form-input__icon fas"
-          :class="[`fa-${icon}`]"
+          v-if="iconRight"
+          class="form-input__icon form-input__icon-right"
+          :class="[`iconoir-${iconRight}`]"
         />
       </div>
-      <div v-if="hasError" class="error">
+    </div>
+    <div class="control__messages">
+      <p v-if="helperText" class="control__helper-text">
+        {{ helperText }}
+      </p>
+      <p v-if="hasError" class="error">
         {{ error }}
-      </div>
+      </p>
     </div>
   </FormElement>
 </template>
@@ -55,6 +60,10 @@
 export default {
   name: 'FormInput',
   props: {
+    id: {
+      type: String,
+      required: true,
+    },
     error: {
       type: String,
       required: false,
@@ -104,16 +113,6 @@ export default {
       required: false,
       default: false,
     },
-    large: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    horizontal: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
     loading: {
       type: Boolean,
       required: false,
@@ -129,6 +128,16 @@ export default {
       required: false,
       default: null,
     },
+    required: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    helperText: {
+      type: String,
+      required: false,
+      default: null,
+    },
   },
   computed: {
     hasError() {
@@ -137,8 +146,10 @@ export default {
     hasIcon() {
       return Boolean(this.iconLeft || this.iconRight)
     },
-    icon() {
-      return this.iconRight || this.iconLeft
+  },
+  methods: {
+    focus() {
+      this.$refs.input.focus()
     },
   },
 }

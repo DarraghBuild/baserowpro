@@ -19,7 +19,7 @@
 
 .field-file__icon {
   display: block;
-  border: solid 1px $color-neutral-300;
+  border: solid 1px $color-neutral-600;
   border-radius: 3px;
   color: $color-neutral-600;
   overflow: hidden;
@@ -70,12 +70,12 @@
   text-align: right;
   padding-top: 6px;
   font-size: 13px;
-  color: $color-success-500;
+  color: $color-green-500;
 }
 
 .field-file__action {
   position: relative;
-  color: $color-neutral-400;
+  color: $color-neutral-600;
   border-radius: 3px;
 
   @include center-text(24px, 13px);
@@ -85,7 +85,7 @@
   }
 
   &:hover {
-    color: $color-primary-900;
+    color: $color-neutral-1100;
     background-color: $color-neutral-100;
   }
 }

@@ -10,7 +10,7 @@
   >
     <div v-show="dragging" class="grid-field-file__dragging">
       <div>
-        <i class="grid-field-file__drop-icon fas fa-cloud-upload-alt"></i>
+        <i class="grid-field-file__drop-icon iconoir-cloud-upload"></i>
         {{ $t('gridViewFieldFile.dropHere') }}
       </div>
     </div>
@@ -46,10 +46,10 @@
       </li>
       <li v-if="!readOnly" v-show="selected" class="grid-field-file__item">
         <a class="grid-field-file__item-add" @click.prevent="showUploadModal()">
-          <i class="fas fa-plus"></i>
+          <i class="iconoir-plus"></i>
         </a>
         <div v-if="value.length == 0" class="grid-field-file__drop">
-          <i class="grid-field-file__drop-icon fas fa-cloud-upload-alt"></i>
+          <i class="grid-field-file__drop-icon iconoir-cloud-upload"></i>
           {{ $t('gridViewFieldFile.dropFileHere') }}
         </div>
       </li>

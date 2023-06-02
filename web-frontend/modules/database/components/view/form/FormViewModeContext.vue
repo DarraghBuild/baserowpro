@@ -10,18 +10,20 @@
       >
         <a class="select__item-link" @click="select(mode, index)"
           ><div class="select__item-name">
-            <i
-              :class="`select__item-icon fas fa-fw fa-${mode.getIconClass()}`"
-            ></i>
-            {{ mode.getName() }}
+            <i :class="`select__item-icon iconoir-${mode.getIconClass()}`"></i>
+            <span>{{ mode.getName() }}</span>
             <div v-if="isDeactivated(mode)" class="deactivated-label">
-              <i class="fas fa-lock"></i>
+              <i class="iconoir-lock"></i>
             </div>
           </div>
           <div class="select__item-description">
             {{ mode.getDescription() }}
-          </div></a
-        >
+          </div>
+          <i
+            v-if="mode.type === view.mode"
+            class="select__item-active-icon iconoir-check-circle"
+          ></i>
+        </a>
         <component
           :is="mode.getDeactivatedClickModal()"
           v-if="hasDeactivatedClickModal(mode)"

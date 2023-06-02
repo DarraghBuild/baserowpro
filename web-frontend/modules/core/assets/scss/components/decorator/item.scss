@@ -14,11 +14,16 @@
 
 .decorator-item__title {
   @extend %ellipsis;
-
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-weight: 600;
-  font-size: 14px;
   margin-bottom: 6px;
   line-height: 140%;
+}
+
+.decorator-item__title-title {
+  font-size: 14px;
 }
 
 .decorator-item__description {

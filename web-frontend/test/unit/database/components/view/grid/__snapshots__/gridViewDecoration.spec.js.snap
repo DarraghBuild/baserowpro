@@ -115,7 +115,7 @@ exports[`GridView component with decoration Default component with first_cell de
                 class="grid-view__add-row"
               >
                 <i
-                  class="fas fa-plus"
+                  class="iconoir-plus"
                 />
               </a>
             </div>
@@ -205,7 +205,7 @@ exports[`GridView component with decoration Default component with first_cell de
               class="grid-view__description-options"
             >
               <i
-                class="fas fa-caret-down"
+                class="iconoir-nav-arrow-down"
               />
             </a>
              
@@ -247,7 +247,7 @@ exports[`GridView component with decoration Default component with first_cell de
               class="grid-view__description-options"
             >
               <i
-                class="fas fa-caret-down"
+                class="iconoir-nav-arrow-down"
               />
             </a>
              
@@ -289,7 +289,7 @@ exports[`GridView component with decoration Default component with first_cell de
               class="grid-view__description-options"
             >
               <i
-                class="fas fa-caret-down"
+                class="iconoir-nav-arrow-down"
               />
             </a>
              
@@ -308,7 +308,7 @@ exports[`GridView component with decoration Default component with first_cell de
             class="grid-view__add-column"
           >
             <i
-              class="fas fa-plus"
+              class="iconoir-plus"
             />
           </a>
            
@@ -543,7 +543,7 @@ exports[`GridView component with decoration Default component with row wrapper d
                 class="grid-view__add-row"
               >
                 <i
-                  class="fas fa-plus"
+                  class="iconoir-plus"
                 />
               </a>
             </div>
@@ -633,7 +633,7 @@ exports[`GridView component with decoration Default component with row wrapper d
               class="grid-view__description-options"
             >
               <i
-                class="fas fa-caret-down"
+                class="iconoir-nav-arrow-down"
               />
             </a>
              
@@ -675,7 +675,7 @@ exports[`GridView component with decoration Default component with row wrapper d
               class="grid-view__description-options"
             >
               <i
-                class="fas fa-caret-down"
+                class="iconoir-nav-arrow-down"
               />
             </a>
              
@@ -717,7 +717,7 @@ exports[`GridView component with decoration Default component with row wrapper d
               class="grid-view__description-options"
             >
               <i
-                class="fas fa-caret-down"
+                class="iconoir-nav-arrow-down"
               />
             </a>
              
@@ -736,7 +736,7 @@ exports[`GridView component with decoration Default component with row wrapper d
             class="grid-view__add-column"
           >
             <i
-              class="fas fa-plus"
+              class="iconoir-plus"
             />
           </a>
            
@@ -974,7 +974,7 @@ exports[`GridView component with decoration Default component with unavailable d
                 class="grid-view__add-row"
               >
                 <i
-                  class="fas fa-plus"
+                  class="iconoir-plus"
                 />
               </a>
             </div>
@@ -1064,7 +1064,7 @@ exports[`GridView component with decoration Default component with unavailable d
               class="grid-view__description-options"
             >
               <i
-                class="fas fa-caret-down"
+                class="iconoir-nav-arrow-down"
               />
             </a>
              
@@ -1106,7 +1106,7 @@ exports[`GridView component with decoration Default component with unavailable d
               class="grid-view__description-options"
             >
               <i
-                class="fas fa-caret-down"
+                class="iconoir-nav-arrow-down"
               />
             </a>
              
@@ -1148,7 +1148,7 @@ exports[`GridView component with decoration Default component with unavailable d
               class="grid-view__description-options"
             >
               <i
-                class="fas fa-caret-down"
+                class="iconoir-nav-arrow-down"
               />
             </a>
              
@@ -1167,7 +1167,7 @@ exports[`GridView component with decoration Default component with unavailable d
             class="grid-view__add-column"
           >
             <i
-              class="fas fa-plus"
+              class="iconoir-plus"
             />
           </a>
            

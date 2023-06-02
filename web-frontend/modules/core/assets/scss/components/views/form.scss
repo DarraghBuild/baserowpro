@@ -39,7 +39,7 @@
 
 .form-view__sidebar-fields-description {
   font-size: 13px;
-  color: $color-primary-900;
+  color: $color-neutral-1100;
   margin: 18px 0;
 }
 
@@ -55,7 +55,8 @@
 .form-view__sidebar-fields-item {
   position: relative;
   display: flex;
-  border: solid 1px $color-neutral-300;
+  align-items: center;
+  border: solid 1px $color-neutral-600;
   border-radius: 3px;
   background-color: $white;
   padding: 0 30px 0 12px;
@@ -63,11 +64,11 @@
   &::after {
     @extend .fas;
 
-    content: fa-content($fa-var-arrow-right);
+    // content: fa-content($fa-var-arrow-right);
     width: 24px;
     line-height: 14px;
     text-align: center;
-    color: $color-primary-900;
+    color: $color-neutral-1100;
     margin-top: -7px;
     display: none;
 
@@ -99,7 +100,7 @@
 
     &::after {
       display: block;
-      content: fa-content($fa-var-exclamation-triangle);
+      // content: fa-content($fa-var-exclamation-triangle);
     }
   }
 }
@@ -108,7 +109,7 @@
   flex: 0 0 20px;
   line-height: 36px;
   font-size: 13px;
-  color: $color-neutral-700;
+  color: $color-neutral-1200;
 }
 
 .form-view__sidebar-fields-name {
@@ -117,7 +118,7 @@
   width: 100%;
   line-height: 36px;
   font-size: 13px;
-  color: $color-primary-900;
+  color: $color-neutral-1100;
 }
 
 .form-view__sidebar-prefill-or-hide-link {
@@ -153,7 +154,7 @@
   line-height: 48px;
   padding: 0 40px;
   background-color: $color-neutral-100;
-  border: 2px dashed $color-neutral-300;
+  border: 2px dashed $color-neutral-600;
   font-size: 13px;
   font-weight: 600;
   border-radius: 12px;
@@ -177,7 +178,7 @@
 
   &.form-view__file--error {
     color: darken($color-neutral-100, 2%);
-    border-color: $color-error-500;
+    border-color: $color-yellow-500;
   }
 }
 
@@ -185,7 +186,7 @@
   @include absolute(auto, auto, 0, 0);
 
   height: 6px;
-  background-color: $color-primary-500;
+  background-color: $color-blue-500;
 }
 
 .form-view__file-dragging,
@@ -201,7 +202,7 @@
   text-align: center;
   margin-left: -50px;
   margin-top: -6.5px;
-  color: $color-primary-900;
+  color: $color-neutral-1100;
 }
 
 .form-view__file-dragging {
@@ -217,7 +218,7 @@
 }
 
 .form-view__file-error {
-  color: $color-error-500;
+  color: $color-yellow-500;
 
   .form-view__file--error & {
     display: block;
@@ -231,7 +232,7 @@
   justify-content: center;
   align-items: center;
   background-color: rgba(0, 0, 0, 0.1);
-  color: $color-error-500;
+  color: $color-yellow-500;
   font-size: 14px;
   font-weight: 600;
 
@@ -259,13 +260,13 @@
   padding-left: 8px;
 
   &:hover {
-    color: $color-primary-900;
+    color: $color-neutral-1100;
   }
 
   &::after {
     @extend .fas;
 
-    content: fa-content($fa-var-pencil-alt);
+    // content: fa-content($fa-var-pencil-alt);
   }
 
   &.form-view__edit--hidden {
@@ -401,7 +402,7 @@
 
   max-width: 100%;
   font-size: 13px;
-  color: $color-primary-900;
+  color: $color-neutral-1100;
 }
 
 .form-view__field-head-options {
@@ -409,7 +410,7 @@
   color: $color-neutral-600;
 
   &:hover {
-    color: $color-primary-900;
+    color: $color-neutral-1100;
   }
 }
 
@@ -418,7 +419,7 @@
   color: $color-neutral-600;
 
   &:hover {
-    color: $color-primary-900;
+    color: $color-neutral-1100;
   }
 }
 

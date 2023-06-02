@@ -17,8 +17,8 @@
             @click="setPage(setting.type)"
           >
             <i
-              class="fas modal-sidebar__nav-icon"
-              :class="'fa-' + setting.iconClass"
+              class="modal-sidebar__nav-icon"
+              :class="'iconoir-' + setting.iconClass"
             ></i>
             {{ setting.getName() }}
           </a>

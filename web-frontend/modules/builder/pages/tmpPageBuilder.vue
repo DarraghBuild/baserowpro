@@ -119,14 +119,14 @@
                     href="#"
                     class="page-builder__preview-add page-builder__preview-element-add page-builder__preview-element-add-first"
                   >
-                    <i class="fas fa-plus"></i>
+                    <i class="iconoir-plus"></i>
                   </a>
                   <a
                     v-if="selectedElementIndex - 1 !== index"
                     href="#"
                     class="page-builder__preview-add page-builder__preview-element-add page-builder__preview-element-add-last"
                   >
-                    <i class="fas fa-plus"></i>
+                    <i class="iconoir-plus"></i>
                   </a>
                   <div
                     class="page-builder__preview-menu page-builder__preview-element-menu"
@@ -150,7 +150,7 @@
                       </div>
                     </a>
                     <a href="#" class="page-builder__preview-menu-item">
-                      <i class="fas fa-trash"></i>
+                      <i class="iconoir-trash"></i>
                       <div class="page-builder__preview-menu-item-description">
                         Delete
                       </div>

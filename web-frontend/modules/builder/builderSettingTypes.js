@@ -31,7 +31,7 @@ export class IntegrationsBuilderSettingsType extends BuilderSettingType {
   }
 
   get icon() {
-    return 'plug'
+    return 'ev-plug'
   }
 
   getOrder() {

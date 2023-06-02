@@ -12,8 +12,9 @@
               :class="{ active: importType === 'none' }"
               @click="importType = 'none'"
             >
-              <i class="choice-items__icon fas fa-clone"></i>
-              {{ $t('databaseForm.emptyLabel') }}
+              <i class="choice-items__icon iconoir-copy"></i>
+              <span>{{ $t('databaseForm.emptyLabel') }}</span>
+              <i v-if="importType === 'none'" class="iconoir-check-circle"></i>
             </a>
           </li>
           <li>
@@ -22,8 +23,12 @@
               :class="{ active: importType === 'airtable' }"
               @click="importType = 'airtable'"
             >
-              <i class="choice-items__icon fas fa-clone"></i>
-              {{ $t('databaseForm.airtableLabel') }}
+              <i class="choice-items__icon iconoir-copy"></i>
+              <span>{{ $t('databaseForm.airtableLabel') }}</span>
+              <i
+                v-if="importType === 'airtable'"
+                class="iconoir-check-circle"
+              ></i>
             </a>
           </li>
         </ul>

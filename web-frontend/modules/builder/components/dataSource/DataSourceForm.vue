@@ -50,7 +50,7 @@
               class="select__footer-button"
               @click="$refs.IntegrationCreateEditModal.show()"
             >
-              <i class="fas fa-plus"></i>
+              <i class="iconoir-plus"></i>
               {{ $t('dataSourceForm.addIntegration') }}
             </a>
             <IntegrationCreateEditModal

@@ -14,8 +14,8 @@
             @click="settingSelected = setting"
           >
             <i
-              class="fas modal-sidebar__nav-icon"
-              :class="'fa-' + setting.icon"
+              class="modal-sidebar__nav-icon"
+              :class="'iconoir-' + setting.icon"
             ></i>
             {{ setting.name }}
           </a>

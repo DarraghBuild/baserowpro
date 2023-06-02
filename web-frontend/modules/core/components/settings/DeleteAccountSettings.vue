@@ -26,7 +26,7 @@
     <div v-else-if="orphanWorkspaces.length" class="delete-section">
       <div class="delete-section__label">
         <div class="delete-section__label-icon">
-          <i class="fas fa-exclamation"></i>
+          <i class="iconoir-chat-bubble-warning"></i>
         </div>
         {{ $t('deleteAccountSettings.orphanWorkspaces') }}
       </div>
@@ -34,8 +34,12 @@
         {{ $t('deleteAccountSettings.workspaceNoticeDescription') }}
       </p>
       <ul class="delete-section__list">
-        <li v-for="workspace in orphanWorkspaces" :key="workspace.id">
-          <i class="delete-section__list-icon fas fa-users"></i>
+        <li
+          v-for="workspace in orphanWorkspaces"
+          :key="workspace.id"
+          class="delete-section__list-item"
+        >
+          <i class="delete-section__list-icon iconoir-book-stack"></i>
           {{ workspace.name }}
           <small>
             {{
@@ -66,7 +70,7 @@
           :disabled="loading"
         >
           {{ $t('deleteAccountSettings.submitButton') }}
-          <i class="fas fa-trash"></i>
+          <i class="iconoir-trash"></i>
         </button>
       </div>
     </form>

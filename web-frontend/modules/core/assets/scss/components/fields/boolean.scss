@@ -1,7 +1,7 @@
 .field-boolean__checkbox {
   border: 1px solid $color-neutral-200;
   border-radius: 3px;
-  color: $color-success-600;
+  color: $color-green-600;
 
   @include center-text(18px, 11px);
 
@@ -14,7 +14,7 @@
   }
 
   .field-boolean__checkbox.active & {
-    border-color: $color-neutral-300;
+    border-color: $color-neutral-600;
   }
 
   .check {

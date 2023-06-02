@@ -9,7 +9,7 @@
         @click="addRow"
         @click.right.prevent="addRows"
       >
-        <i v-if="includeRowDetails" class="fas fa-plus"></i>
+        <i v-if="includeRowDetails" class="iconoir-plus"></i>
       </a>
     </div>
   </div>

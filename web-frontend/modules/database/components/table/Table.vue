@@ -27,8 +27,8 @@
           >
             <template v-if="hasSelectedView">
               <i
-                class="header__filter-icon header-filter-icon--view fas fa-fw"
-                :class="view._.type.colorClass + ' fa-' + view._.type.iconClass"
+                class="header__filter-icon header-filter-icon--view"
+                :class="`${view._.type.colorClass} iconoir-${view._.type.iconClass}`"
               ></i>
               <span class="header__filter-name header__filter-name--forced">
                 <EditableViewName ref="rename" :view="view"></EditableViewName>
@@ -65,7 +65,7 @@
               )
             "
           >
-            <i class="header__filter-icon fas fa-ellipsis-h"></i>
+            <i class="header__filter-icon iconoir-more-horiz-circle"></i>
           </a>
           <ViewContext
             ref="viewContext"

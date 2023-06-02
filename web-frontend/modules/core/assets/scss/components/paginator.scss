@@ -9,7 +9,7 @@
 
 .paginator__group {
   display: flex;
-  border: solid 1px $color-neutral-400;
+  border: solid 1px $color-neutral-600;
   border-radius: 3px;
   overflow: hidden;
   background-color: $white;
@@ -18,13 +18,13 @@
     @include fixed-height(24px, 12px);
 
     &:not(:last-child) {
-      border-right: solid 1px $color-neutral-400;
+      border-right: solid 1px $color-neutral-600;
     }
   }
 }
 
 .paginator__button {
-  color: $color-primary-900;
+  color: $color-neutral-1100;
   text-align: center;
   padding: 0 10px;
 
@@ -55,5 +55,5 @@
 .paginator__count {
   padding: 0 10px;
   color: $color-neutral-500;
-  border-right: solid 1px $color-neutral-400;
+  border-right: solid 1px $color-neutral-600;
 }

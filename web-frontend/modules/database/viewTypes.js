@@ -13,10 +13,10 @@ export const maxPossibleOrderValue = 32767
 
 export class ViewType extends Registerable {
   /**
-   * The font awesome 5 icon name that is used as convenience for the user to
-   * recognize certain view types. If you for example want the database
+   * The Iconoir icon name that is used as convenience for the user to
+   * recognize certain application types. If you for example want the database
    * icon, you must return 'database' here. This will result in the classname
-   * 'fas fa-database'.
+   * 'iconoir-database'.
    */
   getIconClass() {
     return null
@@ -323,7 +323,7 @@ export class GridViewType extends ViewType {
   }
 
   getIconClass() {
-    return 'bars'
+    return 'menu'
   }
 
   getName() {
@@ -714,7 +714,7 @@ export class GalleryViewType extends BaseBufferedRowView {
   }
 
   getIconClass() {
-    return 'th-large'
+    return 'view-grid'
   }
 
   getColorClass() {

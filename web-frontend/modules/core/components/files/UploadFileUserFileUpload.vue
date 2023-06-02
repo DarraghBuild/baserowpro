@@ -34,7 +34,7 @@
         <div class="upload-files__state">
           <i
             v-show="file.state === 'finished'"
-            class="upload-files__state-waiting fas fa-check"
+            class="upload-files__state-waiting iconoir-check"
           ></i>
           <i
             v-show="file.state === 'failed'"
@@ -49,7 +49,7 @@
             class="upload-files__state-link"
             @click.stop.prevent="removeFile(file.id)"
           >
-            <i class="fas fa-trash"></i>
+            <i class="iconoir-trash"></i>
           </a>
         </div>
       </li>

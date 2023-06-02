@@ -13,7 +13,7 @@
           class="input"
           :placeholder="$t('templateCategories.search')"
         />
-        <i class="fas fa-search"></i>
+        <i class="iconoir-search"></i>
       </div>
     </div>
     <ul class="templates__categories">
@@ -28,7 +28,13 @@
         <a
           class="templates__category-link"
           @click="selectCategory(category.id)"
-          >{{ category.name }}</a
+        >
+          <i
+            v-if="category.id === selectedCategoryId"
+            class="iconoir-nav-arrow-down"
+          ></i>
+          <i v-else class="iconoir-nav-arrow-right"></i>
+          {{ category.name }}</a
         >
         <ul class="templates__templates">
           <li

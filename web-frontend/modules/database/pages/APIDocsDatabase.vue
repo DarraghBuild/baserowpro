@@ -31,7 +31,7 @@
       <div class="api-docs__databases-inner">
         <APIDocsSelectDatabase :selected="database.id" />
         <nuxt-link :to="{ name: 'dashboard' }" class="select-application__back">
-          <i class="fas fa-arrow-left"></i>
+          <i class="iconoir-arrow-left"></i>
           {{ $t('apiDocsDatabase.back') }}
         </nuxt-link>
       </div>

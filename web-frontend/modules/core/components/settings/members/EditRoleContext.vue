@@ -20,6 +20,7 @@
       <ul class="context__menu context__menu--can-be-active">
         <li v-for="role in roles" :key="role.uid">
           <a
+            class="edit-role-context__role-link"
             :class="{ active: subject[roleValueColumn] === role.uid }"
             @click="roleUpdate(role.uid, subject)"
           >
@@ -32,9 +33,14 @@
                 >{{ $t('common.free') }}
               </Badge>
             </div>
+
             <div v-if="role.description" class="context__menu-item-description">
               {{ role.description }}
             </div>
+            <i
+              v-if="subject[roleValueColumn] === role.uid"
+              class="select__item-active-icon iconoir-check-circle"
+            ></i>
           </a>
         </li>
         <li>

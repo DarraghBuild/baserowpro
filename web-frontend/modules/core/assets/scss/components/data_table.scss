@@ -31,7 +31,7 @@
   justify-content: space-between;
   margin: 30px 0 20px 0;
   padding: 0 40px;
-  color: $color-neutral-900;
+  color: $color-neutral-1100;
 }
 
 .data-table__title {
@@ -103,7 +103,7 @@
   }
 
   .data-table__table-row--selected & {
-    background-color: $color-primary-100;
+    background-color: $color-blue-50;
   }
 }
 
@@ -157,7 +157,7 @@
   @extend %data-table__table-cell-content;
 
   height: 48px;
-  color: $color-neutral-600;
+  color: $color-neutral-800;
   font-weight: 600;
   font-size: 12px;
   border-bottom: solid 1px $color-neutral-200;
@@ -166,7 +166,7 @@
 
 .data-table__table-cell-head-link {
   text-decoration: none;
-  color: $color-neutral-600;
+  color: $color-neutral-800;
 
   &:hover {
     text-decoration: underline;
@@ -175,17 +175,17 @@
 
 .data-table__more-wrapper {
   width: 100%;
-  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: end;
 }
 
 .data-table__more {
-  color: $color-neutral-900;
-  text-decoration: none;
-
-  @include center-text(32px, 16px);
+  color: $color-neutral-1100;
+  font-size: 20px;
 
   &:hover {
-    color: $color-neutral-600;
+    color: $color-neutral-800;
   }
 }
 

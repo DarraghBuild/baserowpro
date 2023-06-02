@@ -68,7 +68,7 @@
           <a
             class="simple-grid__cell simple-grid__cell--single simple-grid__add-row"
           >
-            <i class="fas fa-plus" />
+            <i class="iconoir-plus" />
           </a>
         </div>
         <div v-if="withFooter" class="simple-grid__foot">

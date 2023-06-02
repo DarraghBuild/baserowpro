@@ -61,20 +61,23 @@
   position: relative;
   z-index: 1;
   border-bottom: solid 2px $color-neutral-200;
+  display: flex;
+  align-items: center;
 }
 
 .select-row-modal__search-icon {
-  color: $color-neutral-300;
+  color: $color-neutral-600;
   z-index: 2;
-
-  @include absolute(auto, auto, auto, 16px);
-  @include fixed-height(44px, 13px);
+  width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
 }
 
 .select-row-modal__search-input {
   position: relative;
   z-index: 1;
-  padding-left: 44px;
   border: 0;
 
   @include fixed-height(44px, 14px);

@@ -18,7 +18,7 @@
         !isPlacementDisabled(PLACEMENTS.LEFT) && $emit('move', PLACEMENTS.LEFT)
       "
     >
-      <i class="fas fa-arrow-left"></i>
+      <i class="iconoir-arrow-left"></i>
       <span
         v-if="!isPlacementDisabled(PLACEMENTS.LEFT)"
         class="element-preview__menu-item-description"
@@ -78,7 +78,7 @@
       </span>
     </a>
     <a class="element-preview__menu-item" @click="$emit('delete')">
-      <i class="fas fa-trash"></i>
+      <i class="iconoir-trash"></i>
       <span class="element-preview__menu-item-description">
         {{ $t('action.delete') }}
       </span>

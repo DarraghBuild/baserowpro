@@ -31,7 +31,7 @@
       class="add"
       @click.prevent="toggleDropdown()"
     >
-      <i class="fas fa-plus add__icon"></i>
+      <i class="iconoir-plus add__icon"></i>
       {{ $t('rowEditFieldMultipleCollaborators.addCollaborator') }}
     </a>
     <FieldCollaboratorDropdown
