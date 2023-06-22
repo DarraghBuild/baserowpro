@@ -8,7 +8,6 @@ from itertools import cycle
 from random import randint, randrange, sample
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
 from zipfile import ZipFile
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.aggregates import StringAgg
@@ -3557,6 +3556,13 @@ class FormulaFieldType(ReadOnlyFieldType):
 
     def check_can_order_by(self, field):
         return self.to_baserow_formula_type(field.specific).can_order_by
+
+    def get_order(
+        self, field, field_name, order_direction
+    ) -> OptionallyAnnotatedOrderBy:
+        return self.to_baserow_formula_type(field.specific).get_order(
+            field, field_name, order_direction
+        )
 
     def should_backup_field_data_for_same_type_update(
         self, old_field: FormulaField, new_field_attrs: Dict[str, Any]

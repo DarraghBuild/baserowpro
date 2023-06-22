@@ -3,13 +3,15 @@ from decimal import Decimal
 from typing import Any, List, Optional, Type, Union
 
 from django.db import models
-from django.db.models import JSONField, Q, Value
+from django.db.models import JSONField, Q, Value, Func, F, Expression
 from django.utils import timezone
 
 from dateutil import parser
 from rest_framework import serializers
 from rest_framework.fields import Field
 
+from django.contrib.postgres.aggregates import ArrayAgg, JSONBAgg
+from baserow.contrib.database.fields.field_sortings import OptionallyAnnotatedOrderBy
 from baserow.contrib.database.fields.mixins import get_date_time_format
 from baserow.contrib.database.formula.ast.tree import (
     BaserowBooleanLiteral,
@@ -198,6 +200,7 @@ class BaserowFormulaNumberType(
     baserow_field_type = "number"
     user_overridable_formatting_option_fields = ["number_decimal_places"]
     MAX_DIGITS = 50
+    can_order_by_in_array = True
 
     def __init__(self, number_decimal_places: int, **kwargs):
         super().__init__(**kwargs)
@@ -263,6 +266,11 @@ class BaserowFormulaNumberType(
         self,
     ) -> "BaserowExpression[BaserowFormulaValidType]":
         return literal(0)
+
+    def get_order_by_in_array_expr(self, field, field_name, order_direction):
+        return JSONBSingleKeyArrayExpression(
+            field_name, "value", output_field=models.TextField()
+        )
 
     def __str__(self) -> str:
         return f"number({self.number_decimal_places})"
@@ -546,7 +554,6 @@ class BaserowFormulaArrayType(BaserowFormulaValidType):
     user_overridable_formatting_option_fields = [
         "array_formula_type",
     ]
-    can_order_by = False
 
     def __init__(self, sub_type: BaserowFormulaValidType, **kwargs):
         super().__init__(**kwargs)
@@ -722,8 +729,55 @@ class BaserowFormulaArrayType(BaserowFormulaValidType):
             human_readable_values.append(export_value)
         return human_readable_values
 
+    @property
+    def can_order_by(self) -> bool:
+        return self.sub_type.can_order_by_in_array
+
+    def get_order(
+        self, field, field_name, order_direction
+    ) -> OptionallyAnnotatedOrderBy:
+        expr = self.sub_type.get_order_by_in_array_expr(field, field_name, order_direction)        
+        annotation_name = f"{field_name}_agg_sort_array"
+        annotation = {annotation_name: expr}
+        field_expr = F(annotation_name)
+
+        if order_direction == "ASC":
+            field_order_by = field_expr.asc(nulls_first=True)
+        else:
+            field_order_by = field_expr.desc(nulls_last=True)
+
+        return OptionallyAnnotatedOrderBy(
+            annotation=annotation, order=field_order_by, can_be_indexed=False
+        )
+
     def __str__(self) -> str:
         return f"array({self.sub_type})"
+
+
+# TODO: text, float
+class JSONBSingleKeyArrayExpression(Expression):
+    template = """
+        (
+            SELECT ARRAY_AGG(items.{key_name})
+            FROM jsonb_to_recordset({field_name}) as items(
+            {key_name} text)
+        )
+        """  # nosec B608
+    # fmt: on
+
+    def __init__(self, field_name: str, key_name: str, **kwargs):
+        super().__init__(**kwargs)
+        self.field_name = field_name
+        self.key_name = key_name
+
+    def as_sql(self, compiler, connection, template=None):
+        template = template or self.template
+        data = {
+            "field_name": f'"{self.field_name}"',
+            "key_name": f'"{self.key_name}"',
+        }
+
+        return template.format(**data), []
 
 
 class BaserowFormulaSingleSelectType(BaserowFormulaValidType):
