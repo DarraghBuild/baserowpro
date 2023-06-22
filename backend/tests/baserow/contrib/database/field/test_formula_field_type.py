@@ -1543,6 +1543,103 @@ def test_has_compatible_model_fields(instance1, instance2, is_compatible):
 
 
 
+def _array_sort_testing_fixture(data_fixture, distinct_values, unsorted_rows):
+    row_handler = RowHandler()
+    user = data_fixture.create_user()
+    database = data_fixture.create_database_application(user=user, name="db")
+
+    # related table
+    related_table = data_fixture.create_database_table(
+        name="Related table", database=database
+    )
+    related_primary_field = data_fixture.create_text_field(
+        table=related_table, order=1, primary=True, name="text"
+    )
+
+    related_table_model = related_table.get_model()
+
+    related_table_rows = {}
+    for dv in distinct_values:
+        related_table_rows[dv] = related_table_model.objects.create(
+        **{f"field_{related_primary_field.id}": dv}
+    )
+
+    # main table
+    table = data_fixture.create_database_table(name="Main table", database=database)
+    primary_field = data_fixture.create_text_field(
+        table=table, order=1, primary=True, name="Primary text"
+    )
+    link_row_field = data_fixture.create_link_row_field(
+        name="link", table=table, link_row_table=related_table
+    )
+    formula_field = data_fixture.create_formula_field(
+        table=table,
+        name="formula_lookup",
+        formula=f"lookup('{link_row_field.name}', '{related_primary_field.name}')",
+        formula_type="number",
+    )
+    grid_view = data_fixture.create_grid_view(table=table)
+
+    for index, field_values in enumerate(unsorted_rows):
+        for index2, value in enumerate(field_values):
+            unsorted_rows[index][index2] = related_table_rows[value].id
+
+    for row_list in unsorted_rows:
+        row_handler.create_row(
+            user=user,
+            table=table,
+            values={
+                f"field_{link_row_field.id}": row_list
+            }
+        )
+
+    return table.get_model(), formula_field, grid_view
+
+
+@pytest.mark.django_db
+def test_formula_field_type_lookup_sorting_array_text_rewritten(
+    data_fixture,
+):
+    view_handler = ViewHandler()
+    
+    distinct_values = ["a", "b", "aa", "bb", "aaa", None]
+    unsorted_rows = [
+        ["b", "a"],
+        ["a"],
+        ["a", "b"],
+        [],
+        ["b", "aaa"],
+        ["b"],
+        ["aa"],
+    ]
+    model, formula_field, grid_view = _array_sort_testing_fixture(data_fixture, distinct_values, unsorted_rows)
+
+    expected = [
+        ['b', 'aaa'],
+        ['b'],
+        ['aa'],
+        ['a', 'b'],
+        ['a', 'b'],
+        ['a'],
+        None
+    ]
+
+    sort = data_fixture.create_view_sort(view=grid_view, field=formula_field, order="DESC")    
+    sorted_rows = view_handler.apply_sorting(grid_view, model.objects.all())
+    sorted_lookup_numbers = [getattr(r, f"field_{formula_field.id}_agg_sort_array") for r in sorted_rows]
+
+    assert sorted_lookup_numbers == expected
+
+    sort.order = "ASC"
+    sort.save()   
+    sorted_rows = view_handler.apply_sorting(grid_view, model.objects.all())
+    sorted_lookup_numbers = [getattr(r, f"field_{formula_field.id}_agg_sort_array") for r in sorted_rows]
+
+    expected.reverse()
+
+    assert sorted_lookup_numbers == expected
+
+
 @pytest.mark.django_db
 def test_formula_field_type_lookup_sorting_array_text(
     data_fixture,
