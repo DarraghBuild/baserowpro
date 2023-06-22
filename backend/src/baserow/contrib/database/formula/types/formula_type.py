@@ -1,9 +1,10 @@
 import abc
 from typing import TYPE_CHECKING, List, Type, TypeVar
 
-from django.db.models import Expression, Value
+from django.db.models import Expression, Value, F
 from django.utils.functional import classproperty
 
+from baserow.contrib.database.fields.field_sortings import OptionallyAnnotatedOrderBy
 from baserow.contrib.database.formula.ast import tree
 from baserow.contrib.database.formula.registries import formula_function_registry
 from baserow.contrib.database.formula.types.exceptions import InvalidFormulaType
@@ -167,6 +168,37 @@ class BaserowFormulaType(abc.ABC):
         """
 
         pass
+
+    # TODO: docs
+    def get_order(
+        self, field, field_name, order_direction
+    ) -> OptionallyAnnotatedOrderBy:
+        field_expr = F(field_name)
+
+        if order_direction == "ASC":
+            field_order_by = field_expr.asc(nulls_first=True)
+        else:
+            field_order_by = field_expr.desc(nulls_last=True)
+
+        return OptionallyAnnotatedOrderBy(order=field_order_by, can_be_indexed=True)
+
+    @property
+    def can_order_by_in_array(self) -> bool:
+        """
+        Return True if the type is sortable as an array formula subtype.
+
+        If True, get_order_by_array_expr() method should be implemented for the subtype.
+        """
+
+        return False
+
+    # TODO: docs
+    def get_order_by_in_array_expr(self, field, field_name, order_direction):
+        """
+        
+        """
+        
+        raise NotImplementedError()
 
     @property
     def can_represent_date(self) -> bool:

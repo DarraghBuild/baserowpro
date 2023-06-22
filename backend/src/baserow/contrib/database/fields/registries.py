@@ -664,8 +664,8 @@ class FieldType(
         self, field, field_name, order_direction
     ) -> OptionallyAnnotatedOrderBy:
         """
-        This hook can be called to generate a different order by expression. By default
-        None is returned which means the normal field sorting will be applied.
+        This hook can be called to generate a different order by expression.
+        By default the normal field sorting will be applied.
         Optionally a different expression can be generated. This is for example used
         by the single select field generates a mapping achieve the correct sorting
         based on the select option value.
