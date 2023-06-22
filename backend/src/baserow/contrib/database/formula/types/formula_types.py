@@ -83,6 +83,7 @@ class BaserowFormulaTextType(
 ):
     type = "text"
     baserow_field_type = "text"
+    can_order_by_in_array = True
 
     def cast_to_text(
         self,
@@ -93,6 +94,11 @@ class BaserowFormulaTextType(
         # in the text type and we don't want to return to_text(arg) but instead just
         # arg.
         return arg
+    
+    def get_order_by_in_array_expr(self, field, field_name, order_direction):
+        return JSONBSingleKeyArrayExpression(
+            field_name, "value", output_field=models.TextField()
+        )
 
 
 class BaserowFormulaCharType(BaserowFormulaBaseTextType, BaserowFormulaValidType):
