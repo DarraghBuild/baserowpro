@@ -104,13 +104,13 @@ export class BaserowFormulaTypeDefinition extends Registerable {
   getSort(name, order, field) {
     const underlyingFieldType = this.app.$registry.get(
       'field',
-      this._mapFormulaTypeToFieldType(field.formula_type)
+      this.getFieldType()
     )
-    return underlyingFieldType.getSort(name, order)
+    return underlyingFieldType.getSort(name, order, field)
   }
 
   mapToSortableArray(element) {
-    return element
+    return element.value
   }
 
   toHumanReadableString(field, value) {
@@ -437,29 +437,35 @@ export class BaserowFormulaArrayType extends BaserowFormulaTypeDefinition {
       'formula_type',
       field.array_formula_type
     )
-    // TODO: delegate to different implementations
-    /**
-     * array(numbers) -> [{value:1.23}]
-     * array(text) -> []
-     * array(char) -> []
-     * 
-     * array(bool) -> []
-     * array(dates) -> [{value: iso_string}] -> [datetimes, datetimes]
-     * array(single select) -> [{value: {value: 'asdasd', id:2}}]
-     * array(date intervals) -> dont sort
-     * array(a href link type) -> dont sort
-     */
-    // return (a, b) => {
-    //   const valuesA = a[name].map(BaserowFormulaDateType.mapToSortableArray)
-    //   const valuesB = b[name].map(subType.mapToSortableArray)
-    //     return lexiographicalArraySort(valuesA, valuesB)
+
+    const innerSortFunction = subType.getSort(name, order, field)
 
     return (a, b) => {
       const valuesA = a[name].map(subType.mapToSortableArray)
       const valuesB = b[name].map(subType.mapToSortableArray)
 
-      // TODO:
-      // b[1] - a[1]
+      for (let i = 0; i < Math.max(valuesA.length, valuesB.length); i++) {
+        let compared = 0
+
+        if (valuesA[i] && valuesB[i]) {
+          compared = innerSortFunction(
+            { [name]: valuesA[i] },
+            { [name]: valuesB[i] }
+          )
+        } else if (valuesA[i]) {
+          compared = order === 'ASC' ? 1 : -1
+        } else if (valuesB[i]) {
+          compared = order === 'ASC' ? -1 : 1
+        } else if (valuesA[i] === null && valuesB[i] === undefined) {
+          compared = order === 'ASC' ? 1 : -1
+        } else if (valuesA[i] === undefined && valuesB[i] === null) {
+          compared = order === 'ASC' ? -1 : 1
+        }
+
+        if (compared !== 0) {
+          return compared
+        }
+      }
     }
   }
 

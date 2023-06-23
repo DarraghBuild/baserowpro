@@ -2,6 +2,8 @@ from io import BytesIO
 
 from django.urls import reverse
 
+from decimal import Decimal
+
 import pytest
 from pytest_unordered import unordered
 from rest_framework.status import HTTP_200_OK, HTTP_204_NO_CONTENT
@@ -2265,34 +2267,36 @@ def test_lookup_field_type_sorting_array_numbers(
 
     for row_list in unsorted_rows:
         row_handler.create_row(
-            user=user,
-            table=table,
-            values={
-                f"field_{link_row_field.id}": row_list
-            }
+            user=user, table=table, values={f"field_{link_row_field.id}": row_list}
         )
 
     expected = [
-        ['2', '111'],
-        ['2'],
-        ['11'],
-        ['1', '2'],
-        ['1', '2'],
-        ['1'],
-        None
+        [Decimal("11")],
+        [Decimal("2"), Decimal("111")],
+        [Decimal("2")],
+        [Decimal("1"), Decimal("2")],
+        [Decimal("1"), Decimal("2")],
+        [Decimal("1")],
+        None,
     ]
 
     model = table.get_model()
-    sort = data_fixture.create_view_sort(view=grid_view, field=lookup_field, order="DESC")    
+    sort = data_fixture.create_view_sort(
+        view=grid_view, field=lookup_field, order="DESC"
+    )
     sorted_rows = view_handler.apply_sorting(grid_view, model.objects.all())
-    sorted_lookup_numbers = [getattr(r, f"field_{lookup_field.id}_agg_sort_array") for r in sorted_rows]
+    sorted_lookup_numbers = [
+        getattr(r, f"field_{lookup_field.id}_agg_sort_array") for r in sorted_rows
+    ]
 
     assert sorted_lookup_numbers == expected
 
     sort.order = "ASC"
-    sort.save()   
+    sort.save()
     sorted_rows = view_handler.apply_sorting(grid_view, model.objects.all())
-    sorted_lookup_numbers = [getattr(r, f"field_{lookup_field.id}_agg_sort_array") for r in sorted_rows]
+    sorted_lookup_numbers = [
+        getattr(r, f"field_{lookup_field.id}_agg_sort_array") for r in sorted_rows
+    ]
 
     expected.reverse()
 
