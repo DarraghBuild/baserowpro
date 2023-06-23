@@ -658,7 +658,6 @@ export class TextFieldType extends FieldType {
     return (a, b) => {
       const stringA = a[name] === null ? '' : '' + a[name]
       const stringB = b[name] === null ? '' : '' + b[name]
-
       return order === 'ASC'
         ? stringA.localeCompare(stringB)
         : stringB.localeCompare(stringA)

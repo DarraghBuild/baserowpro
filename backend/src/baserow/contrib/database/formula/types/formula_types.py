@@ -10,6 +10,7 @@ from dateutil import parser
 from rest_framework import serializers
 from rest_framework.fields import Field
 
+from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.aggregates import ArrayAgg, JSONBAgg
 from baserow.contrib.database.fields.field_sortings import OptionallyAnnotatedOrderBy
 from baserow.contrib.database.fields.mixins import get_date_time_format
@@ -94,9 +95,9 @@ class BaserowFormulaTextType(
         # in the text type and we don't want to return to_text(arg) but instead just
         # arg.
         return arg
-    
+
     def get_order_by_in_array_expr(self, field, field_name, order_direction):
-        return JSONBSingleKeyArrayExpression(
+        return JSONBSingleKeyStringArrayExpression(
             field_name, "value", output_field=models.TextField()
         )
 
@@ -274,8 +275,12 @@ class BaserowFormulaNumberType(
         return literal(0)
 
     def get_order_by_in_array_expr(self, field, field_name, order_direction):
-        return JSONBSingleKeyArrayExpression(
-            field_name, "value", output_field=models.TextField()
+        return JSONBSingleKeyNumberArrayExpression(
+            field_name,
+            "value",
+            output_field=ArrayField(
+                base_field=models.DecimalField(max_digits=50, decimal_places=0)
+            ),
         )
 
     def __str__(self) -> str:
@@ -742,7 +747,9 @@ class BaserowFormulaArrayType(BaserowFormulaValidType):
     def get_order(
         self, field, field_name, order_direction
     ) -> OptionallyAnnotatedOrderBy:
-        expr = self.sub_type.get_order_by_in_array_expr(field, field_name, order_direction)        
+        expr = self.sub_type.get_order_by_in_array_expr(
+            field, field_name, order_direction
+        )
         annotation_name = f"{field_name}_agg_sort_array"
         annotation = {annotation_name: expr}
         field_expr = F(annotation_name)
@@ -758,32 +765,6 @@ class BaserowFormulaArrayType(BaserowFormulaValidType):
 
     def __str__(self) -> str:
         return f"array({self.sub_type})"
-
-
-# TODO: text, float
-class JSONBSingleKeyArrayExpression(Expression):
-    template = """
-        (
-            SELECT ARRAY_AGG(items.{key_name})
-            FROM jsonb_to_recordset({field_name}) as items(
-            {key_name} text)
-        )
-        """  # nosec B608
-    # fmt: on
-
-    def __init__(self, field_name: str, key_name: str, **kwargs):
-        super().__init__(**kwargs)
-        self.field_name = field_name
-        self.key_name = key_name
-
-    def as_sql(self, compiler, connection, template=None):
-        template = template or self.template
-        data = {
-            "field_name": f'"{self.field_name}"',
-            "key_name": f'"{self.key_name}"',
-        }
-
-        return template.format(**data), []
 
 
 class BaserowFormulaSingleSelectType(BaserowFormulaValidType):
@@ -925,3 +906,54 @@ def literal(
         return formula_function_registry.get("date_interval")(literal("0 hours"))
 
     raise TypeError(f"Unknown literal type {type(arg)}")
+
+
+class JSONBSingleKeyStringArrayExpression(Expression):
+    template = """
+        (
+            SELECT ARRAY_AGG(items.{key_name})
+            FROM jsonb_to_recordset({field_name}) as items(
+            {key_name} text)
+        )
+        """  # nosec B608
+    # fmt: on
+
+    def __init__(self, field_name: str, key_name: str, **kwargs):
+        super().__init__(**kwargs)
+        self.field_name = field_name
+        self.key_name = key_name
+
+    def as_sql(self, compiler, connection, template=None):
+        template = template or self.template
+        data = {
+            "field_name": f'"{self.field_name}"',
+            "key_name": f'"{self.key_name}"',
+        }
+
+        return template.format(**data), []
+
+
+class JSONBSingleKeyNumberArrayExpression(Expression):
+    template = """
+        (
+            SELECT ARRAY_AGG(items.{key_name})
+            FROM jsonb_to_recordset({field_name}) as items(
+            {key_name} numeric)
+        )
+        """  # nosec B608
+    # fmt: on
+
+    def __init__(self, field_name: str, key_name: str, **kwargs):
+        super().__init__(**kwargs)
+        self.field_name = field_name
+        self.key_name = key_name
+        self.number_decimal_places = kwargs.get("number_decimal_places", 0)
+
+    def as_sql(self, compiler, connection, template=None):
+        template = template or self.template
+        data = {
+            "field_name": f'"{self.field_name}"',
+            "key_name": f'"{self.key_name}"',
+        }
+
+        return template.format(**data), []
