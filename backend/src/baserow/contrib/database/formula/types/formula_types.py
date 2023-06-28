@@ -292,6 +292,7 @@ class BaserowFormulaBooleanType(
 ):
     type = "boolean"
     baserow_field_type = "boolean"
+    can_order_by_in_array = True
 
     @property
     def comparable_types(self) -> List[Type["BaserowFormulaValidType"]]:
@@ -317,6 +318,15 @@ class BaserowFormulaBooleanType(
         self, expr: "BaserowExpression[BaserowFormulaValidType]"
     ):
         return expr
+
+    def get_order_by_in_array_expr(self, field, field_name, order_direction):
+        return JSONBSingleKeyBooleanArrayExpression(
+            field_name,
+            "value",
+            output_field=ArrayField(
+                base_field=models.DecimalField(max_digits=50, decimal_places=0)
+            ),
+        )
 
 
 def _calculate_addition_interval_type(
@@ -948,6 +958,31 @@ class JSONBSingleKeyNumberArrayExpression(Expression):
         self.field_name = field_name
         self.key_name = key_name
         self.number_decimal_places = kwargs.get("number_decimal_places", 0)
+
+    def as_sql(self, compiler, connection, template=None):
+        template = template or self.template
+        data = {
+            "field_name": f'"{self.field_name}"',
+            "key_name": f'"{self.key_name}"',
+        }
+
+        return template.format(**data), []
+
+
+class JSONBSingleKeyBooleanArrayExpression(Expression):
+    template = """
+        (
+            SELECT ARRAY_AGG(items.{key_name})
+            FROM jsonb_to_recordset({field_name}) as items(
+            {key_name} boolean)
+        )
+        """  # nosec B608
+    # fmt: on
+
+    def __init__(self, field_name: str, key_name: str, **kwargs):
+        super().__init__(**kwargs)
+        self.field_name = field_name
+        self.key_name = key_name
 
     def as_sql(self, compiler, connection, template=None):
         template = template or self.template
