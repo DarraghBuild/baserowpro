@@ -3,32 +3,38 @@ image: gitpod/workspace-full
 tasks:
   - name: "Setup"
     init: |
-      export GITPOD_WORKSPACE_URL=https://baserow-baserow-plamysggcwl.ws-eu101.gitpod.io
       proto="$(echo $GITPOD_WORKSPACE_URL | grep :// | sed -e's,^\(.*://\).*,\1,g')"
       url=$(echo $GITPOD_WORKSPACE_URL | sed -e s,$proto,,g)
       user="$(echo $url | grep @ | cut -d@ -f1)"
       hostport=$(echo $url | sed -e s,$user@,,g | cut -d/ -f1)
 
-      echo -e "DATABASE_PASSWORD=baserow\nREDIS_PASSWORD=baserow\nSECRET_KEY=baserow\nPUBLIC_BACKEND_URL=${proto}8000-${hostport}\nPUBLIC_WEB_FRONTEND_URL=${proto}3000-${hostport}" > .env
+      echo -e "DATABASE_PASSWORD=baserow\nREDIS_PASSWORD=baserow\nSECRET_KEY=baserow\nBASEROW_PUBLIC_URL=\nPUBLIC_BACKEND_URL=${proto}8000-${hostport}\nPUBLIC_WEB_FRONTEND_URL=${proto}3000-${hostport}\nUID=33333\nGID=33333" > .env
       docker-compose -f docker-compose.yml -f docker-compose.dev.yml build
 
       mkdir media
       docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 
-      gp sync-done setup
   - name: "Backend"
     command: |
-      gp sync-wait setup
+      echo "Waiting for setup task to complete..."
+      while [ "`docker inspect -f {{.State.Running}} baserow-backend-1`"!="true" ]; do
+        sleep 1;
+      done;
+      echo "Attaching into backend."
       docker attach baserow-backend-1
   - name: "Web-frontend"
     command: |
-      gp sync-wait setup
+      echo "Waiting for setup task to complete..."
+      while [ "`docker inspect -f {{.State.Running}} baserow-web-frontend-1`"!="true" ]; do
+        sleep 0.1;
+      done;
+      echo "Attaching into web-frontend."
       docker attach baserow-web-frontend-1
 
 
 ports:
   - port: 3000  # Web-frontend
-    onOpen: open-browser
+    onOpen: open-preview
   - port: 8000  # Backend
     onOpen: ignore
   - port: 5678  # Backend debugger
@@ -40,6 +46,10 @@ ports:
   - port: 8025  # Mailhog
     onOpen: ignore
   - port: 4318  # Opentelemetry connector
+    onOpen: ignore
+  - port: 80  # Temporary used
+    onOpen: ignore
+  - port: 443  # Temporary used
     onOpen: ignore
 
 vscode:
