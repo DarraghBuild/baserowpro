@@ -1,0 +1,48 @@
+image: gitpod/workspace-full
+
+tasks:
+  - name: "Setup"
+    init: |
+      export GITPOD_WORKSPACE_URL=https://baserow-baserow-plamysggcwl.ws-eu101.gitpod.io
+      proto="$(echo $GITPOD_WORKSPACE_URL | grep :// | sed -e's,^\(.*://\).*,\1,g')"
+      url=$(echo $GITPOD_WORKSPACE_URL | sed -e s,$proto,,g)
+      user="$(echo $url | grep @ | cut -d@ -f1)"
+      hostport=$(echo $url | sed -e s,$user@,,g | cut -d/ -f1)
+
+      echo -e "DATABASE_PASSWORD=baserow\nREDIS_PASSWORD=baserow\nSECRET_KEY=baserow\nPUBLIC_BACKEND_URL=${proto}8000-${hostport}\nPUBLIC_WEB_FRONTEND_URL=${proto}3000-${hostport}" > .env
+      docker-compose -f docker-compose.yml -f docker-compose.dev.yml build
+
+      mkdir media
+      docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+      gp sync-done setup
+  - name: "Backend"
+    command: |
+      gp sync-wait setup
+      docker attach baserow-backend-1
+  - name: "Web-frontend"
+    command: |
+      gp sync-wait setup
+      docker attach baserow-web-frontend-1
+
+
+ports:
+  - port: 3000  # Web-frontend
+    onOpen: open-browser
+  - port: 8000  # Backend
+    onOpen: ignore
+  - port: 5678  # Backend debugger
+    onOpen: ignore
+  - port: 5432  # PostgreSQL
+    onOpen: ignore
+  - port: 6379  # Redis
+    onOpen: ignore
+  - port: 8025  # Mailhog
+    onOpen: ignore
+  - port: 4318  # Opentelemetry connector
+    onOpen: ignore
+
+vscode:
+  extensions:
+    - ms-python.python
+    - Vue.volar
