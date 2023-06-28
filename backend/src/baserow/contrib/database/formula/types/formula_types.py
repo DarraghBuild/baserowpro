@@ -105,6 +105,12 @@ class BaserowFormulaTextType(
 class BaserowFormulaCharType(BaserowFormulaBaseTextType, BaserowFormulaValidType):
     type = "char"
     baserow_field_type = "text"
+    can_order_by_in_array = True
+
+    def get_order_by_in_array_expr(self, field, field_name, order_direction):
+        return JSONBSingleKeyStringArrayExpression(
+            field_name, "value", output_field=models.TextField()
+        )
 
 
 class BaserowFormulaLinkType(BaserowFormulaTextType):
