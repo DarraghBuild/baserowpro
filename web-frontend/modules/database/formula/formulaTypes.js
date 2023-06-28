@@ -240,6 +240,10 @@ export class BaserowFormulaBooleanType extends BaserowFormulaTypeDefinition {
   getFunctionalGridViewFieldArrayComponent() {
     return FunctionalFormulaBooleanArrayItem
   }
+
+  canBeSortedWhenInArray(field) {
+    return true
+  }
 }
 
 export class BaserowFormulaDateType extends BaserowFormulaTypeDefinition {
@@ -459,6 +463,10 @@ export class BaserowFormulaArrayType extends BaserowFormulaTypeDefinition {
         } else if (valuesA[i] === null && valuesB[i] === undefined) {
           compared = order === 'ASC' ? 1 : -1
         } else if (valuesA[i] === undefined && valuesB[i] === null) {
+          compared = order === 'ASC' ? -1 : 1
+        } else if (valuesA[i] === false && valuesB[i] !== false) {
+          compared = order === 'ASC' ? 1 : -1
+        } else if (valuesA[i] !== false && valuesB[i] === false) {
           compared = order === 'ASC' ? -1 : 1
         }
 

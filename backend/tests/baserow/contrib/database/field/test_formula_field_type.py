@@ -1771,3 +1771,58 @@ def test_formula_field_type_lookup_sorting_array_numbers_fractions(
     expected.reverse()
 
     assert sorted_lookup == expected
+
+
+@pytest.mark.django_db
+def test_formula_field_type_lookup_sorting_array_boolean(
+    data_fixture,
+):
+    create_primary_field = lambda table: data_fixture.create_boolean_field(
+        table=table, order=1, primary=True, name="boolean"
+    )
+    distinct_values = [True, False]
+    formula_type = "boolean"
+    unsorted_rows = [
+        [False, True],
+        [True],
+        [True, False],
+        [],
+        [False, True],
+        [False],
+        [True],
+    ]
+    model, formula_field, grid_view = _create_arr_sort_fixture(
+        data_fixture, create_primary_field, formula_type, distinct_values, unsorted_rows
+    )
+
+    expected = [
+        [True, False],
+        [True, False],
+        [True, False],
+        [True],
+        [True],
+        [False],
+        None,
+    ]
+
+    view_handler = ViewHandler()
+    sort = data_fixture.create_view_sort(
+        view=grid_view, field=formula_field, order="DESC"
+    )
+    sorted_rows = view_handler.apply_sorting(grid_view, model.objects.all())
+    sorted_lookup = [
+        getattr(r, f"field_{formula_field.id}_agg_sort_array") for r in sorted_rows
+    ]
+
+    assert sorted_lookup == expected
+
+    sort.order = "ASC"
+    sort.save()
+    sorted_rows = view_handler.apply_sorting(grid_view, model.objects.all())
+    sorted_lookup = [
+        getattr(r, f"field_{formula_field.id}_agg_sort_array") for r in sorted_rows
+    ]
+
+    expected.reverse()
+
+    assert sorted_lookup == expected
