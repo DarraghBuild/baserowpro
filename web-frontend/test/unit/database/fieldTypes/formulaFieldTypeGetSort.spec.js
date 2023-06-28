@@ -5,7 +5,7 @@ const string_a = { id: 1, value: 'a' }
 const string_b = { id: 2, value: 'b' }
 const string_aa = { id: 3, value: 'aa' }
 const string_aaa = { id: 5, value: 'aaa' }
-const string_null = { id: 6, value: null }
+const string_null = { id: 6, value: '' }
 
 const number_1 = { id: 1, value: '1' }
 const number_2 = { id: 2, value: '2' }
@@ -21,7 +21,6 @@ const number_f_null = { id: 5, value: null }
 
 const boolean_true = { id:1, value: true }
 const boolean_false = { id: 2, value: false }
-const boolean_null = { id: 3, value: null }
 
 const ArrayOfArraysTable = [
   {
@@ -122,7 +121,7 @@ describe('FormulaFieldType.getSort()', () => {
     )
     const expected = [
       [],
-      [null, 'a'],
+      ['', 'a'],
       ['a'],
       ['a'],
       ['a', 'b'],

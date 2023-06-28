@@ -1597,7 +1597,7 @@ def test_formula_field_type_lookup_sorting_array_text(
     create_primary_field = lambda table: data_fixture.create_text_field(
         table=table, order=1, primary=True, name="Primary text"
     )
-    distinct_values = ["a", "b", "aa", "bb", "aaa", None]
+    distinct_values = ["a", "b", "aa", "bb", "aaa", ""]
     formula_type = "text"
     unsorted_rows = [
         ["b", "a"],
@@ -1606,7 +1606,7 @@ def test_formula_field_type_lookup_sorting_array_text(
         [],
         ["b", "aaa"],
         ["b"],
-        [None],
+        [""],
         ["aa"],
     ]
     model, formula_field, grid_view = _create_arr_sort_fixture(
@@ -1614,13 +1614,13 @@ def test_formula_field_type_lookup_sorting_array_text(
     )
 
     expected = [
-        [None],
         ["b", "aaa"],
         ["b"],
         ["aa"],
         ["a", "b"],
         ["a", "b"],
         ["a"],
+        [""],
         None,
     ]
 
