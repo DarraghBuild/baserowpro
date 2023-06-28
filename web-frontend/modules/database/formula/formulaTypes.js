@@ -51,7 +51,7 @@ export class BaserowFormulaTypeDefinition extends Registerable {
       .getGridViewFieldComponent()
   }
 
-  getFieldType() {
+  getFieldType(field) {
     throw new Error(
       'Not implemented error. This method should return the types corresponding' +
         ' Baserow field type that should be used for things like sort indicators etc.'
@@ -104,7 +104,7 @@ export class BaserowFormulaTypeDefinition extends Registerable {
   getSort(name, order, field) {
     const underlyingFieldType = this.app.$registry.get(
       'field',
-      this.getFieldType()
+      this.getFieldType(field)
     )
     return underlyingFieldType.getSort(name, order, field)
   }
@@ -116,7 +116,7 @@ export class BaserowFormulaTypeDefinition extends Registerable {
   toHumanReadableString(field, value) {
     const underlyingFieldType = this.app.$registry.get(
       'field',
-      this.getFieldType()
+      this.getFieldType(field)
     )
     return underlyingFieldType.toHumanReadableString(field, value)
   }
@@ -131,7 +131,7 @@ export class BaserowFormulaTextType extends BaserowFormulaTypeDefinition {
     return 'text'
   }
 
-  getFieldType() {
+  getFieldType(field) {
     return 'text'
   }
 
@@ -165,7 +165,7 @@ export class BaserowFormulaCharType extends BaserowFormulaTypeDefinition {
     return 'char'
   }
 
-  getFieldType() {
+  getFieldType(field) {
     return 'text'
   }
 
@@ -195,7 +195,7 @@ export class BaserowFormulaNumberType extends BaserowFormulaTypeDefinition {
     return 'number'
   }
 
-  getFieldType() {
+  getFieldType(field) {
     return 'number'
   }
 
@@ -221,7 +221,7 @@ export class BaserowFormulaBooleanType extends BaserowFormulaTypeDefinition {
     return 'boolean'
   }
 
-  getFieldType() {
+  getFieldType(field) {
     return 'boolean'
   }
 
@@ -251,7 +251,7 @@ export class BaserowFormulaDateType extends BaserowFormulaTypeDefinition {
     return 'date'
   }
 
-  getFieldType() {
+  getFieldType(field) {
     return 'date'
   }
 
@@ -281,7 +281,7 @@ export class BaserowFormulaDateIntervalType extends BaserowFormulaTypeDefinition
     return 'date_interval'
   }
 
-  getFieldType() {
+  getFieldType(field) {
     return 'date'
   }
 
@@ -313,7 +313,7 @@ export class BaserowFormulaSpecialType extends BaserowFormulaTypeDefinition {
     return 'special'
   }
 
-  getFieldType() {
+  getFieldType(field) {
     return 'text'
   }
 
@@ -339,7 +339,7 @@ export class BaserowFormulaInvalidType extends BaserowFormulaTypeDefinition {
     return 'invalid'
   }
 
-  getFieldType() {
+  getFieldType(field) {
     return 'text'
   }
 
@@ -373,8 +373,17 @@ export class BaserowFormulaArrayType extends BaserowFormulaTypeDefinition {
     return 'array'
   }
 
-  getFieldType() {
-    return 'text'
+  getFieldType(field) {
+    if (!field) {
+      return "text"
+    }
+
+    const subType = this.app.$registry.get(
+      'formula_type',
+      field.array_formula_type
+    )
+
+    return subType.getFieldType(field)
   }
 
   getIconClass() {
@@ -498,7 +507,7 @@ export class BaserowFormulaSingleSelectType extends BaserowFormulaTypeDefinition
     return 'single_select'
   }
 
-  getFieldType() {
+  getFieldType(field) {
     return 'single_select'
   }
 
@@ -528,7 +537,7 @@ export class BaserowFormulaLinkType extends BaserowFormulaTypeDefinition {
     return 'link'
   }
 
-  getFieldType() {
+  getFieldType(field) {
     return 'text'
   }
 

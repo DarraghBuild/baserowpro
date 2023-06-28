@@ -2647,8 +2647,8 @@ export class FormulaFieldType extends FieldType {
     return RowCardFieldFormula
   }
 
-  _mapFormulaTypeToFieldType(formulaType) {
-    return this.app.$registry.get('formula_type', formulaType).getFieldType()
+  _mapFormulaTypeToFieldType(formulaType, field) {
+    return this.app.$registry.get('formula_type', formulaType).getFieldType(field)
   }
 
   getCardValueHeight(field) {
@@ -2702,7 +2702,7 @@ export class FormulaFieldType extends FieldType {
   getContainsFilterFunction(field) {
     const underlyingFieldType = this.app.$registry.get(
       'field',
-      this._mapFormulaTypeToFieldType(field.formula_type)
+      this._mapFormulaTypeToFieldType(field.formula_type, field)
     )
     return underlyingFieldType.getContainsFilterFunction()
   }
@@ -2710,7 +2710,7 @@ export class FormulaFieldType extends FieldType {
   getContainsWordFilterFunction(field) {
     const underlyingFieldType = this.app.$registry.get(
       'field',
-      this._mapFormulaTypeToFieldType(field.formula_type)
+      this._mapFormulaTypeToFieldType(field.formula_type, field)
     )
     return underlyingFieldType.getContainsWordFilterFunction()
   }
@@ -2724,7 +2724,7 @@ export class FormulaFieldType extends FieldType {
   getSortIndicator(field) {
     const underlyingFieldType = this.app.$registry.get(
       'field',
-      this._mapFormulaTypeToFieldType(field.formula_type)
+      this._mapFormulaTypeToFieldType(field.formula_type, field)
     )
     return underlyingFieldType.getSortIndicator()
   }
