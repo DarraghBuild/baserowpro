@@ -536,7 +536,7 @@ export class BaserowFormulaSingleSelectType extends BaserowFormulaTypeDefinition
   }
 
   mapToSortableArray(element) {
-    return element.value.value
+    return element.value
   }
 }
 
