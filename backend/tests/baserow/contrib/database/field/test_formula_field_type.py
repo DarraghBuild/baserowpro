@@ -1826,3 +1826,115 @@ def test_formula_field_type_lookup_sorting_array_boolean(
     expected.reverse()
 
     assert sorted_lookup == expected
+
+
+@pytest.mark.django_db
+def test_formula_field_type_lookup_sorting_single_select(
+    data_fixture,
+):
+    row_handler = RowHandler()
+    user = data_fixture.create_user()
+    database = data_fixture.create_database_application(user=user, name="db")
+
+    # related table
+    related_table = data_fixture.create_database_table(
+        name="Related table", database=database
+    )
+    related_primary_field = data_fixture.create_single_select_field(
+        table=related_table, order=1, primary=True, name="Primary text"
+    )
+    distinct_values = ["a", "b", "aa", "bb", "aaa", None]
+    distinct_values_id_mapping = {}
+    for dv in distinct_values:
+        if dv:
+            option = data_fixture.create_select_option(
+                field=related_primary_field, value=dv, color="blue"
+            )
+        else:
+            option = None
+        distinct_values_id_mapping[dv] = option
+    
+    related_table_model = related_table.get_model()
+    related_table_rows = {}
+    for dv in distinct_values:
+        related_table_rows[dv] = related_table_model.objects.create(
+            **{f"field_{related_primary_field.id}": distinct_values_id_mapping[dv]}
+        )
+
+    # main table
+    table = data_fixture.create_database_table(name="Main table", database=database)
+    data_fixture.create_text_field(
+        table=table, order=1, primary=True, name="Primary text"
+    )
+    link_row_field = data_fixture.create_link_row_field(
+        name="link", table=table, link_row_table=related_table
+    )
+    formula_field = data_fixture.create_formula_field(
+        table=table,
+        name="formula_lookup",
+        formula=f"lookup('{link_row_field.name}', '{related_primary_field.name}')",
+        formula_type="single_select",
+    )
+    grid_view = data_fixture.create_grid_view(table=table)
+
+    unsorted_rows = [
+        ["b", "a"],
+        ["a"],
+        ["a", "b"],
+        [],
+        ["b", "aaa"],
+        ["b"],
+        ["aa"],
+        [None]
+    ]
+
+    for index, field_values in enumerate(unsorted_rows):
+        for index2, value in enumerate(field_values):
+            unsorted_rows[index][index2] = related_table_rows[value].id
+
+    for row_list in unsorted_rows:
+        row_handler.create_row(
+            user=user, table=table, values={f"field_{link_row_field.id}": row_list}
+        )
+    
+    # FIXME:
+    expected = [
+        ["b", "aaa"],
+        ["b"],
+        ["aa"],
+        ["a", "b"],
+        ["a", "b"],
+        ["a"],
+        [None],
+        [],
+    ]
+
+    view_handler = ViewHandler()
+    sort = data_fixture.create_view_sort(
+        view=grid_view, field=formula_field, order="DESC"
+    )
+    model = table.get_model()
+    sorted_rows = view_handler.apply_sorting(grid_view, model.objects.all())
+
+    print(sorted_rows.query)
+
+    sorted_lookup = [
+        getattr(r, f"field_{formula_field.id}_agg_sort_array") for r in sorted_rows
+    ]
+
+    # TODO: remove
+    # for row in table.get_model().objects.all():
+    #     print(getattr(row, f"field_{formula_field.id}"))
+
+    assert sorted_lookup == expected
+
+    sort.order = "ASC"
+    sort.save()
+    sorted_rows = view_handler.apply_sorting(grid_view, model.objects.all())
+    sorted_lookup = [
+        getattr(r, f"field_{formula_field.id}_agg_sort_array") for r in sorted_rows
+    ]
+
+    expected.reverse()
+
+    assert sorted_lookup == expected
