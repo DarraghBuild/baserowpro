@@ -28,15 +28,15 @@ const single_select_a = {
 }
 const single_select_b = {
   id: 2,
-  value: { id: 2219, value: 'b', color: 'light-red' },
+  value: { id: 2220, value: 'b', color: 'light-red' },
 }
 const single_select_aa = {
   id: 3,
-  value: { id: 2219, value: 'aa', color: 'light-red' },
+  value: { id: 2221, value: 'aa', color: 'light-red' },
 }
 const single_select_aaa = {
   id: 4,
-  value: { id: 2219, value: 'aaa', color: 'light-red' },
+  value: { id: 2222, value: 'aaa', color: 'light-red' },
 }
 const single_select_null = {
   id: 5,
@@ -303,7 +303,7 @@ describe('FormulaFieldType.getSort()', () => {
     expect(sortedReversed).toEqual(expected.reverse())
   })
 
-  test.only('array(single_select)', () => {
+  test('array(single_select)', () => {
     const formulaType = testApp._app.$registry.get('field', 'formula')
     const formulaField = {
       formula_type: 'array',
@@ -327,17 +327,15 @@ describe('FormulaFieldType.getSort()', () => {
       obj.field_single_select.map((inner) => inner.value.value)
     )
 
-    // FIXME: not the same as text
-
     const expected = [
       [],
-      [null, 'a'],
       ['a'],
       ['a'],
       ['a', 'b'],
       ['aa'],
       ['b', 'a'],
       ['b', 'aaa'],
+      [null, 'a'],
     ]
 
     console.log({ sorted: JSON.stringify(sorted) })
