@@ -1013,9 +1013,9 @@ class JSONBSingleKeyBooleanArrayExpression(Expression):
 class JSONBSingleKeySingleSelectArrayExpression(Expression):
     template = """
         (
-            SELECT ARRAY_AGG(items.{key_name})
+            SELECT ARRAY_AGG(items.{key_name}->>'value'::text)
             FROM jsonb_to_recordset({field_name}) as items(
-            {key_name} json)
+            {key_name} jsonb)
         )
         """  # nosec B608
     # fmt: on

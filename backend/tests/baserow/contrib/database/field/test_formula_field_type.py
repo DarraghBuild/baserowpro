@@ -1897,16 +1897,15 @@ def test_formula_field_type_lookup_sorting_single_select(
             user=user, table=table, values={f"field_{link_row_field.id}": row_list}
         )
     
-    # FIXME:
     expected = [
+        [None],
         ["b", "aaa"],
         ["b"],
         ["aa"],
         ["a", "b"],
         ["a", "b"],
         ["a"],
-        [None],
-        [],
+        None,
     ]
 
     view_handler = ViewHandler()
@@ -1916,15 +1915,9 @@ def test_formula_field_type_lookup_sorting_single_select(
     model = table.get_model()
     sorted_rows = view_handler.apply_sorting(grid_view, model.objects.all())
 
-    print(sorted_rows.query)
-
     sorted_lookup = [
         getattr(r, f"field_{formula_field.id}_agg_sort_array") for r in sorted_rows
     ]
-
-    # TODO: remove
-    # for row in table.get_model().objects.all():
-    #     print(getattr(row, f"field_{formula_field.id}"))
 
     assert sorted_lookup == expected
 
