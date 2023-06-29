@@ -12,24 +12,21 @@ tasks:
       docker-compose -f docker-compose.yml -f docker-compose.dev.yml build
 
       mkdir media
-      docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
-
-#  - name: "Backend"
-#    command: |
-#      echo "Waiting for setup task to complete..."
-#      while [ "`docker inspect -f {{.State.Running}} baserow-backend-1`"!="true" ]; do
-#        sleep 1;
-#      done;
-#      echo "Attaching into backend."
-#      docker attach baserow-backend-1
-#  - name: "Web-frontend"
-#    command: |
-#      echo "Waiting for setup task to complete..."
-#      while [ "`docker inspect -f {{.State.Running}} baserow-web-frontend-1`"!="true" ]; do
-#        sleep 1;
-#      done;
-#      echo "Attaching into web-frontend."
-#      docker attach baserow-web-frontend-1
+      docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+      gp sync-done setup
+      docker-compose -f docker-compose.yml -f docker-compose.dev.yml logs --follow
+  - name: "Backend"
+    command: |
+      echo "Waiting for setup task to complete..."
+      gp sync-await setup
+      echo "Attaching into backend."
+      docker attach baserow-backend-1
+  - name: "Web-frontend"
+    command: |
+      echo "Waiting for setup task to complete..."
+      gp sync-await setup
+      echo "Attaching into web-frontend."
+      docker attach baserow-web-frontend-1
 
 
 ports:

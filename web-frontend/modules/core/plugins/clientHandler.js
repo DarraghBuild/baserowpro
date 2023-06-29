@@ -463,7 +463,7 @@ const prepareRequestHeaders = (store) => (config) => {
 }
 
 const createAxiosInstance = (app) => {
-  const withCredentials = ['true', 'y', 'on'].includes(
+  const withCredentials = ['t', 'true', 'y', 'yes', 'on', '1'].includes(
     app.$env.BASEROW_FRONTEND_WITH_CREDENTIALS_REQUEST.toLowerCase()
   )
   const url =
