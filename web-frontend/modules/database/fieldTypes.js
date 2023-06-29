@@ -2648,7 +2648,9 @@ export class FormulaFieldType extends FieldType {
   }
 
   _mapFormulaTypeToFieldType(formulaType, field) {
-    return this.app.$registry.get('formula_type', formulaType).getFieldType(field)
+    return this.app.$registry
+      .get('formula_type', formulaType)
+      .getFieldType(field)
   }
 
   getCardValueHeight(field) {
