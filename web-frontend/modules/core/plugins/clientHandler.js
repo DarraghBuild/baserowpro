@@ -463,13 +463,16 @@ const prepareRequestHeaders = (store) => (config) => {
 }
 
 const createAxiosInstance = (app) => {
+  const withCredentials = ['true', 'y', 'on'].includes(
+    app.$env.BASEROW_FRONTEND_WITH_CREDENTIALS_REQUEST.toLowerCase()
+  )
   const url =
     (process.client
       ? app.$env.PUBLIC_BACKEND_URL
       : app.$env.PRIVATE_BACKEND_URL) + '/api'
   return axios.create({
     baseURL: url,
-    withCredentials: false,
+    withCredentials,
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',

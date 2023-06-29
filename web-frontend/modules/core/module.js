@@ -118,6 +118,10 @@ export default function CoreModule(options) {
           key: 'BASEROW_FRONTEND_JOBS_POLLING_TIMEOUT_MS',
           default: 2000,
         },
+        {
+          key: 'BASEROW_FRONTEND_WITH_CREDENTIALS_REQUEST',
+          default: 'false',
+        },
       ],
     },
   ])
