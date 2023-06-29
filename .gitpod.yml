@@ -14,22 +14,22 @@ tasks:
       mkdir media
       docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 
-  - name: "Backend"
-    command: |
-      echo "Waiting for setup task to complete..."
-      while [ "`docker inspect -f {{.State.Running}} baserow-backend-1`"!="true" ]; do
-        sleep 1;
-      done;
-      echo "Attaching into backend."
-      docker attach baserow-backend-1
-  - name: "Web-frontend"
-    command: |
-      echo "Waiting for setup task to complete..."
-      while [ "`docker inspect -f {{.State.Running}} baserow-web-frontend-1`"!="true" ]; do
-        sleep 0.1;
-      done;
-      echo "Attaching into web-frontend."
-      docker attach baserow-web-frontend-1
+#  - name: "Backend"
+#    command: |
+#      echo "Waiting for setup task to complete..."
+#      while [ "`docker inspect -f {{.State.Running}} baserow-backend-1`"!="true" ]; do
+#        sleep 1;
+#      done;
+#      echo "Attaching into backend."
+#      docker attach baserow-backend-1
+#  - name: "Web-frontend"
+#    command: |
+#      echo "Waiting for setup task to complete..."
+#      while [ "`docker inspect -f {{.State.Running}} baserow-web-frontend-1`"!="true" ]; do
+#        sleep 1;
+#      done;
+#      echo "Attaching into web-frontend."
+#      docker attach baserow-web-frontend-1
 
 
 ports:
