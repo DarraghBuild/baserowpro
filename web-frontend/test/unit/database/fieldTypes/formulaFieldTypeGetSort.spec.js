@@ -22,6 +22,27 @@ const number_f_null = { id: 5, value: null }
 const boolean_true = { id: 1, value: true }
 const boolean_false = { id: 2, value: false }
 
+const single_select_a = {
+  id: 1,
+  value: { id: 2219, value: 'a', color: 'light-red' },
+}
+const single_select_b = {
+  id: 2,
+  value: { id: 2219, value: 'b', color: 'light-red' },
+}
+const single_select_aa = {
+  id: 3,
+  value: { id: 2219, value: 'aa', color: 'light-red' },
+}
+const single_select_aaa = {
+  id: 4,
+  value: { id: 2219, value: 'aaa', color: 'light-red' },
+}
+const single_select_null = {
+  id: 5,
+  value: { id: null, value: null, color: null },
+}
+
 const ArrayOfArraysTable = [
   {
     id: 1,
@@ -30,6 +51,7 @@ const ArrayOfArraysTable = [
     field_numbers: [number_2, number_1],
     field_booleans: [boolean_false, boolean_true],
     field_numbers_fractions: [number_f_0_4, number_f_0_0_5],
+    field_single_select: [single_select_b, single_select_a],
   },
   {
     id: 2,
@@ -38,6 +60,7 @@ const ArrayOfArraysTable = [
     field_numbers: [number_1],
     field_booleans: [boolean_true],
     field_numbers_fractions: [number_f_0_0_5],
+    field_single_select: [single_select_a],
   },
   {
     id: 3,
@@ -46,6 +69,7 @@ const ArrayOfArraysTable = [
     field_numbers: [number_1, number_2],
     field_booleans: [boolean_true, boolean_false],
     field_numbers_fractions: [number_f_0_0_5, number_f_0_4],
+    field_single_select: [single_select_a, single_select_b],
   },
   {
     id: 4,
@@ -54,6 +78,7 @@ const ArrayOfArraysTable = [
     field_numbers: [],
     field_booleans: [],
     field_numbers_fractions: [],
+    field_single_select: [],
   },
   {
     id: 5,
@@ -62,6 +87,7 @@ const ArrayOfArraysTable = [
     field_numbers: [number_2, number_111],
     field_booleans: [boolean_false, boolean_true],
     field_numbers_fractions: [number_f_0_4, number_f_1_1],
+    field_single_select: [single_select_b, single_select_aaa],
   },
   {
     id: 6,
@@ -70,6 +96,7 @@ const ArrayOfArraysTable = [
     field_numbers: [number_1],
     field_booleans: [boolean_true],
     field_numbers_fractions: [number_f_0_4],
+    field_single_select: [single_select_a],
   },
   {
     id: 7,
@@ -78,6 +105,7 @@ const ArrayOfArraysTable = [
     field_numbers: [number_11],
     field_booleans: [boolean_true],
     field_numbers_fractions: [number_f_1_0],
+    field_single_select: [single_select_aa],
   },
   {
     id: 8,
@@ -86,6 +114,7 @@ const ArrayOfArraysTable = [
     field_numbers: [number_null, number_1],
     field_booleans: [boolean_false, boolean_true],
     field_numbers_fractions: [number_f_null, number_f_0_0_5],
+    field_single_select: [single_select_null, single_select_a],
   },
 ]
 
@@ -182,7 +211,7 @@ describe('FormulaFieldType.getSort()', () => {
     expect(sortedReversed).toEqual(expected.reverse())
   })
 
-  test.only('array(number) fractions', () => {
+  test('array(number) fractions', () => {
     const formulaType = testApp._app.$registry.get('field', 'formula')
     const formulaField = {
       formula_type: 'array',
@@ -270,6 +299,58 @@ describe('FormulaFieldType.getSort()', () => {
     const sortedReversed = ArrayOfArraysTable.map((obj) =>
       obj.field_booleans.map((inner) => inner.value)
     )
+
+    expect(sortedReversed).toEqual(expected.reverse())
+  })
+
+  test.only('array(single_select)', () => {
+    const formulaType = testApp._app.$registry.get('field', 'formula')
+    const formulaField = {
+      formula_type: 'array',
+      array_formula_type: 'single_select',
+    }
+
+    expect(formulaType.getCanSortInView(formulaField)).toBe(true)
+
+    const ASC = formulaType.getSort('field_single_select', 'ASC', formulaField)
+    const sortASC = firstBy().thenBy(ASC)
+    const DESC = formulaType.getSort(
+      'field_single_select',
+      'DESC',
+      formulaField
+    )
+    const sortDESC = firstBy().thenBy(DESC)
+
+    ArrayOfArraysTable.sort(sortASC)
+
+    const sorted = ArrayOfArraysTable.map((obj) =>
+      obj.field_single_select.map((inner) => inner.value.value)
+    )
+
+    // FIXME: not the same as text
+
+    const expected = [
+      [],
+      [null, 'a'],
+      ['a'],
+      ['a'],
+      ['a', 'b'],
+      ['aa'],
+      ['b', 'a'],
+      ['b', 'aaa'],
+    ]
+
+    console.log({ sorted: JSON.stringify(sorted) })
+
+    expect(sorted).toEqual(expected)
+
+    ArrayOfArraysTable.sort(sortDESC)
+
+    const sortedReversed = ArrayOfArraysTable.map((obj) =>
+      obj.field_single_select.map((inner) => inner.value.value)
+    )
+
+    console.log({ sortedReversed: JSON.stringify(sortedReversed) })
 
     expect(sortedReversed).toEqual(expected.reverse())
   })

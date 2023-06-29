@@ -787,6 +787,7 @@ class BaserowFormulaSingleSelectType(BaserowFormulaValidType):
     type = "single_select"
     baserow_field_type = "single_select"
     can_order_by = False
+    can_order_by_in_array = True
 
     @property
     def comparable_types(self) -> List[Type["BaserowFormulaValidType"]]:
@@ -846,6 +847,15 @@ class BaserowFormulaSingleSelectType(BaserowFormulaValidType):
         )
         return formula_function_registry.get("when_empty")(
             single_select_value, literal("")
+        )
+    
+    def get_order_by_in_array_expr(self, field, field_name, order_direction):
+        return JSONBSingleKeySingleSelectArrayExpression(
+            field_name,
+            "value",
+            output_field=ArrayField(
+                base_field=models.DecimalField(max_digits=50, decimal_places=0)
+            ),
         )
 
 
@@ -981,6 +991,31 @@ class JSONBSingleKeyBooleanArrayExpression(Expression):
             SELECT ARRAY_AGG(items.{key_name})
             FROM jsonb_to_recordset({field_name}) as items(
             {key_name} boolean)
+        )
+        """  # nosec B608
+    # fmt: on
+
+    def __init__(self, field_name: str, key_name: str, **kwargs):
+        super().__init__(**kwargs)
+        self.field_name = field_name
+        self.key_name = key_name
+
+    def as_sql(self, compiler, connection, template=None):
+        template = template or self.template
+        data = {
+            "field_name": f'"{self.field_name}"',
+            "key_name": f'"{self.key_name}"',
+        }
+
+        return template.format(**data), []
+
+
+class JSONBSingleKeySingleSelectArrayExpression(Expression):
+    template = """
+        (
+            SELECT ARRAY_AGG(items.{key_name})
+            FROM jsonb_to_recordset({field_name}) as items(
+            {key_name} json)
         )
         """  # nosec B608
     # fmt: on

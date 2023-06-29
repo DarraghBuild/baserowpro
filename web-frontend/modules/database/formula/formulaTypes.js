@@ -530,6 +530,14 @@ export class BaserowFormulaSingleSelectType extends BaserowFormulaTypeDefinition
   getCanSortInView(field) {
     return false
   }
+
+  canBeSortedWhenInArray(field) {
+    return true
+  }
+
+  mapToSortableArray(element) {
+    return element.value.value
+  }
 }
 
 export class BaserowFormulaLinkType extends BaserowFormulaTypeDefinition {
