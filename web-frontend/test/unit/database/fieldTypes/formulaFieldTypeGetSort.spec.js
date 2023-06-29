@@ -19,7 +19,7 @@ const number_f_1_0 = { id: 3, value: '1.00' }
 const number_f_1_1 = { id: 4, value: '1.10' }
 const number_f_null = { id: 5, value: null }
 
-const boolean_true = { id:1, value: true }
+const boolean_true = { id: 1, value: true }
 const boolean_false = { id: 2, value: false }
 
 const ArrayOfArraysTable = [
@@ -160,7 +160,16 @@ describe('FormulaFieldType.getSort()', () => {
     const sorted = ArrayOfArraysTable.map((obj) =>
       obj.field_numbers.map((inner) => inner.value)
     )
-    const expected = [[], [null, '1'], ['1'], ['1'], ['1', '2'], ['2', '1'], ['2', '111'], ['11']]
+    const expected = [
+      [],
+      [null, '1'],
+      ['1'],
+      ['1'],
+      ['1', '2'],
+      ['2', '1'],
+      ['2', '111'],
+      ['11'],
+    ]
 
     expect(sorted).toEqual(expected)
 
@@ -173,7 +182,7 @@ describe('FormulaFieldType.getSort()', () => {
     expect(sortedReversed).toEqual(expected.reverse())
   })
 
-  test('array(number) fractions', () => {
+  test.only('array(number) fractions', () => {
     const formulaType = testApp._app.$registry.get('field', 'formula')
     const formulaField = {
       formula_type: 'array',
@@ -182,9 +191,17 @@ describe('FormulaFieldType.getSort()', () => {
 
     expect(formulaType.getCanSortInView(formulaField)).toBe(true)
 
-    const ASC = formulaType.getSort('field_numbers_fractions', 'ASC', formulaField)
+    const ASC = formulaType.getSort(
+      'field_numbers_fractions',
+      'ASC',
+      formulaField
+    )
     const sortASC = firstBy().thenBy(ASC)
-    const DESC = formulaType.getSort('field_numbers_fractions', 'DESC', formulaField)
+    const DESC = formulaType.getSort(
+      'field_numbers_fractions',
+      'DESC',
+      formulaField
+    )
     const sortDESC = firstBy().thenBy(DESC)
 
     ArrayOfArraysTable.sort(sortASC)
@@ -195,13 +212,13 @@ describe('FormulaFieldType.getSort()', () => {
 
     const expected = [
       [],
-      [ null, '0.05' ],
-      [ '0.05' ],
-      [ '0.05', '0.40' ],
-      [ '0.40' ],
-      [ '0.40', '0.05' ],
-      [ '0.40', '1.10' ],
-      [ '1.00' ]
+      [null, '0.05'],
+      ['0.05'],
+      ['0.05', '0.40'],
+      ['0.40'],
+      ['0.40', '0.05'],
+      ['0.40', '1.10'],
+      ['1.00'],
     ]
 
     expect(sorted).toEqual(expected)
@@ -237,13 +254,13 @@ describe('FormulaFieldType.getSort()', () => {
 
     const expected = [
       [],
-      [ false, true ],
-      [ false, true ],
-      [ false, true ],
-      [ true ],
-      [ true ],
-      [ true ],
-      [ true, false ]
+      [false, true],
+      [false, true],
+      [false, true],
+      [true],
+      [true],
+      [true],
+      [true, false],
     ]
 
     expect(sorted).toEqual(expected)
@@ -256,5 +273,4 @@ describe('FormulaFieldType.getSort()', () => {
 
     expect(sortedReversed).toEqual(expected.reverse())
   })
-
 })

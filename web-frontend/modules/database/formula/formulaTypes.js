@@ -375,7 +375,7 @@ export class BaserowFormulaArrayType extends BaserowFormulaTypeDefinition {
 
   getFieldType(field) {
     if (!field) {
-      return "text"
+      return 'text'
     }
 
     const subType = this.app.$registry.get(
@@ -460,8 +460,8 @@ export class BaserowFormulaArrayType extends BaserowFormulaTypeDefinition {
       for (let i = 0; i < Math.max(valuesA.length, valuesB.length); i++) {
         let compared = 0
 
-        const isAdefined = valuesA[i] || valuesA[i] === ""
-        const isBdefined = valuesB[i] || valuesB[i] === ""
+        const isAdefined = valuesA[i] || valuesA[i] === ''
+        const isBdefined = valuesB[i] || valuesB[i] === ''
 
         if (isAdefined && isBdefined) {
           compared = innerSortFunction(
