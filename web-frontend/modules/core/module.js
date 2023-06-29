@@ -119,7 +119,7 @@ export default function CoreModule(options) {
           default: 2000,
         },
         {
-          key: 'BASEROW_FRONTEND_WITH_CREDENTIALS_REQUEST',
+          key: 'BASEROW_STRICT_CORS',
           default: 'false',
         },
       ],

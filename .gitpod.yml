@@ -8,7 +8,7 @@ tasks:
       user="$(echo $url | grep @ | cut -d@ -f1)"
       hostport=$(echo $url | sed -e s,$user@,,g | cut -d/ -f1)
 
-      echo -e "DATABASE_PASSWORD=baserow\nREDIS_PASSWORD=baserow\nSECRET_KEY=baserow\nBASEROW_PUBLIC_URL=\nPUBLIC_BACKEND_URL=${proto}8000-${hostport}\nPUBLIC_WEB_FRONTEND_URL=${proto}3000-${hostport}\nUID=33333\nGID=33333\nBASEROW_FRONTEND_WITH_CREDENTIALS_REQUEST=true" > .env
+      echo -e "DATABASE_PASSWORD=baserow\nREDIS_PASSWORD=baserow\nSECRET_KEY=baserow\nBASEROW_PUBLIC_URL=\nPUBLIC_BACKEND_URL=${proto}8000-${hostport}\nPUBLIC_WEB_FRONTEND_URL=${proto}3000-${hostport}\nUID=33333\nGID=33333\nBASEROW_STRICT_CORS=true" > .env
       docker-compose -f docker-compose.yml -f docker-compose.dev.yml build
 
       mkdir media

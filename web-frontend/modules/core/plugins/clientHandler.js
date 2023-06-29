@@ -464,7 +464,7 @@ const prepareRequestHeaders = (store) => (config) => {
 
 const createAxiosInstance = (app) => {
   const withCredentials = ['t', 'true', 'y', 'yes', 'on', '1'].includes(
-    app.$env.BASEROW_FRONTEND_WITH_CREDENTIALS_REQUEST.toLowerCase()
+    app.$env.BASEROW_STRICT_CORS.toLowerCase()
   )
   const url =
     (process.client
