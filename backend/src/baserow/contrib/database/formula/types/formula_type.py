@@ -182,6 +182,20 @@ class BaserowFormulaType(abc.ABC):
 
         return OptionallyAnnotatedOrderBy(order=field_order_by, can_be_indexed=True)
 
+    def get_value_for_filter(self, row, field) -> any:
+        """
+        Returns the value of a field in a row that can be used for SQL filtering.
+        Usually this is just a string or int value stored in the row.
+
+        Should be implemented when can_order_by_in_array is True.
+
+        :param row: The row which contains the field value.
+        :param field: The instance of the field to get the value for.
+        :return: The value of the field in the row in a filterable format.
+        """
+
+        return Value(None, output_field=CharField())
+
     @property
     def can_order_by_in_array(self) -> bool:
         """

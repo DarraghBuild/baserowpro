@@ -1454,7 +1454,7 @@ class FieldType(
 
         return []
 
-    def get_value_for_filter(self, row: "GeneratedTableModel", field_name: str) -> any:
+    def get_value_for_filter(self, row: "GeneratedTableModel", field: Field) -> any:
         """
         Returns the value of a field in a row that can be used for SQL filtering.
         Usually this is just a string or int value stored in the row but for
@@ -1464,11 +1464,11 @@ class FieldType(
         method.
 
         :param row: The row which contains the field value.
-        :param field_name: The name of the field to get the value for.
+        :param field: The instance of the field to get the value for.
         :return: The value of the field in the row in a filterable format.
         """
 
-        return getattr(row, field_name)
+        return getattr(row, field.db_column)
 
     def can_represent_date(self, field):
         """Indicates whether the field can be used to represent date or datetime."""
