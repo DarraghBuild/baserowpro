@@ -848,7 +848,7 @@ class BaserowFormulaSingleSelectType(BaserowFormulaValidType):
         return formula_function_registry.get("when_empty")(
             single_select_value, literal("")
         )
-    
+
     def get_order_by_in_array_expr(self, field, field_name, order_direction):
         return JSONBSingleKeySingleSelectArrayExpression(
             field_name,

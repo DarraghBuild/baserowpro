@@ -1051,35 +1051,11 @@ def test_cannot_create_view_filter_or_sort_on_invalid_field(data_fixture):
     )
     data_fixture.create_select_option(field=option_field, value="A", color="blue")
     data_fixture.create_select_option(field=option_field, value="B", color="red")
-    single_select_formula_field = FieldHandler().create_field(
-        user=user,
-        table=table,
-        type_name="formula",
-        name="2",
-        formula="field('option_field')",
-    )
-    lookup_field = FieldHandler().create_field(
-        user=user,
-        table=table,
-        type_name="lookup",
-        name="lookup",
-        through_field_name=link.name,
-        target_field_name="primary",
-    )
-
     broken_formula_field = FormulaField.objects.get(id=broken_formula_field.id)
-    single_select_formula_field = FormulaField.objects.get(
-        id=single_select_formula_field.id
-    )
-    lookup_field = LookupField.objects.get(id=lookup_field.id)
     assert broken_formula_field.formula_type == "invalid"
-    assert single_select_formula_field.formula_type == "single_select"
-    assert lookup_field.formula_type == "array"
 
     fields_which_cant_yet_be_sorted_or_filtered = [
         broken_formula_field,
-        single_select_formula_field,
-        lookup_field,
     ]
     for field in fields_which_cant_yet_be_sorted_or_filtered:
         for view_filter_type in view_filter_type_registry.get_all():
@@ -1853,7 +1829,7 @@ def test_formula_field_type_lookup_sorting_single_select(
         else:
             option = None
         distinct_values_id_mapping[dv] = option
-    
+
     related_table_model = related_table.get_model()
     related_table_rows = {}
     for dv in distinct_values:
@@ -1885,7 +1861,7 @@ def test_formula_field_type_lookup_sorting_single_select(
         ["b", "aaa"],
         ["b"],
         ["aa"],
-        [None]
+        [None],
     ]
 
     for index, field_values in enumerate(unsorted_rows):
@@ -1896,7 +1872,7 @@ def test_formula_field_type_lookup_sorting_single_select(
         row_handler.create_row(
             user=user, table=table, values={f"field_{link_row_field.id}": row_list}
         )
-    
+
     expected = [
         [None],
         ["b", "aaa"],
