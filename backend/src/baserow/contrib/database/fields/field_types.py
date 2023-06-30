@@ -2464,8 +2464,8 @@ class SingleSelectFieldType(SelectOptionBaseFieldType):
             models.Prefetch(name, queryset=SelectOption.objects.using("default").all())
         )
 
-    def get_value_for_filter(self, row: "GeneratedTableModel", field_name: str) -> int:
-        return getattr(row, field_name)
+    def get_value_for_filter(self, row: "GeneratedTableModel", field) -> int:
+        return getattr(row, field.db_column)
 
     def get_internal_value_from_db(
         self, row: "GeneratedTableModel", field_name: str
@@ -2731,8 +2731,8 @@ class MultipleSelectFieldType(SelectOptionBaseFieldType):
             child=field_serializer, required=required, **kwargs
         )
 
-    def get_value_for_filter(self, row: "GeneratedTableModel", field_name: str) -> str:
-        related_objects = getattr(row, field_name)
+    def get_value_for_filter(self, row: "GeneratedTableModel", field) -> str:
+        related_objects = getattr(row, field.db_column)
         values = [related_object.value for related_object in related_objects.all()]
         return list_to_comma_separated_string(values)
 
@@ -3564,9 +3564,10 @@ class FormulaFieldType(ReadOnlyFieldType):
             field, field_name, order_direction
         )
     
-    # TODO: should provide get_value_for_filter?
-
-    
+    def get_value_for_filter(self, row: "GeneratedTableModel", field):
+        return self.to_baserow_formula_type(field.specific).get_value_for_filter(
+            row, field
+        )
 
     def should_backup_field_data_for_same_type_update(
         self, old_field: FormulaField, new_field_attrs: Dict[str, Any]
@@ -4343,7 +4344,7 @@ class MultipleCollaboratorsFieldType(FieldType):
 
         return OptionallyAnnotatedOrderBy(annotation=annotation, order=order)
 
-    def get_value_for_filter(self, row: "GeneratedTableModel", field_name: str) -> any:
-        related_objects = getattr(row, field_name)
+    def get_value_for_filter(self, row: "GeneratedTableModel", field) -> any:
+        related_objects = getattr(row, field.db_column)
         values = [related_object.first_name for related_object in related_objects.all()]
         return list_to_comma_separated_string(values)

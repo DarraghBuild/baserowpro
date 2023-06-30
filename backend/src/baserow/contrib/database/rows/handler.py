@@ -442,7 +442,7 @@ class RowHandler(metaclass=baserow_trace_methods(tracer)):
                 expression_name = field_annotated_order_by.expression.name
                 filter_key = f"{expression_name}{order_direction_suffix}"
 
-                value = field_type.get_value_for_filter(row, field_name)
+                value = field_type.get_value_for_filter(row, field)
 
                 q_kwargs = copy(previous_fields)
                 q_kwargs[filter_key] = value
