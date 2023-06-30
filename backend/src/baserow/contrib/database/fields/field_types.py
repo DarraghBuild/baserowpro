@@ -3563,6 +3563,10 @@ class FormulaFieldType(ReadOnlyFieldType):
         return self.to_baserow_formula_type(field.specific).get_order(
             field, field_name, order_direction
         )
+    
+    # TODO: should provide get_value_for_filter?
+
+    
 
     def should_backup_field_data_for_same_type_update(
         self, old_field: FormulaField, new_field_attrs: Dict[str, Any]
