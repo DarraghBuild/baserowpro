@@ -468,10 +468,20 @@ export class BaserowFormulaArrayType extends BaserowFormulaTypeDefinition {
             { [name]: valuesA[i] },
             { [name]: valuesB[i] }
           )
-        } else if (isAdefined) {
+        } else if (
+          isAdefined &&
+          (valuesB[i] === undefined || valuesB[i] === false)
+        ) {
           compared = order === 'ASC' ? 1 : -1
-        } else if (isBdefined) {
+        } else if (
+          isBdefined &&
+          (valuesA[i] === undefined || valuesA[i] === false)
+        ) {
           compared = order === 'ASC' ? -1 : 1
+        } else if (isAdefined && valuesB[i] === null) {
+          compared = order === 'ASC' ? -1 : 1
+        } else if (isBdefined && valuesA[i] === null) {
+          compared = order === 'ASC' ? 1 : -1
         } else if (valuesA[i] === null && valuesB[i] === undefined) {
           compared = order === 'ASC' ? 1 : -1
         } else if (valuesA[i] === undefined && valuesB[i] === null) {

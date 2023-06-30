@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { TestApp } from '@baserow/test/helpers/testApp'
 import { firstBy } from 'thenby'
 
@@ -191,13 +192,13 @@ describe('FormulaFieldType.getSort()', () => {
     )
     const expected = [
       [],
-      [null, '1'],
       ['1'],
       ['1'],
       ['1', '2'],
       ['2', '1'],
       ['2', '111'],
       ['11'],
+      [null, '1'],
     ]
 
     expect(sorted).toEqual(expected)
@@ -241,13 +242,13 @@ describe('FormulaFieldType.getSort()', () => {
 
     const expected = [
       [],
-      [null, '0.05'],
       ['0.05'],
       ['0.05', '0.40'],
       ['0.40'],
       ['0.40', '0.05'],
       ['0.40', '1.10'],
       ['1.00'],
+      [null, '0.05'],
     ]
 
     expect(sorted).toEqual(expected)
@@ -338,8 +339,6 @@ describe('FormulaFieldType.getSort()', () => {
       [null, 'a'],
     ]
 
-    console.log({ sorted: JSON.stringify(sorted) })
-
     expect(sorted).toEqual(expected)
 
     ArrayOfArraysTable.sort(sortDESC)
@@ -347,8 +346,6 @@ describe('FormulaFieldType.getSort()', () => {
     const sortedReversed = ArrayOfArraysTable.map((obj) =>
       obj.field_single_select.map((inner) => inner.value.value)
     )
-
-    console.log({ sortedReversed: JSON.stringify(sortedReversed) })
 
     expect(sortedReversed).toEqual(expected.reverse())
   })
