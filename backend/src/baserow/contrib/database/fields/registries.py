@@ -7,6 +7,7 @@ from django.core.files.storage import Storage
 from django.db import models as django_models
 from django.db.models import BooleanField, DurationField, Q, QuerySet
 from django.db.models.fields.related import ForeignKey, ManyToManyField
+from django.db.models.functions import Collate
 
 from baserow.contrib.database.fields.constants import UPSERT_OPTION_DICT_KEY
 from baserow.contrib.database.fields.field_sortings import OptionallyAnnotatedOrderBy
@@ -685,7 +686,8 @@ class FieldType(
         :rtype: Optional[Expression, AnnotatedOrderBy, None]
         """
 
-        field_expr = django_models.F(field_name)
+        field_expr = Collate(field_name, "en-x-icu")
+        field_expr.name = field_name
 
         if order_direction == "ASC":
             field_order_by = field_expr.asc(nulls_first=True)
