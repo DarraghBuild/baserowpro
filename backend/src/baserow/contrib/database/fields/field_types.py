@@ -8,6 +8,7 @@ from itertools import cycle
 from random import randint, randrange, sample
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
 from zipfile import ZipFile
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.aggregates import StringAgg
@@ -3563,7 +3564,7 @@ class FormulaFieldType(ReadOnlyFieldType):
         return self.to_baserow_formula_type(field.specific).get_order(
             field, field_name, order_direction
         )
-    
+
     def get_value_for_filter(self, row: "GeneratedTableModel", field):
         return self.to_baserow_formula_type(field.specific).get_value_for_filter(
             row, field

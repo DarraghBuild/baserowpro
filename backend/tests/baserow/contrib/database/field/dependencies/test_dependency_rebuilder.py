@@ -6,9 +6,6 @@ from baserow.contrib.database.fields.dependencies.exceptions import (
 from baserow.contrib.database.fields.dependencies.handler import FieldDependencyHandler
 from baserow.contrib.database.fields.dependencies.models import FieldDependency
 from baserow.contrib.database.fields.field_cache import FieldCache
-from baserow.contrib.database.fields.models import LookupField
-from baserow.contrib.database.rows.handler import RowHandler
-from baserow.contrib.database.views.handler import ViewHandler
 
 
 def _unwrap_ids(qs):

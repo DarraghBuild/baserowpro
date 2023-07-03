@@ -1,7 +1,7 @@
 import abc
 from typing import TYPE_CHECKING, List, Type, TypeVar
 
-from django.db.models import Expression, Value, F
+from django.db.models import Expression, F, Value
 from django.utils.functional import classproperty
 
 from baserow.contrib.database.fields.field_sortings import OptionallyAnnotatedOrderBy
@@ -169,10 +169,14 @@ class BaserowFormulaType(abc.ABC):
 
         pass
 
-    # TODO: docs
     def get_order(
         self, field, field_name, order_direction
     ) -> OptionallyAnnotatedOrderBy:
+        """
+        Returns OptionallyAnnotatedOrderBy with desired order and optional
+        annotation that will be used as the order on the particular field.
+        """
+
         field_expr = F(field_name)
 
         if order_direction == "ASC":
@@ -194,7 +198,7 @@ class BaserowFormulaType(abc.ABC):
         :return: The value of the field in the row in a filterable format.
         """
 
-        return Value(None, output_field=CharField())
+        return getattr(row, field.db_column)
 
     @property
     def can_order_by_in_array(self) -> bool:
@@ -206,9 +210,11 @@ class BaserowFormulaType(abc.ABC):
 
         return False
 
-    # TODO: docs
     def get_order_by_in_array_expr(self, field, field_name, order_direction):
-        """ """
+        """
+        Can be used to aggregate values for ordering if can_order_by_in_array returns
+        True.
+        """
 
         raise NotImplementedError()
 

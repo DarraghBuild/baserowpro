@@ -15,7 +15,7 @@ from baserow.contrib.database.fields.field_cache import FieldCache
 from baserow.contrib.database.fields.field_types import FormulaFieldType
 from baserow.contrib.database.fields.fields import BaserowExpressionField
 from baserow.contrib.database.fields.handler import FieldHandler
-from baserow.contrib.database.fields.models import FormulaField, LookupField
+from baserow.contrib.database.fields.models import FormulaField
 from baserow.contrib.database.fields.registries import field_type_registry
 from baserow.contrib.database.formula import (
     BaserowFormulaInvalidType,
@@ -1570,9 +1570,11 @@ def _create_arr_sort_fixture(
 def test_formula_field_type_lookup_sorting_array_text(
     data_fixture,
 ):
-    create_primary_field = lambda table: data_fixture.create_text_field(
-        table=table, order=1, primary=True, name="Primary text"
-    )
+    def create_primary_field(table):
+        return data_fixture.create_text_field(
+            table=table, order=1, primary=True, name="Primary text"
+        )
+
     distinct_values = ["a", "b", "aa", "bb", "aaa", ""]
     formula_type = "text"
     unsorted_rows = [
@@ -1627,9 +1629,11 @@ def test_formula_field_type_lookup_sorting_array_text(
 def test_formula_field_type_lookup_sorting_array_numbers(
     data_fixture,
 ):
-    create_primary_field = lambda table: data_fixture.create_number_field(
-        table=table, order=1, primary=True, name="number"
-    )
+    def create_primary_field(table):
+        return data_fixture.create_number_field(
+            table=table, order=1, primary=True, name="number"
+        )
+
     formula_type = "number"
     distinct_values = [1, 2, 11, 22, 111, None]
     unsorted_rows = [
@@ -1685,9 +1689,11 @@ def test_formula_field_type_lookup_sorting_array_numbers(
 def test_formula_field_type_lookup_sorting_array_numbers_fractions(
     data_fixture,
 ):
-    create_primary_field = lambda table: data_fixture.create_number_field(
-        table=table, order=1, primary=True, name="number", number_decimal_places=2
-    )
+    def create_primary_field(table):
+        return data_fixture.create_number_field(
+            table=table, order=1, primary=True, name="number", number_decimal_places=2
+        )
+
     formula_type = "number"
     distinct_values = [
         Decimal("1.00"),
@@ -1753,9 +1759,11 @@ def test_formula_field_type_lookup_sorting_array_numbers_fractions(
 def test_formula_field_type_lookup_sorting_array_boolean(
     data_fixture,
 ):
-    create_primary_field = lambda table: data_fixture.create_boolean_field(
-        table=table, order=1, primary=True, name="boolean"
-    )
+    def create_primary_field(table):
+        return data_fixture.create_boolean_field(
+            table=table, order=1, primary=True, name="boolean"
+        )
+
     distinct_values = [True, False]
     formula_type = "boolean"
     unsorted_rows = [

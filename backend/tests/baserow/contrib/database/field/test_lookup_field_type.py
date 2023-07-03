@@ -1,8 +1,7 @@
+from decimal import Decimal
 from io import BytesIO
 
 from django.urls import reverse
-
-from decimal import Decimal
 
 import pytest
 from pytest_unordered import unordered
@@ -21,9 +20,9 @@ from baserow.contrib.database.formula import (
     BaserowFormulaNumberType,
 )
 from baserow.contrib.database.rows.handler import RowHandler
+from baserow.contrib.database.views.handler import ViewHandler
 from baserow.core.db import specific_iterator
 from baserow.core.handler import CoreHandler
-from baserow.contrib.database.views.handler import ViewHandler
 
 
 @pytest.mark.django_db

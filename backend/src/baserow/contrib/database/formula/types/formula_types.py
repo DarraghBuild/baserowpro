@@ -2,16 +2,15 @@ import datetime
 from decimal import Decimal
 from typing import Any, List, Optional, Type, Union
 
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models import JSONField, Q, Value, Func, F, Expression
+from django.db.models import Expression, F, JSONField, Q, Value
 from django.utils import timezone
 
 from dateutil import parser
 from rest_framework import serializers
 from rest_framework.fields import Field
 
-from django.contrib.postgres.fields import ArrayField
-from django.contrib.postgres.aggregates import ArrayAgg, JSONBAgg
 from baserow.contrib.database.fields.field_sortings import OptionallyAnnotatedOrderBy
 from baserow.contrib.database.fields.mixins import get_date_time_format
 from baserow.contrib.database.formula.ast.tree import (
