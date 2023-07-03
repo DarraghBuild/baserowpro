@@ -1,3 +1,5 @@
+from zoneinfo import ZoneInfo
+from datetime import datetime
 import inspect
 from decimal import Decimal
 
@@ -7,7 +9,6 @@ from django.urls import reverse
 
 import pytest
 from rest_framework.status import HTTP_200_OK, HTTP_204_NO_CONTENT
-
 from baserow.contrib.database.fields.dependencies.update_collector import (
     FieldUpdateCollector,
 )
@@ -1899,6 +1900,182 @@ def test_formula_field_type_lookup_sorting_single_select(
     model = table.get_model()
     sorted_rows = view_handler.apply_sorting(grid_view, model.objects.all())
 
+    sorted_lookup = [
+        getattr(r, f"field_{formula_field.id}_agg_sort_array") for r in sorted_rows
+    ]
+
+    assert sorted_lookup == expected
+
+    sort.order = "ASC"
+    sort.save()
+    sorted_rows = view_handler.apply_sorting(grid_view, model.objects.all())
+    sorted_lookup = [
+        getattr(r, f"field_{formula_field.id}_agg_sort_array") for r in sorted_rows
+    ]
+
+    expected.reverse()
+
+    assert sorted_lookup == expected
+
+
+@pytest.mark.django_db
+def test_formula_field_type_lookup_sorting_array_datetimes(
+    data_fixture,
+):
+    def create_primary_field(table):
+        return data_fixture.create_date_field(
+            table=table, order=1, primary=True, name="date", date_include_time=True
+        )
+
+    formula_type = "date"
+    distinct_values = [
+        datetime(2020, 1, 1, 0, 0, tzinfo=ZoneInfo("UTC")),
+        datetime(2020, 1, 1, 15, 0, tzinfo=ZoneInfo("UTC")),
+        datetime(2020, 1, 1, 15, 15, tzinfo=ZoneInfo("UTC")),
+        datetime(2020, 1, 2, 0, 0, tzinfo=ZoneInfo("UTC")),
+        datetime(2020, 1, 2, 15, 0, tzinfo=ZoneInfo("UTC")),
+        datetime(2020, 1, 2, 15, 15, tzinfo=ZoneInfo("UTC")),
+        datetime(2020, 2, 15, 0, 0, tzinfo=ZoneInfo("UTC")),
+        datetime(2020, 2, 1, 0, 0, tzinfo=ZoneInfo("UTC")),
+        None,
+    ]
+    unsorted_rows = [
+        [
+            datetime(2020, 1, 1, 0, 0, tzinfo=ZoneInfo("UTC")),
+            datetime(2020, 1, 2, 0, 0, tzinfo=ZoneInfo("UTC")),
+        ],
+        [
+            datetime(2020, 1, 1, 15, 15, tzinfo=ZoneInfo("UTC")),
+            datetime(2020, 1, 2, 15, 15, tzinfo=ZoneInfo("UTC")),
+        ],
+        [
+            datetime(2020, 1, 1, 15, 15, tzinfo=ZoneInfo("UTC")),
+            datetime(2020, 2, 15, 0, 0, tzinfo=ZoneInfo("UTC")),
+        ],
+        [],
+        [datetime(2020, 2, 1, 0, 0, tzinfo=ZoneInfo("UTC"))],
+        [datetime(2020, 1, 1, 0, 0, tzinfo=ZoneInfo("UTC"))],
+        [None],
+        [datetime(2020, 2, 15, 0, 0, tzinfo=ZoneInfo("UTC"))],
+    ]
+
+    model, formula_field, grid_view = _create_arr_sort_fixture(
+        data_fixture, create_primary_field, formula_type, distinct_values, unsorted_rows
+    )
+
+    expected = [
+        [None],
+        [datetime(2020, 2, 15, 0, 0)],
+        [datetime(2020, 2, 1, 0, 0)],
+        [
+            datetime(2020, 1, 1, 15, 15),
+            datetime(2020, 2, 15, 0, 0),
+        ],
+        [
+            datetime(2020, 1, 1, 15, 15),
+            datetime(2020, 1, 2, 15, 15),
+        ],
+        [
+            datetime(2020, 1, 1, 0, 0),
+            datetime(2020, 1, 2, 0, 0),
+        ],
+        [datetime(2020, 1, 1, 0, 0)],
+        None,
+    ]
+
+    view_handler = ViewHandler()
+    sort = data_fixture.create_view_sort(
+        view=grid_view, field=formula_field, order="DESC"
+    )
+    sorted_rows = view_handler.apply_sorting(grid_view, model.objects.all())
+    sorted_lookup = [
+        getattr(r, f"field_{formula_field.id}_agg_sort_array") for r in sorted_rows
+    ]
+
+    assert sorted_lookup == expected
+
+    sort.order = "ASC"
+    sort.save()
+    sorted_rows = view_handler.apply_sorting(grid_view, model.objects.all())
+    sorted_lookup = [
+        getattr(r, f"field_{formula_field.id}_agg_sort_array") for r in sorted_rows
+    ]
+
+    expected.reverse()
+
+    assert sorted_lookup == expected
+
+
+@pytest.mark.django_db
+def test_formula_field_type_lookup_sorting_array_dates(
+    data_fixture,
+):
+    def create_primary_field(table):
+        return data_fixture.create_date_field(
+            table=table, order=1, primary=True, name="date", date_include_time=False
+        )
+
+    formula_type = "date"
+    distinct_values = [
+        datetime(2020, 1, 1, 0, 0, tzinfo=ZoneInfo("UTC")),
+        datetime(2020, 1, 1, 15, 0, tzinfo=ZoneInfo("UTC")),
+        datetime(2020, 1, 1, 15, 15, tzinfo=ZoneInfo("UTC")),
+        datetime(2020, 1, 2, 0, 0, tzinfo=ZoneInfo("UTC")),
+        datetime(2020, 1, 2, 15, 0, tzinfo=ZoneInfo("UTC")),
+        datetime(2020, 1, 2, 15, 15, tzinfo=ZoneInfo("UTC")),
+        datetime(2020, 2, 15, 0, 0, tzinfo=ZoneInfo("UTC")),
+        datetime(2020, 2, 1, 0, 0, tzinfo=ZoneInfo("UTC")),
+        None,
+    ]
+    unsorted_rows = [
+        [
+            datetime(2020, 1, 1, 0, 0, tzinfo=ZoneInfo("UTC")),
+            datetime(2020, 1, 2, 0, 0, tzinfo=ZoneInfo("UTC")),
+        ],
+        [
+            datetime(2020, 1, 1, 15, 15, tzinfo=ZoneInfo("UTC")),
+            datetime(2020, 1, 2, 15, 15, tzinfo=ZoneInfo("UTC")),
+        ],
+        [
+            datetime(2020, 1, 1, 15, 15, tzinfo=ZoneInfo("UTC")),
+            datetime(2020, 2, 15, 0, 0, tzinfo=ZoneInfo("UTC")),
+        ],
+        [],
+        [datetime(2020, 2, 1, 0, 0, tzinfo=ZoneInfo("UTC"))],
+        [datetime(2020, 1, 1, 0, 0, tzinfo=ZoneInfo("UTC"))],
+        [None],
+        [datetime(2020, 2, 15, 0, 0, tzinfo=ZoneInfo("UTC"))],
+    ]
+
+    model, formula_field, grid_view = _create_arr_sort_fixture(
+        data_fixture, create_primary_field, formula_type, distinct_values, unsorted_rows
+    )
+
+    expected = [
+        [None],
+        [datetime(2020, 2, 15, 0, 0)],
+        [datetime(2020, 2, 1, 0, 0)],
+        [
+            datetime(2020, 1, 1, 0, 0),
+            datetime(2020, 2, 15, 0, 0),
+        ],
+        [
+            datetime(2020, 1, 1, 0, 0),
+            datetime(2020, 1, 2, 0, 0),
+        ],
+        [
+            datetime(2020, 1, 1, 0, 0),
+            datetime(2020, 1, 2, 0, 0),
+        ],
+        [datetime(2020, 1, 1, 0, 0)],
+        None,
+    ]
+
+    view_handler = ViewHandler()
+    sort = data_fixture.create_view_sort(
+        view=grid_view, field=formula_field, order="DESC"
+    )
+    sorted_rows = view_handler.apply_sorting(grid_view, model.objects.all())
     sorted_lookup = [
         getattr(r, f"field_{formula_field.id}_agg_sort_array") for r in sorted_rows
     ]

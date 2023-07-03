@@ -468,6 +468,7 @@ class BaserowFormulaDateType(BaserowFormulaValidType):
     ]
     nullable_option_fields = ["date_force_timezone"]
     can_represent_date = True
+    can_order_by_in_array = True
 
     def __init__(
         self,
@@ -568,6 +569,11 @@ class BaserowFormulaDateType(BaserowFormulaValidType):
             field = models.DateField()
 
         return Value(timezone.now(), output_field=field)
+
+    def get_order_by_in_array_expr(self, field, field_name, order_direction):
+        return JSONBSingleKeyArrayExpression(
+            field_name, "value", "timestamp", output_field=models.DateTimeField()
+        )
 
     def __str__(self) -> str:
         date_or_datetime = "datetime" if self.date_include_time else "date"

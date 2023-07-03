@@ -286,6 +286,14 @@ export class BaserowFormulaDateType extends BaserowFormulaTypeDefinition {
   canRepresentDate() {
     return true
   }
+
+  canBeSortedWhenInArray(field) {
+    return true
+  }
+
+  mapToSortableArray(element) {
+    return element.value
+  }
 }
 
 export class BaserowFormulaDateIntervalType extends BaserowFormulaTypeDefinition {

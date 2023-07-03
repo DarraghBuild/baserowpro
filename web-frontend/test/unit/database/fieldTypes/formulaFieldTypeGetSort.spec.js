@@ -44,6 +44,12 @@ const single_select_null = {
   value: { id: null, value: null, color: null },
 }
 
+const datetime_1_12 = { id: 1, value: '2023-01-01T12:00:00+00:00' }
+const datetime_2_12 = { id: 2, value: '2023-01-02T12:00:00+00:00' }
+const datetime_1_16 = { id: 3, value: '2023-01-01T16:00:00+00:00' }
+const datetime_1_23 = { id: 4, value: '2023-01-01T23:00:00+00:00' }
+const datetime_null = { id: 5, value: null }
+
 const ArrayOfArraysTable = [
   {
     id: 1,
@@ -53,6 +59,7 @@ const ArrayOfArraysTable = [
     field_booleans: [boolean_false, boolean_true],
     field_numbers_fractions: [number_f_0_4, number_f_0_0_5],
     field_single_select: [single_select_b, single_select_a],
+    field_datetime: [datetime_2_12, datetime_1_12],
   },
   {
     id: 2,
@@ -62,6 +69,7 @@ const ArrayOfArraysTable = [
     field_booleans: [boolean_true],
     field_numbers_fractions: [number_f_0_0_5],
     field_single_select: [single_select_a],
+    field_datetime: [datetime_1_12],
   },
   {
     id: 3,
@@ -71,6 +79,7 @@ const ArrayOfArraysTable = [
     field_booleans: [boolean_true, boolean_false],
     field_numbers_fractions: [number_f_0_0_5, number_f_0_4],
     field_single_select: [single_select_a, single_select_b],
+    field_datetime: [datetime_1_12, datetime_2_12],
   },
   {
     id: 4,
@@ -80,6 +89,7 @@ const ArrayOfArraysTable = [
     field_booleans: [],
     field_numbers_fractions: [],
     field_single_select: [],
+    field_datetime: [],
   },
   {
     id: 5,
@@ -89,6 +99,7 @@ const ArrayOfArraysTable = [
     field_booleans: [boolean_false, boolean_true],
     field_numbers_fractions: [number_f_0_4, number_f_1_1],
     field_single_select: [single_select_b, single_select_aaa],
+    field_datetime: [datetime_2_12, datetime_1_23],
   },
   {
     id: 6,
@@ -98,6 +109,7 @@ const ArrayOfArraysTable = [
     field_booleans: [boolean_true],
     field_numbers_fractions: [number_f_0_4],
     field_single_select: [single_select_a],
+    field_datetime: [datetime_1_12],
   },
   {
     id: 7,
@@ -107,6 +119,7 @@ const ArrayOfArraysTable = [
     field_booleans: [boolean_true],
     field_numbers_fractions: [number_f_1_0],
     field_single_select: [single_select_aa],
+    field_datetime: [datetime_1_16],
   },
   {
     id: 8,
@@ -116,6 +129,7 @@ const ArrayOfArraysTable = [
     field_booleans: [boolean_false, boolean_true],
     field_numbers_fractions: [number_f_null, number_f_0_0_5],
     field_single_select: [single_select_null, single_select_a],
+    field_datetime: [datetime_null, datetime_1_12],
   },
 ]
 
@@ -345,6 +359,47 @@ describe('FormulaFieldType.getSort()', () => {
 
     const sortedReversed = ArrayOfArraysTable.map((obj) =>
       obj.field_single_select.map((inner) => inner.value.value)
+    )
+
+    expect(sortedReversed).toEqual(expected.reverse())
+  })
+
+  test('array(date)', () => {
+    const formulaType = testApp._app.$registry.get('field', 'formula')
+    const formulaField = {
+      formula_type: 'array',
+      array_formula_type: 'date',
+    }
+
+    expect(formulaType.getCanSortInView(formulaField)).toBe(true)
+
+    const ASC = formulaType.getSort('field_datetime', 'ASC', formulaField)
+    const sortASC = firstBy().thenBy(ASC)
+    const DESC = formulaType.getSort('field_datetime', 'DESC', formulaField)
+    const sortDESC = firstBy().thenBy(DESC)
+
+    ArrayOfArraysTable.sort(sortASC)
+
+    const sorted = ArrayOfArraysTable.map((obj) =>
+      obj.field_datetime.map((inner) => inner.value)
+    )
+    const expected = [
+      [],
+      ['2023-01-01T12:00:00+00:00'],
+      ['2023-01-01T12:00:00+00:00'],
+      ['2023-01-01T12:00:00+00:00', '2023-01-02T12:00:00+00:00'],
+      ['2023-01-01T16:00:00+00:00'],
+      ['2023-01-02T12:00:00+00:00', '2023-01-01T12:00:00+00:00'],
+      ['2023-01-02T12:00:00+00:00', '2023-01-01T23:00:00+00:00'],
+      [null, '2023-01-01T12:00:00+00:00'],
+    ]
+
+    expect(sorted).toEqual(expected)
+
+    ArrayOfArraysTable.sort(sortDESC)
+
+    const sortedReversed = ArrayOfArraysTable.map((obj) =>
+      obj.field_datetime.map((inner) => inner.value)
     )
 
     expect(sortedReversed).toEqual(expected.reverse())
