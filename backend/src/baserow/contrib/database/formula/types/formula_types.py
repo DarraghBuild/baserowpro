@@ -96,8 +96,8 @@ class BaserowFormulaTextType(
         return arg
 
     def get_order_by_in_array_expr(self, field, field_name, order_direction):
-        return JSONBSingleKeyStringArrayExpression(
-            field_name, "value", output_field=models.TextField()
+        return JSONBSingleKeyArrayExpression(
+            field_name, "value", "text", output_field=models.TextField()
         )
 
 
@@ -107,8 +107,8 @@ class BaserowFormulaCharType(BaserowFormulaBaseTextType, BaserowFormulaValidType
     can_order_by_in_array = True
 
     def get_order_by_in_array_expr(self, field, field_name, order_direction):
-        return JSONBSingleKeyStringArrayExpression(
-            field_name, "value", output_field=models.TextField()
+        return JSONBSingleKeyArrayExpression(
+            field_name, "value", "text", output_field=models.TextField()
         )
 
 
@@ -280,9 +280,10 @@ class BaserowFormulaNumberType(
         return literal(0)
 
     def get_order_by_in_array_expr(self, field, field_name, order_direction):
-        return JSONBSingleKeyNumberArrayExpression(
+        return JSONBSingleKeyArrayExpression(
             field_name,
             "value",
+            "numeric",
             output_field=ArrayField(
                 base_field=models.DecimalField(max_digits=50, decimal_places=0)
             ),
@@ -325,9 +326,10 @@ class BaserowFormulaBooleanType(
         return expr
 
     def get_order_by_in_array_expr(self, field, field_name, order_direction):
-        return JSONBSingleKeyBooleanArrayExpression(
+        return JSONBSingleKeyArrayExpression(
             field_name,
             "value",
+            "boolean",
             output_field=ArrayField(
                 base_field=models.DecimalField(max_digits=50, decimal_places=0)
             ),
@@ -849,9 +851,12 @@ class BaserowFormulaSingleSelectType(BaserowFormulaValidType):
         )
 
     def get_order_by_in_array_expr(self, field, field_name, order_direction):
-        return JSONBSingleKeySingleSelectArrayExpression(
+        return JSONBSingleInnerKeyArrayExpression(
             field_name,
             "value",
+            "jsonb",
+            "value",
+            "text",
             output_field=ArrayField(
                 base_field=models.DecimalField(max_digits=50, decimal_places=0)
             ),
@@ -933,102 +938,67 @@ def literal(
     raise TypeError(f"Unknown literal type {type(arg)}")
 
 
-class JSONBSingleKeyStringArrayExpression(Expression):
+class JSONBSingleKeyArrayExpression(Expression):
     template = """
         (
             SELECT ARRAY_AGG(items.{key_name})
             FROM jsonb_to_recordset({field_name}) as items(
-            {key_name} text)
+            {key_name} {data_type})
         )
         """  # nosec B608
     # fmt: on
 
-    def __init__(self, field_name: str, key_name: str, **kwargs):
+    def __init__(self, field_name: str, key_name: str, data_type: str, **kwargs):
         super().__init__(**kwargs)
         self.field_name = field_name
         self.key_name = key_name
+        self.data_type = data_type
 
     def as_sql(self, compiler, connection, template=None):
         template = template or self.template
         data = {
             "field_name": f'"{self.field_name}"',
             "key_name": f'"{self.key_name}"',
+            "data_type": self.data_type,
         }
 
         return template.format(**data), []
 
 
-class JSONBSingleKeyNumberArrayExpression(Expression):
+class JSONBSingleInnerKeyArrayExpression(Expression):
     template = """
         (
-            SELECT ARRAY_AGG(items.{key_name})
+            SELECT ARRAY_AGG(items.{key_name}->>{inner_key_name}::{inner_data_type})
             FROM jsonb_to_recordset({field_name}) as items(
-            {key_name} numeric)
+            {key_name} {data_type})
         )
         """  # nosec B608
     # fmt: on
 
-    def __init__(self, field_name: str, key_name: str, **kwargs):
+    def __init__(
+        self,
+        field_name: str,
+        key_name: str,
+        data_type: str,
+        inner_key_name: str,
+        inner_data_type: str,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self.field_name = field_name
         self.key_name = key_name
-        self.number_decimal_places = kwargs.get("number_decimal_places", 0)
+        self.data_type = data_type
+        self.inner_key_name = inner_key_name
+        self.inner_data_type = inner_data_type
 
     def as_sql(self, compiler, connection, template=None):
         template = template or self.template
         data = {
             "field_name": f'"{self.field_name}"',
             "key_name": f'"{self.key_name}"',
-        }
-
-        return template.format(**data), []
-
-
-class JSONBSingleKeyBooleanArrayExpression(Expression):
-    template = """
-        (
-            SELECT ARRAY_AGG(items.{key_name})
-            FROM jsonb_to_recordset({field_name}) as items(
-            {key_name} boolean)
-        )
-        """  # nosec B608
-    # fmt: on
-
-    def __init__(self, field_name: str, key_name: str, **kwargs):
-        super().__init__(**kwargs)
-        self.field_name = field_name
-        self.key_name = key_name
-
-    def as_sql(self, compiler, connection, template=None):
-        template = template or self.template
-        data = {
-            "field_name": f'"{self.field_name}"',
-            "key_name": f'"{self.key_name}"',
-        }
-
-        return template.format(**data), []
-
-
-class JSONBSingleKeySingleSelectArrayExpression(Expression):
-    template = """
-        (
-            SELECT ARRAY_AGG(items.{key_name}->>'value'::text)
-            FROM jsonb_to_recordset({field_name}) as items(
-            {key_name} jsonb)
-        )
-        """  # nosec B608
-    # fmt: on
-
-    def __init__(self, field_name: str, key_name: str, **kwargs):
-        super().__init__(**kwargs)
-        self.field_name = field_name
-        self.key_name = key_name
-
-    def as_sql(self, compiler, connection, template=None):
-        template = template or self.template
-        data = {
-            "field_name": f'"{self.field_name}"',
-            "key_name": f'"{self.key_name}"',
+            "data_type": self.data_type,
+            "inner_key_name": f"'{self.inner_key_name}'",
+            "inner_data_type": self.inner_data_type,
         }
 
         return template.format(**data), []
