@@ -51,7 +51,7 @@ export class BaserowFormulaTypeDefinition extends Registerable {
       .getGridViewFieldComponent()
   }
 
-  getFieldType(field) {
+  getFieldType() {
     throw new Error(
       'Not implemented error. This method should return the types corresponding' +
         ' Baserow field type that should be used for things like sort indicators etc.'
@@ -104,9 +104,21 @@ export class BaserowFormulaTypeDefinition extends Registerable {
   getSort(name, order, field) {
     const underlyingFieldType = this.app.$registry.get(
       'field',
-      this.getFieldType(field)
+      this.getFieldType()
     )
     return underlyingFieldType.getSort(name, order, field)
+  }
+
+  _mapFormulaTypeToFieldType(formulaType) {
+    return this.app.$registry.get('formula_type', formulaType).getFieldType()
+  }
+
+  getSortIndicator(field) {
+    const underlyingFieldType = this.app.$registry.get(
+      'field',
+      this._mapFormulaTypeToFieldType(field.formula_type)
+    )
+    return underlyingFieldType.getSortIndicator()
   }
 
   mapToSortableArray(element) {
@@ -116,7 +128,7 @@ export class BaserowFormulaTypeDefinition extends Registerable {
   toHumanReadableString(field, value) {
     const underlyingFieldType = this.app.$registry.get(
       'field',
-      this.getFieldType(field)
+      this.getFieldType()
     )
     return underlyingFieldType.toHumanReadableString(field, value)
   }
@@ -131,7 +143,7 @@ export class BaserowFormulaTextType extends BaserowFormulaTypeDefinition {
     return 'text'
   }
 
-  getFieldType(field) {
+  getFieldType() {
     return 'text'
   }
 
@@ -165,7 +177,7 @@ export class BaserowFormulaCharType extends BaserowFormulaTypeDefinition {
     return 'char'
   }
 
-  getFieldType(field) {
+  getFieldType() {
     return 'text'
   }
 
@@ -195,7 +207,7 @@ export class BaserowFormulaNumberType extends BaserowFormulaTypeDefinition {
     return 'number'
   }
 
-  getFieldType(field) {
+  getFieldType() {
     return 'number'
   }
 
@@ -221,7 +233,7 @@ export class BaserowFormulaBooleanType extends BaserowFormulaTypeDefinition {
     return 'boolean'
   }
 
-  getFieldType(field) {
+  getFieldType() {
     return 'boolean'
   }
 
@@ -251,7 +263,7 @@ export class BaserowFormulaDateType extends BaserowFormulaTypeDefinition {
     return 'date'
   }
 
-  getFieldType(field) {
+  getFieldType() {
     return 'date'
   }
 
@@ -281,7 +293,7 @@ export class BaserowFormulaDateIntervalType extends BaserowFormulaTypeDefinition
     return 'date_interval'
   }
 
-  getFieldType(field) {
+  getFieldType() {
     return 'date'
   }
 
@@ -313,7 +325,7 @@ export class BaserowFormulaSpecialType extends BaserowFormulaTypeDefinition {
     return 'special'
   }
 
-  getFieldType(field) {
+  getFieldType() {
     return 'text'
   }
 
@@ -339,7 +351,7 @@ export class BaserowFormulaInvalidType extends BaserowFormulaTypeDefinition {
     return 'invalid'
   }
 
-  getFieldType(field) {
+  getFieldType() {
     return 'text'
   }
 
@@ -374,16 +386,7 @@ export class BaserowFormulaArrayType extends BaserowFormulaTypeDefinition {
   }
 
   getFieldType(field) {
-    if (!field) {
-      return 'text'
-    }
-
-    const subType = this.app.$registry.get(
-      'formula_type',
-      field.array_formula_type
-    )
-
-    return subType.getFieldType(field)
+    return 'text'
   }
 
   getIconClass() {
@@ -499,6 +502,14 @@ export class BaserowFormulaArrayType extends BaserowFormulaTypeDefinition {
     }
   }
 
+  getSortIndicator(field) {
+    const underlyingFieldType = this.app.$registry.get(
+      'field',
+      this._mapFormulaTypeToFieldType(field.array_formula_type)
+    )
+    return underlyingFieldType.getSortIndicator()
+  }
+
   toHumanReadableString(field, value) {
     const subType = this.app.$registry.get(
       'formula_type',
@@ -517,7 +528,7 @@ export class BaserowFormulaSingleSelectType extends BaserowFormulaTypeDefinition
     return 'single_select'
   }
 
-  getFieldType(field) {
+  getFieldType() {
     return 'single_select'
   }
 
@@ -555,7 +566,7 @@ export class BaserowFormulaLinkType extends BaserowFormulaTypeDefinition {
     return 'link'
   }
 
-  getFieldType(field) {
+  getFieldType() {
     return 'text'
   }
 
