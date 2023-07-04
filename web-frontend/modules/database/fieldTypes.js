@@ -819,7 +819,8 @@ export class LinkRowFieldType extends FieldType {
   }
 
   getCanSortInView(field) {
-    return false
+    // TODO: based on linked primary field
+    return true
   }
 
   getCanBePrimaryField() {

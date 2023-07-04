@@ -24,6 +24,7 @@ from baserow.contrib.database.table.handler import TableHandler
 from baserow.core.handler import CoreHandler
 from baserow.core.models import TrashEntry
 from baserow.core.trash.handler import TrashHandler
+from baserow.contrib.database.views.handler import ViewHandler
 
 
 @pytest.mark.django_db
@@ -1624,3 +1625,103 @@ def test_deleting_only_one_side_of_a_link_row_field_update_deleted_side_dependen
     assert lookup.formula_type == "invalid"
     # ensure no entry in the trash is created for the update
     assert TrashEntry.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_link_row_field_type_sorting_text(
+    data_fixture,
+):
+    row_handler = RowHandler()
+    user = data_fixture.create_user()
+    database = data_fixture.create_database_application(user=user, name="db")
+
+    # related table
+    related_table = data_fixture.create_database_table(
+        name="Related table", database=database
+    )
+    related_primary_field = data_fixture.create_text_field(
+        table=related_table, order=1, primary=True, name="Primary text"
+    )
+    distinct_values = ["a", "b", "aa", "bb", "aaa", None]
+    related_table_model = related_table.get_model()
+    related_table_rows = {}
+    for dv in distinct_values:
+        related_table_rows[dv] = related_table_model.objects.create(
+            **{f"field_{related_primary_field.id}": dv}
+        )
+
+    # main table
+    table = data_fixture.create_database_table(name="Main table", database=database)
+    blank_text_field = data_fixture.create_text_field(
+        table=table, order=1, primary=True, name="Primary text"
+    )
+    link_row_field = data_fixture.create_link_row_field(
+        name="link", table=table, link_row_table=related_table
+    )
+
+    grid_view = data_fixture.create_grid_view(table=table)
+
+    unsorted_rows = [
+        ["b", "a"],
+        ["a"],
+        ["a", "b"],
+        [],
+        ["b", "aaa"],
+        ["b"],
+        ["aa"],
+        [None],
+    ]
+
+    for index, field_values in enumerate(unsorted_rows):
+        for index2, value in enumerate(field_values):
+            unsorted_rows[index][index2] = related_table_rows[value].id
+
+    for row_list in unsorted_rows:
+        new_row = row_handler.create_row(
+            user=user, table=table, values={f"field_{link_row_field.id}": row_list, f"field_{blank_text_field.id}": "testik"}
+        )
+
+    expected = [
+        [None],
+        ["b", "aaa"],
+        ["b"],
+        ["aa"],
+        ["a", "b"],
+        ["a", "b"],
+        ["a"],
+        None,
+    ]
+
+    view_handler = ViewHandler()
+    sort = data_fixture.create_view_sort(
+        view=grid_view, field=link_row_field, order="DESC"
+    )
+
+    model = table.get_model()
+
+    # print("model:")
+    # from pprint import pprint
+    # pprint(model.__dict__)
+    # print("")
+    # for m in model.objects.all():
+    #     print(m.__dict__)
+
+    sorted_rows = view_handler.apply_sorting(grid_view, model.objects.all())
+
+    sorted_lookup = [
+        getattr(r, f"field_{link_row_field.id}_agg_sort_array") for r in sorted_rows
+    ]
+
+    assert sorted_lookup == expected
+
+    # TODO: reverse
+    # sort.order = "ASC"
+    # sort.save()
+    # sorted_rows = view_handler.apply_sorting(grid_view, model.objects.all())
+    # sorted_lookup = [
+    #     getattr(r, f"field_{link_row_field.id}_agg_sort_array") for r in sorted_rows
+    # ]
+
+    # expected.reverse()
+
+    # assert sorted_lookup == expected

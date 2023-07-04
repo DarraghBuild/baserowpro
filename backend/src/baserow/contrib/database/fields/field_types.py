@@ -19,6 +19,7 @@ from django.db import OperationalError, models
 from django.db.models import CharField, DateTimeField, F, Func, Q, QuerySet, Value
 from django.db.models.functions import Coalesce
 from django.utils.timezone import make_aware
+from django.contrib.postgres.aggregates import ArrayAgg
 
 import pytz
 from dateutil import parser
@@ -2084,6 +2085,36 @@ class LinkRowFieldType(FieldType):
         # that we have via ourself as it makes no sense that we are a dependant of
         # ourself.
         return FieldDependencyHandler.get_via_dependants_of_link_field(field)
+
+    def check_can_order_by(self, field: Field) -> bool:
+        # TODO: remove self._can_order_by
+        # TODO: only allow for certain primary field types
+
+        return True
+
+    def get_order(
+        self, field, field_name, order_direction
+    ) -> OptionallyAnnotatedOrderBy:
+
+        parent = field.get_parent()
+        model = parent.get_model()
+        remote_model = model._meta.get_field(field_name).remote_field.model
+        through_model = model._meta.get_field(field_name).remote_field.through
+        primary_field_object = next(object for object in remote_model._field_objects.values() if object["field"].primary)        
+        remote_field_name = primary_field_object["name"]
+        output_field = primary_field_object["type"].get_model_field(primary_field_object["field"])
+
+        sort_column_name = f"field_{field.id}_agg_sort_array"
+        query = ArrayAgg(f"field_{field.id}__{remote_field_name}")
+        annotation = {sort_column_name: query}
+        
+        field_expr = models.F(sort_column_name)
+        if order_direction == "ASC":
+            field_order_by = field_expr.asc(nulls_first=True)
+        else:
+            field_order_by = field_expr.desc(nulls_last=True)
+
+        return OptionallyAnnotatedOrderBy(annotation=annotation, order=field_order_by)
 
 
 class EmailFieldType(CharFieldMatchingRegexFieldType):
