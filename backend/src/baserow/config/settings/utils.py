@@ -3,6 +3,7 @@ import traceback
 from typing import Any, Callable, List, NamedTuple, Optional, Union
 
 from celery.schedules import crontab
+from redis.asyncio.connection import Connection, RedisSSLContext
 
 
 def setup_dev_e2e(*args, **kwargs):
@@ -122,3 +123,28 @@ def get_crontab_from_env(env_var_name: str, default_crontab: str) -> crontab:
         env_var_name, default_crontab
     ).split(" ")
     return crontab(minute, hour, day_of_week, day_of_month, month_of_year)
+
+
+# Required to get Channels v4 working with Heroku Redis
+# See https://github.com/django/channels_redis/issues/235
+class CustomSSLConnection(Connection):
+    def __init__(
+        self,
+        ssl_context: Optional[str] = None,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.ssl_context = RedisSSLContext(ssl_context)
+
+
+class RedisSSLContext:  # noqa: F811
+    __slots__ = ("context",)
+
+    def __init__(
+        self,
+        ssl_context,
+    ):
+        self.context = ssl_context
+
+    def get(self):
+        return self.context
