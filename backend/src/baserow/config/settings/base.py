@@ -162,7 +162,7 @@ REDIS_TLS_URL = os.getenv("REDIS_TLS_URL", REDIS_URL)  # noqa: F405
 
 if REDIS_PROTOCOL == "rediss" or "rediss" in REDIS_TLS_URL:  # noqa: F405
     DISABLE_REDIS_SSL_CERT_REQS = str_to_bool(
-        os.getenv("BASEROW_DISABLE_REDIS_SSL_CERT_REQS", "true")
+        os.getenv("BASEROW_DISABLE_REDIS_SSL_CERT_REQS", "false")
     )
     if DISABLE_REDIS_SSL_CERT_REQS:
         # We need to set the certificate check to None, otherwise it is not compatible with
@@ -182,14 +182,41 @@ if REDIS_PROTOCOL == "rediss" or "rediss" in REDIS_TLS_URL:  # noqa: F405
             "connection_class": CustomSSLConnection,
             "ssl_context": ssl_context,
         }
-        CHANNEL_LAYERS["default"]["CONFIG"]["hosts"] = [
+        CHANNEL_LAYERS["default"]["CONFIG"]["hosts"] = [  # noqa: F821
             CHANNELS_REDIS_HOST
         ]  # noqa: F405
 
         # The built in healthcheck does not handle customizing ssl_cert_reqs...
         INSTALLED_APPS.remove("health_check.contrib.redis")  # noqa: F405
-        for CACHE in CACHES.values():  # noqa: F405
+        for CACHE in CACHES.values():  # noqa: F405,F821
             CACHE["OPTIONS"]["CONNECTION_POOL_KWARGS"] = {"ssl_cert_reqs": None}
+    REQUIRE_REDIS_SSL_CERT_REQS = str_to_bool(
+        os.getenv("BASEROW_REQUIRE_REDIS_SSL_CERT_REQS", "false")
+    )
+    if REQUIRE_REDIS_SSL_CERT_REQS:
+        CELERY_REDBEAT_REDIS_USE_SSL = {"ssl_cert_reqs": ssl.CERT_REQUIRED}
+
+        parsed_redis_url = urlparse(REDIS_TLS_URL)
+        ssl_context = ssl.SSLContext()
+        ssl_context.verify_mode = ssl.CERT_REQUIRED
+        CHANNELS_REDIS_HOST = {
+            "host": parsed_redis_url.hostname,
+            "port": parsed_redis_url.port,
+            "username": parsed_redis_url.username,
+            "password": parsed_redis_url.password,
+            "connection_class": CustomSSLConnection,
+            "ssl_context": ssl_context,
+        }
+        CHANNEL_LAYERS["default"]["CONFIG"]["hosts"] = [  # noqa: F821
+            CHANNELS_REDIS_HOST
+        ]  # noqa: F405
+
+        # The built in healthcheck does not handle customizing ssl_cert_reqs...
+        INSTALLED_APPS.remove("health_check.contrib.redis")  # noqa: F405
+        for CACHE in CACHES.values():  # noqa: F405,F821
+            CACHE["OPTIONS"]["CONNECTION_POOL_KWARGS"] = {
+                "ssl_cert_reqs": ssl.CERT_REQUIRED
+            }
 
 BASEROW_GROUP_STORAGE_USAGE_QUEUE = os.getenv(
     "BASEROW_GROUP_STORAGE_USAGE_QUEUE", "export"
