@@ -69,6 +69,18 @@
       @selectNext="$options.methods.selectNext(listeners, props, 'next')"
       @selectAbove="$options.methods.selectNext(listeners, props, 'above')"
       @selectBelow="$options.methods.selectNext(listeners, props, 'below')"
+      @expandSelectPrevious="
+        $options.methods.expandSelectionNext(listeners, props, 'previous')
+      "
+      @expandSelectAbove="
+        $options.methods.expandSelectionNext(listeners, props, 'above')
+      "
+      @expandSelectNext="
+        $options.methods.expandSelectionNext(listeners, props, 'next')
+      "
+      @expandSelectBelow="
+        $options.methods.expandSelectionNext(listeners, props, 'below')
+      "
       @add-row-after="$options.methods.addRowAfter(listeners, props)"
       @add-keep-alive="parent.addKeepAlive(props.field.id)"
       @remove-keep-alive="parent.removeKeepAlive(props.field.id)"
@@ -203,6 +215,19 @@ export default {
     selectNext(listeners, props, direction) {
       if (listeners['select-next']) {
         listeners['select-next']({
+          row: props.row,
+          field: props.field,
+          direction,
+        })
+      }
+    },
+    /**
+     * Called when the field type component want to expand select to adjacent cell.
+     */
+    expandSelectionNext(listeners, props, direction) {
+      // TODO: rename expand to change?
+      if (listeners['expand-select-next']) {
+        listeners['expand-select-next']({
           row: props.row,
           field: props.field,
           direction,

@@ -1222,6 +1222,15 @@ export const actions = {
       fieldIndex,
     })
   },
+  multiSelectShiftExpand({ getters, commit }, { rowId, fieldIndex }) {
+    commit('SET_MULTISELECT_ACTIVE', true)
+
+    commit('UPDATE_MULTISELECT', {
+      position: 'tail',
+      rowIndex: getters.getRowIndexById(rowId),
+      fieldIndex,
+    })
+  },
   multiSelectHold({ getters, commit }, { rowId, fieldIndex }) {
     if (getters.isMultiSelectHolding) {
       // Unselect single cell
