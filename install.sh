@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ -x "$(command -v docker)" ]; then
-    echo "Update docker"
+    #echo "Update docker"
 	sudo apt-get update && sudo apt-get upgrade docker-ce
 else
     sudo apt-get install -y \
@@ -15,18 +15,18 @@ else
    $(lsb_release -cs) \
    stable"
 	sudo apt-get update
-	sudo apt-get install -y docker-ce
-	sudo docker run hello-world
+	sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y 
+fi
 # Linux post-install
-	sudo groupadd docker
 	sudo usermod -aG docker $USER
-# Refresh the group so you don't need to relog to get docker permissions
-	newgrp docker
+	sudo su - $USER -c exit;
 	sudo systemctl enable docker
+	
 # Change BASEROW_PUBLIC_URL to your domain name or http://YOUR_SERVERS_IP if you want
 # to access Baserow remotely.
 # This command will run Baserow with it's data stored in the new baserow_data docker 
 # volume.
+
 	docker run -e BASEROW_PUBLIC_URL=http://localhost \
 	--name baserow \
 	-d \
