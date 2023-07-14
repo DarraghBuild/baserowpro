@@ -67,6 +67,9 @@ export const state = () => ({
   multiSelectHeadFieldIndex: -1,
   multiSelectTailRowIndex: -1,
   multiSelectTailFieldIndex: -1,
+  // Keep the original row and field index to remember when user began
+  multiSelectStartRowIndex: -1,
+  multiSelectStartFieldIndex: -1,
   // The last used grid id.
   lastGridId: -1,
   // Contains the custom field options per view. Things like the field width are
@@ -280,32 +283,63 @@ export const mutations = {
         row._.selectedFieldId = fieldId
       }
     })
+
+    if (rowId !== -1 && fieldId !== -1) {
+      state.multiSelectStartRowIndex = rowId
+      state.multiSelectStartFieldIndex = fieldId
+    }
   },
   UPDATE_MULTISELECT(state, { position, rowIndex, fieldIndex }) {
     if (position === 'head') {
       state.multiSelectHeadRowIndex = rowIndex
       state.multiSelectHeadFieldIndex = fieldIndex
     } else if (position === 'tail') {
+      // TODO: prevent going into positions that are not in the table
       // Limit selection to 200 rows (199 since rows start at index 0)
       // This limit is set by the backend
-      if (Math.abs(state.multiSelectHeadRowIndex - rowIndex) <= 199) {
+      // if (Math.abs(state.multiSelectHeadRowIndex - rowIndex) <= 199) {
+      //   state.multiSelectTailRowIndex = rowIndex
+      //   state.multiSelectTailFieldIndex = fieldIndex
+      // }
+      // TODO: also do the same for fields
+      // TODO: do the same for head (shouldn't reach < 0 index)
+      if (
+        state.rowsEndIndex - 1 >
+        Math.abs(state.multiSelectHeadRowIndex - rowIndex)
+      ) {
         state.multiSelectTailRowIndex = rowIndex
         state.multiSelectTailFieldIndex = fieldIndex
       }
     }
+    console.log('UPDATE_MULTISELECT')
+    console.log({
+      multiSelectActive: state.multiSelectActive,
+      multiSelectHeadRowIndex: state.multiSelectHeadRowIndex,
+      multiSelectHeadFieldIndex: state.multiSelectHeadFieldIndex,
+      multiSelectTailRowIndex: state.multiSelectTailRowIndex,
+      multiSelectTailFieldIndex: state.multiSelectTailFieldIndex,
+    })
   },
   SET_MULTISELECT_HOLDING(state, value) {
+    console.log('SET_MULTISELECT_HOLDING')
     state.multiSelectHolding = value
   },
   SET_MULTISELECT_ACTIVE(state, value) {
+    // TODO: should set start index?
+    console.log('SET_MULTISELECT_ACTIVE')
     state.multiSelectActive = value
   },
   CLEAR_MULTISELECT(state) {
-    state.multiSelectHolding = false
-    state.multiSelectHeadRowIndex = -1
+    ;(state.multiSelectActive = false),
+      (state.multiSelectHolding = false),
+      (state.multiSelectHeadRowIndex = -1)
     state.multiSelectHeadFieldIndex = -1
     state.multiSelectTailRowIndex = -1
     state.multiSelectTailFieldIndex = -1
+    state.multiSelectStartRowIndex = -1
+    state.multiSelectStartFieldIndex = -1
+    state.multiSelectStartRowIndex = -1
+    state.multiSelectStartFieldIndex = -1
   },
   ADD_FIELD_TO_ROWS_IN_BUFFER(state, { field, value }) {
     const name = `field_${field.id}`
@@ -1222,14 +1256,56 @@ export const actions = {
       fieldIndex,
     })
   },
-  multiSelectShiftExpand({ getters, commit }, { rowId, fieldIndex }) {
-    commit('SET_MULTISELECT_ACTIVE', true)
+  multiSelectShiftChangeNext({ getters, commit }, { direction }) {
+    const selectedCellRowIndex = getters.getMultiSelectTailRowIndex
+    const selectedCellFieldIndex = getters.getMultiSelectTailFieldIndex
 
-    commit('UPDATE_MULTISELECT', {
-      position: 'tail',
-      rowIndex: getters.getRowIndexById(rowId),
-      fieldIndex,
+    const apply = {
+      previous: (rowIndex, fieldIndex) => {
+        return [rowIndex, fieldIndex - 1]
+      },
+      next: (rowIndex, fieldIndex) => {
+        return [rowIndex, fieldIndex + 1]
+      },
+      above: (rowIndex, fieldIndex) => {
+        return [rowIndex - 1, fieldIndex]
+      },
+      below: (rowIndex, fieldIndex) => {
+        return [rowIndex + 1, fieldIndex]
+      },
+    }
+
+    const [newRowIndex, newFieldIndex] = apply[direction](
+      selectedCellRowIndex,
+      selectedCellFieldIndex
+    )
+
+    console.log('***********')
+    console.log({
+      getMultiSelectStartRowIndex: getters.getMultiSelectStartRowIndex,
+      getMultiSelectStartFieldIndex: getters.getMultiSelectStartFieldIndex,
     })
+    console.log({ newRowIndex, newFieldIndex })
+
+    // TODO: check
+
+    if (
+      selectedCellRowIndex >= getters.getMultiSelectStartRowIndex &&
+      selectedCellFieldIndex >= getters.getMultiSelectStartFieldIndex
+    ) {
+      console.log({ direction, selectedCellRowIndex, selectedCellFieldIndex })
+
+      // commit('SET_MULTISELECT_ACTIVE', true)
+      console.log('!!!! changed')
+
+      commit('UPDATE_MULTISELECT', {
+        position: 'tail',
+        rowIndex: newRowIndex,
+        fieldIndex: newFieldIndex,
+      })
+    } else {
+      console.log('not applicable')
+    }
   },
   multiSelectHold({ getters, commit }, { rowId, fieldIndex }) {
     if (getters.isMultiSelectHolding) {
@@ -1734,6 +1810,8 @@ export const actions = {
     { commit },
     { rowHeadIndex, fieldHeadIndex, rowTailIndex, fieldTailIndex }
   ) {
+    // TODO: ? is the start index set here?
+
     commit('UPDATE_MULTISELECT', {
       position: 'head',
       rowIndex: rowHeadIndex,
@@ -2455,6 +2533,38 @@ export const getters = {
       state.multiSelectHeadRowIndex,
       state.multiSelectTailRowIndex
     )
+  },
+  getMultiSelectTailFieldIndex(state) {
+    // Return the rightmost
+    return Math.max(
+      state.multiSelectHeadFieldIndex,
+      state.multiSelectTailFieldIndex
+    )
+  },
+  getMultiSelectTailRowIndex(state) {
+    // Return the bottommost
+    return Math.max(
+      state.multiSelectHeadRowIndex,
+      state.multiSelectTailRowIndex
+    )
+  },
+  getOriginalMultiSelectHeadFieldIndex(state) {
+    return state.multiSelectHeadFieldIndex
+  },
+  getOriginalMultiSelectTailFieldIndex(state) {
+    return state.multiSelectTailFieldIndex
+  },
+  getOriginalMultiSelectHeadRowIndex(state) {
+    return state.multiSelectHeadRowIndex
+  },
+  getOriginalMultiSelectTailRowIndex(state) {
+    return state.multiSelectTailRowIndex
+  },
+  getMultiSelectStartRowIndex(state) {
+    return state.multiSelectStartRowIndex
+  },
+  getMultiSelectStartFieldIndex(state) {
+    return state.multiSelectStartFieldIndex
   },
   // Get the index of a row given it's row id.
   // This will calculate the row index from the current buffer position and offset.

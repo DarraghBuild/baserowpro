@@ -135,10 +135,10 @@ export default {
           ArrowDown: 'selectBelow',
         }
         const arrowShiftKeysMapping = {
-          ArrowLeft: 'expandSelectPrevious',
-          ArrowUp: 'expandSelectAbove',
-          ArrowRight: 'expandSelectNext',
-          ArrowDown: 'expandSelectBelow',
+          ArrowLeft: 'changeSelectionPrevious',
+          ArrowUp: 'changeSelectionAbove',
+          ArrowRight: 'changeSelectionNext',
+          ArrowDown: 'changeSelectionBelow',
         }
         if (this.canSelectNext(event)) {
           if (Object.keys(arrowKeysMapping).includes(key)) {

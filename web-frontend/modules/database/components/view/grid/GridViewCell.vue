@@ -69,17 +69,17 @@
       @selectNext="$options.methods.selectNext(listeners, props, 'next')"
       @selectAbove="$options.methods.selectNext(listeners, props, 'above')"
       @selectBelow="$options.methods.selectNext(listeners, props, 'below')"
-      @expandSelectPrevious="
-        $options.methods.expandSelectionNext(listeners, props, 'previous')
+      @changeSelectionPrevious="
+        $options.methods.changeSelection(listeners, props, 'previous')
       "
-      @expandSelectAbove="
-        $options.methods.expandSelectionNext(listeners, props, 'above')
+      @changeSelectionAbove="
+        $options.methods.changeSelection(listeners, props, 'above')
       "
-      @expandSelectNext="
-        $options.methods.expandSelectionNext(listeners, props, 'next')
+      @changeSelectionNext="
+        $options.methods.changeSelection(listeners, props, 'next')
       "
-      @expandSelectBelow="
-        $options.methods.expandSelectionNext(listeners, props, 'below')
+      @changeSelectionBelow="
+        $options.methods.changeSelection(listeners, props, 'below')
       "
       @add-row-after="$options.methods.addRowAfter(listeners, props)"
       @add-keep-alive="parent.addKeepAlive(props.field.id)"
@@ -222,12 +222,12 @@ export default {
       }
     },
     /**
-     * Called when the field type component want to expand select to adjacent cell.
+     * Called when the field type component want to expand or shrink selection
+     * by adjacent cell.
      */
-    expandSelectionNext(listeners, props, direction) {
-      // TODO: rename expand to change?
-      if (listeners['expand-select-next']) {
-        listeners['expand-select-next']({
+    changeSelection(listeners, props, direction) {
+      if (listeners['change-selection-next']) {
+        listeners['change-selection-next']({
           row: props.row,
           field: props.field,
           direction,

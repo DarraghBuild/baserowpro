@@ -118,7 +118,7 @@
       @selected="selectedCell"
       @unselected="unselectedCell"
       @select-next="selectNextCell"
-      @expand-select-next="expandSelectNextCell"
+      @change-selection-next="changeSelectionNextCell"
       @edit-modal="openRowEditModal($event.id)"
       @scroll="scroll($event.pixelY, $event.pixelX)"
     >
@@ -878,6 +878,7 @@ export default {
      * direction and will select that one.
      */
     selectNextCell({ row, field, direction = 'next' }) {
+      console.log('selectNextCell')
       const fields = this.allVisibleFields
       let nextFieldId = -1
       let nextRowId = -1
@@ -928,71 +929,8 @@ export default {
         fieldId: nextFieldId,
       })
     },
-    /**
-     * This method is called when the selection is extended to the adjacent cell.
-     * TODO:
-     */
-    expandSelectNextCell({ row, field, direction = 'next' }) {
-      console.log({ op: 'expandSelectNextCell', row, field, direction })
-
-      // TODO: refactor for the use with selectNextCell
-
-      const fields = this.allVisibleFields
-      let nextFieldId = -1
-      let nextRowId = -1
-
-      let fieldIndex = null
-
-      if (direction === 'next' || direction === 'previous') {
-        nextRowId = row.id
-
-        // First we need to know which index the currently selected field has in the
-        // fields list.
-        const index = fields.findIndex((f) => f.id === field.id)
-
-        // TODO: this is wrong
-        fieldIndex = index + 1
-        
-        if (direction === 'next' && fields.length > index + 1) {
-          // If we want to select the next field we can just check if the next index
-          // exists and read the id from there.
-          nextFieldId = fields[index + 1].id
-        } else if (direction === 'previous' && index > 0) {
-          // If we want to select the previous field we can just check if aren't
-          // already the first and read the id from the previous.
-          nextFieldId = fields[index - 1].id
-        }
-      }
-
-      if (direction === 'below' || direction === 'above') {
-        nextFieldId = field.id
-        const rows =
-          this.$store.getters[this.storePrefix + 'view/grid/getAllRows']
-        const index = rows.findIndex((r) => r.id === row.id)
-
-        if (index !== -1 && direction === 'below' && rows.length > index + 1) {
-          // If the next row index exists we can select the same field in the next row.
-          nextRowId = rows[index + 1].id
-        } else if (index !== -1 && direction === 'above' && index > 0) {
-          // If the previous row index exists we can select the same field in the
-          // previous row.
-          nextRowId = rows[index - 1].id
-        }
-      }
-
-      if (nextFieldId === -1 || nextRowId === -1) {
-        return
-      }
-
-      // TODO: maybe we need to do multiselect start if it is not started
-
-      this.$store.dispatch(
-        this.storePrefix + 'view/grid/multiSelectShiftExpand',
-        {
-          rowId: nextRowId,
-          fieldIndex: fieldIndex,
-        }
-      )
+    changeSelectionNextCell({ row, field, direction = 'next' }) {
+      // TODO: delete including all the event drilling
     },
     /**
      * This method is called from the parent component when the data in the view has
@@ -1062,6 +1000,7 @@ export default {
      * outside of GridViewRows.
      */
     cancelMultiSelectIfActive(event) {
+      console.log('cancelMultiSelectIfActive')
       if (
         this.$store.getters[
           this.storePrefix + 'view/grid/isMultiSelectActive'
@@ -1078,6 +1017,7 @@ export default {
       }
     },
     keyDownEvent(event) {
+      console.log('keyDownEvent')
       if (
         this.$store.getters[this.storePrefix + 'view/grid/isMultiSelectActive']
       ) {
@@ -1087,9 +1027,20 @@ export default {
             event.key
           )
         ) {
-          // Cancels multi-select if it's currently active.
+          const key = event.key
+          const arrowShiftKeysMapping = {
+            ArrowLeft: 'previous',
+            ArrowRight: 'next',
+            ArrowUp: 'above',
+            ArrowDown: 'below',
+          }
+
+          // TODO: add shift key check + check if multiselect is started
           this.$store.dispatch(
-            this.storePrefix + 'view/grid/clearAndDisableMultiSelect'
+            this.storePrefix + 'view/grid/multiSelectShiftChangeNext',
+            {
+              direction: arrowShiftKeysMapping[key],
+            }
           )
         }
         if (event.key === 'Backspace' || event.key === 'Delete') {
