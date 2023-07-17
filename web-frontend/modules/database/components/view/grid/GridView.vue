@@ -1000,7 +1000,6 @@ export default {
      * outside of GridViewRows.
      */
     cancelMultiSelectIfActive(event) {
-      console.log('cancelMultiSelectIfActive')
       if (
         this.$store.getters[
           this.storePrefix + 'view/grid/isMultiSelectActive'

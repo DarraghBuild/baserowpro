@@ -283,11 +283,12 @@ export const mutations = {
         row._.selectedFieldId = fieldId
       }
     })
-
-    if (rowId !== -1 && fieldId !== -1) {
-      state.multiSelectStartRowIndex = rowId
-      state.multiSelectStartFieldIndex = fieldId
-    }
+  },
+  SET_MULTISELECT_START_ROW_INDEX(state, value) {
+    state.multiSelectStartRowIndex = value
+  },
+  SET_MULTISELECT_START_FIELD_INDEX(state, value) {
+    state.multiSelectStartFieldIndex = value
   },
   UPDATE_MULTISELECT(state, { position, rowIndex, fieldIndex }) {
     if (position === 'head') {
@@ -313,11 +314,10 @@ export const mutations = {
     }
     console.log('UPDATE_MULTISELECT')
     console.log({
-      multiSelectActive: state.multiSelectActive,
-      multiSelectHeadRowIndex: state.multiSelectHeadRowIndex,
-      multiSelectHeadFieldIndex: state.multiSelectHeadFieldIndex,
-      multiSelectTailRowIndex: state.multiSelectTailRowIndex,
-      multiSelectTailFieldIndex: state.multiSelectTailFieldIndex,
+      headRowIndex: state.multiSelectHeadRowIndex,
+      headFieldIndex: state.multiSelectHeadFieldIndex,
+      tailRowIndex: state.multiSelectTailRowIndex,
+      tailFieldIndex: state.multiSelectTailFieldIndex,
     })
   },
   SET_MULTISELECT_HOLDING(state, value) {
@@ -336,8 +336,6 @@ export const mutations = {
     state.multiSelectHeadFieldIndex = -1
     state.multiSelectTailRowIndex = -1
     state.multiSelectTailFieldIndex = -1
-    state.multiSelectStartRowIndex = -1
-    state.multiSelectStartFieldIndex = -1
     state.multiSelectStartRowIndex = -1
     state.multiSelectStartFieldIndex = -1
   },
@@ -1221,8 +1219,15 @@ export const actions = {
   setAddRowHover({ commit }, value) {
     commit('SET_ADD_ROW_HOVER', value)
   },
-  setSelectedCell({ commit }, { rowId, fieldId }) {
+  setSelectedCell({ commit, getters, rootGetters }, { rowId, fieldId }) {
+    console.log('setSelectedCell')
     commit('SET_SELECTED_CELL', { rowId, fieldId })
+
+    const bufferIndex = getters.getRows.findIndex((r) => r.id === rowId)
+    if (bufferIndex !== -1) {
+      commit('SET_MULTISELECT_START_ROW_INDEX', getters.getBufferStartIndex + bufferIndex)
+      commit('SET_MULTISELECT_START_FIELD_INDEX', rootGetters['field/getAll'].findIndex((f) => f.id === fieldId))
+    }
   },
   setMultiSelectHolding({ commit }, value) {
     commit('SET_MULTISELECT_HOLDING', value)
@@ -1231,6 +1236,7 @@ export const actions = {
     commit('SET_MULTISELECT_ACTIVE', value)
   },
   clearAndDisableMultiSelect({ commit }) {
+    console.log('clearAndDisableMultiSelect')
     commit('CLEAR_MULTISELECT')
     commit('SET_MULTISELECT_ACTIVE', false)
   },
@@ -1257,10 +1263,11 @@ export const actions = {
     })
   },
   multiSelectShiftChangeNext({ getters, commit }, { direction }) {
-    const selectedCellRowIndex = getters.getMultiSelectTailRowIndex
-    const selectedCellFieldIndex = getters.getMultiSelectTailFieldIndex
-
-    const apply = {
+    const tailRowIndex = getters.getOriginalMultiSelectTailRowIndex
+    const tailFieldIndex = getters.getOriginalMultiSelectTailFieldIndex
+    const headRowIndex = getters.getOriginalMultiSelectHeadRowIndex
+    const headFieldIndex = getters.getOriginalMultiSelectHeadFieldIndex
+    const movePosition = {
       previous: (rowIndex, fieldIndex) => {
         return [rowIndex, fieldIndex - 1]
       },
@@ -1274,43 +1281,88 @@ export const actions = {
         return [rowIndex + 1, fieldIndex]
       },
     }
-
-    const [newRowIndex, newFieldIndex] = apply[direction](
-      selectedCellRowIndex,
-      selectedCellFieldIndex
+    const [newRowTailIndex, newFieldTailIndex] = movePosition[direction](
+      tailRowIndex,
+      tailFieldIndex
+    )
+    const [newRowHeadIndex, newFieldHeadIndex] = movePosition[direction](
+      headRowIndex,
+      headFieldIndex
     )
 
-    console.log('***********')
-    console.log({
-      getMultiSelectStartRowIndex: getters.getMultiSelectStartRowIndex,
-      getMultiSelectStartFieldIndex: getters.getMultiSelectStartFieldIndex,
-    })
-    console.log({ newRowIndex, newFieldIndex })
-
-    // TODO: check
-
-    if (
-      selectedCellRowIndex >= getters.getMultiSelectStartRowIndex &&
-      selectedCellFieldIndex >= getters.getMultiSelectStartFieldIndex
-    ) {
-      console.log({ direction, selectedCellRowIndex, selectedCellFieldIndex })
-
-      // commit('SET_MULTISELECT_ACTIVE', true)
-      console.log('!!!! changed')
-
-      commit('UPDATE_MULTISELECT', {
-        position: 'tail',
-        rowIndex: newRowIndex,
-        fieldIndex: newFieldIndex,
-      })
-    } else {
-      console.log('not applicable')
+    if (direction === 'below') {
+      if (headRowIndex === getters.getMultiSelectStartRowIndex) {
+        commit('UPDATE_MULTISELECT', {
+          position: 'tail',
+          rowIndex: newRowTailIndex,
+          fieldIndex: newFieldTailIndex,
+        })
+      } else {
+        commit('UPDATE_MULTISELECT', {
+          position: 'head',
+          rowIndex: newRowHeadIndex,
+          fieldIndex: newFieldHeadIndex,
+        }) 
+      }
     }
+
+    if (direction === 'above') {
+      if (tailRowIndex === getters.getMultiSelectStartRowIndex) {
+        commit('UPDATE_MULTISELECT', {
+          position: 'head',
+          rowIndex: newRowHeadIndex,
+          fieldIndex: newFieldHeadIndex,
+        }) 
+      } else {
+        commit('UPDATE_MULTISELECT', {
+          position: 'tail',
+          rowIndex: newRowTailIndex,
+          fieldIndex: newFieldTailIndex,
+        })
+      }
+    }
+
+    if (direction === 'previous') {
+      if (tailFieldIndex === getters.getMultiSelectStartFieldIndex) {
+        commit('UPDATE_MULTISELECT', {
+          position: 'head',
+          rowIndex: newRowHeadIndex,
+          fieldIndex: newFieldHeadIndex,
+        }) 
+      } else {
+        commit('UPDATE_MULTISELECT', {
+          position: 'tail',
+          rowIndex: newRowTailIndex,
+          fieldIndex: newFieldTailIndex,
+        })
+      }
+    }
+
+    if (direction === 'next') {
+      if (headFieldIndex === getters.getMultiSelectStartFieldIndex) {
+        commit('UPDATE_MULTISELECT', {
+          position: 'tail',
+          rowIndex: newRowTailIndex,
+          fieldIndex: newFieldTailIndex,
+        })
+      } else {
+        commit('UPDATE_MULTISELECT', {
+          position: 'head',
+          rowIndex: newRowHeadIndex,
+          fieldIndex: newFieldHeadIndex,
+        }) 
+      }
+    }
+
+    // TODO: prevent going over the edges
+    // commit('SET_MULTISELECT_ACTIVE', true)
   },
   multiSelectHold({ getters, commit }, { rowId, fieldIndex }) {
     if (getters.isMultiSelectHolding) {
       // Unselect single cell
       commit('SET_SELECTED_CELL', { rowId: -1, fieldId: -1 })
+      // TODO:
+      console.log('restarting SET_SELECTED_CELL')
 
       commit('UPDATE_MULTISELECT', {
         position: 'tail',
