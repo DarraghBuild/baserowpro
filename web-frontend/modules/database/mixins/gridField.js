@@ -134,18 +134,10 @@ export default {
           ArrowRight: 'selectNext',
           ArrowDown: 'selectBelow',
         }
-        const arrowShiftKeysMapping = {
-          ArrowLeft: 'changeSelectionPrevious',
-          ArrowUp: 'changeSelectionAbove',
-          ArrowRight: 'changeSelectionNext',
-          ArrowDown: 'changeSelectionBelow',
-        }
         if (this.canSelectNext(event)) {
-          if (Object.keys(arrowKeysMapping).includes(key)) {
+          if (Object.keys(arrowKeysMapping).includes(key) && !shiftKey) {
             event.preventDefault()
-            // TODO: Distinguish between pressed and unpressed shift
-            // this.$emit(arrowKeysMapping[key])
-            this.$emit(arrowShiftKeysMapping[key])
+            this.$emit(arrowKeysMapping[key])
           } else if (key === 'Tab') {
             event.preventDefault()
             this.$emit(shiftKey ? 'selectPrevious' : 'selectNext')

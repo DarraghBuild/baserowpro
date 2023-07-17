@@ -118,7 +118,6 @@
       @selected="selectedCell"
       @unselected="unselectedCell"
       @select-next="selectNextCell"
-      @change-selection-next="changeSelectionNextCell"
       @edit-modal="openRowEditModal($event.id)"
       @scroll="scroll($event.pixelY, $event.pixelX)"
     >
@@ -878,7 +877,6 @@ export default {
      * direction and will select that one.
      */
     selectNextCell({ row, field, direction = 'next' }) {
-      console.log('selectNextCell')
       const fields = this.allVisibleFields
       let nextFieldId = -1
       let nextRowId = -1
@@ -928,9 +926,6 @@ export default {
         rowId: nextRowId,
         fieldId: nextFieldId,
       })
-    },
-    changeSelectionNextCell({ row, field, direction = 'next' }) {
-      // TODO: delete including all the event drilling
     },
     /**
      * This method is called from the parent component when the data in the view has
@@ -1016,17 +1011,15 @@ export default {
       }
     },
     keyDownEvent(event) {
-      console.log('keyDownEvent')
       if (
         this.$store.getters[this.storePrefix + 'view/grid/isMultiSelectActive']
       ) {
-        // Check if arrow key was pressed.
+        const { key, shiftKey } = event
         if (
           ['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(
-            event.key
-          )
+            key
+          ) && shiftKey
         ) {
-          const key = event.key
           const arrowShiftKeysMapping = {
             ArrowLeft: 'previous',
             ArrowRight: 'next',
@@ -1034,7 +1027,6 @@ export default {
             ArrowDown: 'below',
           }
 
-          // TODO: add shift key check + check if multiselect is started
           this.$store.dispatch(
             this.storePrefix + 'view/grid/multiSelectShiftChangeNext',
             {

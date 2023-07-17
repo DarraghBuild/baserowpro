@@ -104,7 +104,6 @@
         @selected="$emit('selected', $event)"
         @unselected="$emit('unselected', $event)"
         @select-next="$emit('select-next', $event)"
-        @change-selection-next="$emit('change-selection-next', $event)"
         @cell-mousedown-left="$emit('cell-mousedown-left', { row, field })"
         @cell-mouseover="$emit('cell-mouseover', { row, field })"
         @cell-mouseup-left="$emit('cell-mouseup-left', { row, field })"
