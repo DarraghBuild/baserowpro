@@ -1267,7 +1267,7 @@ export const actions = {
     const tailFieldIndex = getters.getOriginalMultiSelectTailFieldIndex
     const headRowIndex = getters.getOriginalMultiSelectHeadRowIndex
     const headFieldIndex = getters.getOriginalMultiSelectHeadFieldIndex
-    const movePosition = {
+    const updatePositionFn = {
       previous: (rowIndex, fieldIndex) => {
         return [rowIndex, fieldIndex - 1]
       },
@@ -1281,81 +1281,53 @@ export const actions = {
         return [rowIndex + 1, fieldIndex]
       },
     }
-    const [newRowTailIndex, newFieldTailIndex] = movePosition[direction](
+    const [newRowTailIndex, newFieldTailIndex] = updatePositionFn[direction](
       tailRowIndex,
       tailFieldIndex
     )
-    const [newRowHeadIndex, newFieldHeadIndex] = movePosition[direction](
+    const [newRowHeadIndex, newFieldHeadIndex] = updatePositionFn[direction](
       headRowIndex,
       headFieldIndex
     )
+    let positionToMove = undefined
 
     if (direction === 'below') {
       if (headRowIndex === getters.getMultiSelectStartRowIndex) {
-        commit('UPDATE_MULTISELECT', {
-          position: 'tail',
-          rowIndex: newRowTailIndex,
-          fieldIndex: newFieldTailIndex,
-        })
+        positionToMove = 'tail'
       } else {
-        commit('UPDATE_MULTISELECT', {
-          position: 'head',
-          rowIndex: newRowHeadIndex,
-          fieldIndex: newFieldHeadIndex,
-        }) 
+        positionToMove = 'head'
       }
     }
 
     if (direction === 'above') {
       if (tailRowIndex === getters.getMultiSelectStartRowIndex) {
-        commit('UPDATE_MULTISELECT', {
-          position: 'head',
-          rowIndex: newRowHeadIndex,
-          fieldIndex: newFieldHeadIndex,
-        }) 
+        positionToMove = 'head'
       } else {
-        commit('UPDATE_MULTISELECT', {
-          position: 'tail',
-          rowIndex: newRowTailIndex,
-          fieldIndex: newFieldTailIndex,
-        })
+        positionToMove = 'tail'
       }
     }
 
     if (direction === 'previous') {
       if (tailFieldIndex === getters.getMultiSelectStartFieldIndex) {
-        commit('UPDATE_MULTISELECT', {
-          position: 'head',
-          rowIndex: newRowHeadIndex,
-          fieldIndex: newFieldHeadIndex,
-        }) 
+        positionToMove = 'head'
       } else {
-        commit('UPDATE_MULTISELECT', {
-          position: 'tail',
-          rowIndex: newRowTailIndex,
-          fieldIndex: newFieldTailIndex,
-        })
+        positionToMove = 'tail'
       }
     }
 
     if (direction === 'next') {
       if (headFieldIndex === getters.getMultiSelectStartFieldIndex) {
-        commit('UPDATE_MULTISELECT', {
-          position: 'tail',
-          rowIndex: newRowTailIndex,
-          fieldIndex: newFieldTailIndex,
-        })
+        positionToMove = 'tail'
       } else {
-        commit('UPDATE_MULTISELECT', {
-          position: 'head',
-          rowIndex: newRowHeadIndex,
-          fieldIndex: newFieldHeadIndex,
-        }) 
+        positionToMove = 'head'
       }
     }
 
-    // TODO: prevent going over the edges
-    // commit('SET_MULTISELECT_ACTIVE', true)
+    commit('UPDATE_MULTISELECT', {
+      position: positionToMove,
+      rowIndex: positionToMove === 'tail' ? newRowTailIndex : newRowHeadIndex,
+      fieldIndex: positionToMove === 'tail' ? newFieldTailIndex : newFieldHeadIndex,
+    })
   },
   multiSelectHold({ getters, commit }, { rowId, fieldIndex }) {
     if (getters.isMultiSelectHolding) {
