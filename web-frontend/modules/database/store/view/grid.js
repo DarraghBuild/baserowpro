@@ -51,6 +51,21 @@ function extractMetadataAndPopulateRow(data, rowIndex) {
   populateRow(row, metadata[row.id])
 }
 
+const updatePositionFn = {
+  previous: (rowIndex, fieldIndex) => {
+    return [rowIndex, fieldIndex - 1]
+  },
+  next: (rowIndex, fieldIndex) => {
+    return [rowIndex, fieldIndex + 1]
+  },
+  above: (rowIndex, fieldIndex) => {
+    return [rowIndex - 1, fieldIndex]
+  },
+  below: (rowIndex, fieldIndex) => {
+    return [rowIndex + 1, fieldIndex]
+  },
+}
+
 export const state = () => ({
   // Indicates if multiple cell selection is active
   multiSelectActive: false,
@@ -330,14 +345,15 @@ export const mutations = {
     state.multiSelectActive = value
   },
   CLEAR_MULTISELECT(state) {
-    ;(state.multiSelectActive = false),
-      (state.multiSelectHolding = false),
-      (state.multiSelectHeadRowIndex = -1)
+    state.multiSelectActive = false
+    state.multiSelectHolding = false
+    state.multiSelectHeadRowIndex = -1
     state.multiSelectHeadFieldIndex = -1
     state.multiSelectTailRowIndex = -1
     state.multiSelectTailFieldIndex = -1
-    state.multiSelectStartRowIndex = -1
-    state.multiSelectStartFieldIndex = -1
+    // TODO:
+    // state.multiSelectStartRowIndex = -1
+    // state.multiSelectStartFieldIndex = -1
   },
   ADD_FIELD_TO_ROWS_IN_BUFFER(state, { field, value }) {
     const name = `field_${field.id}`
@@ -1220,7 +1236,6 @@ export const actions = {
     commit('SET_ADD_ROW_HOVER', value)
   },
   setSelectedCell({ commit, getters, rootGetters }, { rowId, fieldId }) {
-    console.log('setSelectedCell')
     commit('SET_SELECTED_CELL', { rowId, fieldId })
 
     const bufferIndex = getters.getRows.findIndex((r) => r.id === rowId)
@@ -1237,27 +1252,11 @@ export const actions = {
     }
   },
   setSelectedCellCancelledMultiSelect(
-    { commit, getters, rootGetters },
+    { commit, getters, rootGetters, dispatch },
     { direction }
   ) {
     const rowIndex = getters.getMultiSelectStartRowIndex
     const fieldIndex = getters.getMultiSelectStartFieldIndex
-
-    const updatePositionFn = {
-      previous: (rowIndex, fieldIndex) => {
-        return [rowIndex, fieldIndex - 1]
-      },
-      next: (rowIndex, fieldIndex) => {
-        return [rowIndex, fieldIndex + 1]
-      },
-      above: (rowIndex, fieldIndex) => {
-        return [rowIndex - 1, fieldIndex]
-      },
-      below: (rowIndex, fieldIndex) => {
-        return [rowIndex + 1, fieldIndex]
-      },
-    }
-
     const [newRowIndex, newFieldIndex] = updatePositionFn[direction](
       rowIndex,
       fieldIndex
@@ -1266,13 +1265,14 @@ export const actions = {
     const rows = getters.getRows
     // TODO: visible fields?
     const fields = rootGetters['field/getAll']
-
+    
     const row = rows[newRowIndex]
     const field = fields[newFieldIndex]
-
+    
     if (row && field) {
-      commit('SET_SELECTED_CELL', { rowId: row.id, fieldId: field.id })
+      dispatch('setSelectedCell', { rowId: row.id, fieldId: field.id })
     }
+    dispatch('clearAndDisableMultiSelect')
   },
   setMultiSelectHolding({ commit }, value) {
     commit('SET_MULTISELECT_HOLDING', value)
@@ -1315,33 +1315,25 @@ export const actions = {
     }
 
     if (!getters.isMultiSelectActive) {
-      commit('SET_SELECTED_CELL', { rowId: -1, fieldId: -1 })
       commit('SET_MULTISELECT_ACTIVE', true)
+      commit('UPDATE_MULTISELECT', {
+        position: 'head',
+        rowIndex: getters.getMultiSelectStartRowIndex,
+        fieldIndex: getters.getMultiSelectStartFieldIndex,
+      })
       commit('UPDATE_MULTISELECT', {
         position: 'tail',
         rowIndex: getters.getMultiSelectStartRowIndex,
         fieldIndex: getters.getMultiSelectStartFieldIndex,
       })
+      commit('SET_SELECTED_CELL', { rowId: -1, fieldId: -1 })
     }
 
     const tailRowIndex = getters.getOriginalMultiSelectTailRowIndex
     const tailFieldIndex = getters.getOriginalMultiSelectTailFieldIndex
     const headRowIndex = getters.getOriginalMultiSelectHeadRowIndex
     const headFieldIndex = getters.getOriginalMultiSelectHeadFieldIndex
-    const updatePositionFn = {
-      previous: (rowIndex, fieldIndex) => {
-        return [rowIndex, fieldIndex - 1]
-      },
-      next: (rowIndex, fieldIndex) => {
-        return [rowIndex, fieldIndex + 1]
-      },
-      above: (rowIndex, fieldIndex) => {
-        return [rowIndex - 1, fieldIndex]
-      },
-      below: (rowIndex, fieldIndex) => {
-        return [rowIndex + 1, fieldIndex]
-      },
-    }
+    
     const [newRowTailIndex, newFieldTailIndex] = updatePositionFn[direction](
       tailRowIndex,
       tailFieldIndex

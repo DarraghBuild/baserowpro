@@ -1040,9 +1040,6 @@ export default {
               direction: arrowShiftKeysMapping[key],
             }
           )
-          this.$store.dispatch(
-            this.storePrefix + 'view/grid/clearAndDisableMultiSelect'
-          )
         }
 
         if (event.key === 'Backspace' || event.key === 'Delete') {
