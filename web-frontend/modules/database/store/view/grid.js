@@ -307,10 +307,12 @@ export const mutations = {
   },
   UPDATE_MULTISELECT(state, { position, rowIndex, fieldIndex }) {
     if (position === 'head') {
-      state.multiSelectHeadRowIndex = rowIndex
-      state.multiSelectHeadFieldIndex = fieldIndex
+      if (rowIndex >= 0 && fieldIndex >= 0) {
+        state.multiSelectHeadRowIndex = rowIndex
+        state.multiSelectHeadFieldIndex = fieldIndex
+      }
     } else if (position === 'tail') {
-      // TODO: prevent going into positions that are not in the table
+      // TODO:
       // Limit selection to 200 rows (199 since rows start at index 0)
       // This limit is set by the backend
       // if (Math.abs(state.multiSelectHeadRowIndex - rowIndex) <= 199) {
@@ -318,10 +320,8 @@ export const mutations = {
       //   state.multiSelectTailFieldIndex = fieldIndex
       // }
       // TODO: also do the same for fields
-      // TODO: do the same for head (shouldn't reach < 0 index)
       if (
-        state.rowsEndIndex - 1 >
-        Math.abs(state.multiSelectHeadRowIndex - rowIndex)
+        rowIndex < state.rowsEndIndex
       ) {
         state.multiSelectTailRowIndex = rowIndex
         state.multiSelectTailFieldIndex = fieldIndex
@@ -1242,7 +1242,7 @@ export const actions = {
     if (bufferIndex !== -1) {
       commit(
         'SET_MULTISELECT_START_ROW_INDEX',
-        getters.getBufferStartIndex + bufferIndex
+        getters.getRowsStartIndex + bufferIndex
       )
       // TODO: visible fields?
       commit(
@@ -1306,7 +1306,7 @@ export const actions = {
       fieldIndex,
     })
   },
-  multiSelectShiftChange({ getters, commit }, { direction }) {
+  multiSelectShiftChange({ getters, commit, dispatch }, { direction }) {
     if (
       getters.getMultiSelectStartRowIndex === -1 ||
       getters.getMultiSelectStartFieldIndex === -1
