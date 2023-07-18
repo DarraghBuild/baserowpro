@@ -1229,10 +1229,49 @@ export const actions = {
         'SET_MULTISELECT_START_ROW_INDEX',
         getters.getBufferStartIndex + bufferIndex
       )
+      // TODO: visible fields?
       commit(
         'SET_MULTISELECT_START_FIELD_INDEX',
         rootGetters['field/getAll'].findIndex((f) => f.id === fieldId)
       )
+    }
+  },
+  setSelectedCellCancelledMultiSelect(
+    { commit, getters, rootGetters },
+    { direction }
+  ) {
+    const rowIndex = getters.getMultiSelectStartRowIndex
+    const fieldIndex = getters.getMultiSelectStartFieldIndex
+
+    const updatePositionFn = {
+      previous: (rowIndex, fieldIndex) => {
+        return [rowIndex, fieldIndex - 1]
+      },
+      next: (rowIndex, fieldIndex) => {
+        return [rowIndex, fieldIndex + 1]
+      },
+      above: (rowIndex, fieldIndex) => {
+        return [rowIndex - 1, fieldIndex]
+      },
+      below: (rowIndex, fieldIndex) => {
+        return [rowIndex + 1, fieldIndex]
+      },
+    }
+
+    const [newRowIndex, newFieldIndex] = updatePositionFn[direction](
+      rowIndex,
+      fieldIndex
+    )
+
+    const rows = getters.getRows
+    // TODO: visible fields?
+    const fields = rootGetters['field/getAll']
+
+    const row = rows[newRowIndex]
+    const field = fields[newFieldIndex]
+
+    if (row && field) {
+      commit('SET_SELECTED_CELL', { rowId: row.id, fieldId: field.id })
     }
   },
   setMultiSelectHolding({ commit }, value) {
@@ -1242,7 +1281,6 @@ export const actions = {
     commit('SET_MULTISELECT_ACTIVE', value)
   },
   clearAndDisableMultiSelect({ commit }) {
-    console.log('clearAndDisableMultiSelect')
     commit('CLEAR_MULTISELECT')
     commit('SET_MULTISELECT_ACTIVE', false)
   },
@@ -1268,7 +1306,7 @@ export const actions = {
       fieldIndex,
     })
   },
-  multiSelectShiftChangeNext({ getters, commit }, { direction }) {
+  multiSelectShiftChange({ getters, commit }, { direction }) {
     if (
       getters.getMultiSelectStartRowIndex === -1 ||
       getters.getMultiSelectStartFieldIndex === -1
