@@ -1225,8 +1225,14 @@ export const actions = {
 
     const bufferIndex = getters.getRows.findIndex((r) => r.id === rowId)
     if (bufferIndex !== -1) {
-      commit('SET_MULTISELECT_START_ROW_INDEX', getters.getBufferStartIndex + bufferIndex)
-      commit('SET_MULTISELECT_START_FIELD_INDEX', rootGetters['field/getAll'].findIndex((f) => f.id === fieldId))
+      commit(
+        'SET_MULTISELECT_START_ROW_INDEX',
+        getters.getBufferStartIndex + bufferIndex
+      )
+      commit(
+        'SET_MULTISELECT_START_FIELD_INDEX',
+        rootGetters['field/getAll'].findIndex((f) => f.id === fieldId)
+      )
     }
   },
   setMultiSelectHolding({ commit }, value) {
@@ -1263,6 +1269,23 @@ export const actions = {
     })
   },
   multiSelectShiftChangeNext({ getters, commit }, { direction }) {
+    if (
+      getters.getMultiSelectStartRowIndex === -1 ||
+      getters.getMultiSelectStartFieldIndex === -1
+    ) {
+      return
+    }
+
+    if (!getters.isMultiSelectActive) {
+      commit('SET_SELECTED_CELL', { rowId: -1, fieldId: -1 })
+      commit('SET_MULTISELECT_ACTIVE', true)
+      commit('UPDATE_MULTISELECT', {
+        position: 'tail',
+        rowIndex: getters.getMultiSelectStartRowIndex,
+        fieldIndex: getters.getMultiSelectStartFieldIndex,
+      })
+    }
+
     const tailRowIndex = getters.getOriginalMultiSelectTailRowIndex
     const tailFieldIndex = getters.getOriginalMultiSelectTailFieldIndex
     const headRowIndex = getters.getOriginalMultiSelectHeadRowIndex
@@ -1289,7 +1312,7 @@ export const actions = {
       headRowIndex,
       headFieldIndex
     )
-    let positionToMove = undefined
+    let positionToMove
 
     if (direction === 'below') {
       if (headRowIndex === getters.getMultiSelectStartRowIndex) {
@@ -1326,7 +1349,8 @@ export const actions = {
     commit('UPDATE_MULTISELECT', {
       position: positionToMove,
       rowIndex: positionToMove === 'tail' ? newRowTailIndex : newRowHeadIndex,
-      fieldIndex: positionToMove === 'tail' ? newFieldTailIndex : newFieldHeadIndex,
+      fieldIndex:
+        positionToMove === 'tail' ? newFieldTailIndex : newFieldHeadIndex,
     })
   },
   multiSelectHold({ getters, commit }, { rowId, fieldIndex }) {

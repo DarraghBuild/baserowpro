@@ -1011,29 +1011,31 @@ export default {
       }
     },
     keyDownEvent(event) {
+      const { key, shiftKey } = event
+      if (
+        ['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(key) &&
+        shiftKey
+      ) {
+        const arrowShiftKeysMapping = {
+          ArrowLeft: 'previous',
+          ArrowRight: 'next',
+          ArrowUp: 'above',
+          ArrowDown: 'below',
+        }
+
+        this.$store.dispatch(
+          this.storePrefix + 'view/grid/multiSelectShiftChangeNext',
+          {
+            direction: arrowShiftKeysMapping[key],
+          }
+        )
+        
+        return
+      }
+
       if (
         this.$store.getters[this.storePrefix + 'view/grid/isMultiSelectActive']
       ) {
-        const { key, shiftKey } = event
-        if (
-          ['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(
-            key
-          ) && shiftKey
-        ) {
-          const arrowShiftKeysMapping = {
-            ArrowLeft: 'previous',
-            ArrowRight: 'next',
-            ArrowUp: 'above',
-            ArrowDown: 'below',
-          }
-
-          this.$store.dispatch(
-            this.storePrefix + 'view/grid/multiSelectShiftChangeNext',
-            {
-              direction: arrowShiftKeysMapping[key],
-            }
-          )
-        }
         if (event.key === 'Backspace' || event.key === 'Delete') {
           this.clearValuesFromMultipleCellSelection()
         }
