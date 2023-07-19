@@ -313,13 +313,13 @@ export const mutations = {
       state.multiSelectTailRowIndex = rowIndex
       state.multiSelectTailFieldIndex = fieldIndex
     }
-    console.log('UPDATE_MULTISELECT')
-    console.log({
-      headRowIndex: state.multiSelectHeadRowIndex,
-      headFieldIndex: state.multiSelectHeadFieldIndex,
-      tailRowIndex: state.multiSelectTailRowIndex,
-      tailFieldIndex: state.multiSelectTailFieldIndex,
-    })
+    // console.log('UPDATE_MULTISELECT')
+    // console.log({
+    //   headRowIndex: state.multiSelectHeadRowIndex,
+    //   headFieldIndex: state.multiSelectHeadFieldIndex,
+    //   tailRowIndex: state.multiSelectTailRowIndex,
+    //   tailFieldIndex: state.multiSelectTailFieldIndex,
+    // })
   },
   SET_MULTISELECT_HOLDING(state, value) {
     console.log('SET_MULTISELECT_HOLDING')
@@ -1226,9 +1226,13 @@ export const actions = {
 
     if (rowIndex !== -1) {
       commit('SET_MULTISELECT_START_ROW_INDEX', rowIndex)
+      
+      const sortedFieldEntries = Object.entries(getters.getAllFieldOptions).sort((a, b) => a[1].order - b[1].order)
+      const visibleFieldEntries = sortedFieldEntries.filter((entry) => entry[1].hidden === false)
+      
       commit(
         'SET_MULTISELECT_START_FIELD_INDEX',
-        rootGetters['field/getAll'].findIndex((f) => f.id === fieldId)
+        visibleFieldEntries.findIndex((f) => parseInt(f[0]) === fieldId)
       )
     }
   },
@@ -1244,20 +1248,23 @@ export const actions = {
     )
 
     const rows = getters.getAllRows
-    // TODO: visible fields?
-    const fields = rootGetters['field/getAll']
+    
+    const sortedFieldEntries = Object.entries(getters.getAllFieldOptions).sort((a, b) => a[1].order - b[1].order)
+    const visibleFieldEntries = sortedFieldEntries.filter((entry) => entry[1].hidden === false)
 
     const row = rows[newRowIndex - getters.getBufferStartIndex]
-    const field = fields[newFieldIndex]
+    const field = visibleFieldEntries[newFieldIndex]
+
+    console.log({ row, field, newFieldIndex, fieldIndex, visibleFieldEntries })
 
     if (row && field) {
-      dispatch('setSelectedCell', { rowId: row.id, fieldId: field.id })
+      dispatch('setSelectedCell', { rowId: row.id, fieldId: parseInt(field[0]) })
     } else {
       const oldRow = rows[rowIndex - getters.getBufferStartIndex]
-      const oldField = fields[fieldIndex]
+      const oldField = visibleFieldEntries[fieldIndex]
 
       if (oldRow && oldField) {
-        dispatch('setSelectedCell', { rowId: oldRow.id, fieldId: oldField.id })
+        dispatch('setSelectedCell', { rowId: oldRow.id, fieldId: parseInt(oldField[0]) })
       }
     }
     dispatch('clearAndDisableMultiSelect')
