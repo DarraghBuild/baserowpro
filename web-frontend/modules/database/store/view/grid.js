@@ -1243,15 +1243,22 @@ export const actions = {
       fieldIndex
     )
 
-    const rows = getters.getRows
+    const rows = getters.getAllRows
     // TODO: visible fields?
     const fields = rootGetters['field/getAll']
 
-    const row = rows[newRowIndex]
+    const row = rows[newRowIndex - getters.getBufferStartIndex]
     const field = fields[newFieldIndex]
 
     if (row && field) {
       dispatch('setSelectedCell', { rowId: row.id, fieldId: field.id })
+    } else {
+      const oldRow = rows[rowIndex - getters.getBufferStartIndex]
+      const oldField = fields[fieldIndex]
+
+      if (oldRow && oldField) {
+        dispatch('setSelectedCell', { rowId: oldRow.id, fieldId: oldField.id })
+      }
     }
     dispatch('clearAndDisableMultiSelect')
   },
