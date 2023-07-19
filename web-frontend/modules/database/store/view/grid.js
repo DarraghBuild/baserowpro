@@ -1249,13 +1249,12 @@ export const actions = {
 
     const rows = getters.getAllRows
     
+    // TODO: refactor to getter
     const sortedFieldEntries = Object.entries(getters.getAllFieldOptions).sort((a, b) => a[1].order - b[1].order)
     const visibleFieldEntries = sortedFieldEntries.filter((entry) => entry[1].hidden === false)
 
     const row = rows[newRowIndex - getters.getBufferStartIndex]
     const field = visibleFieldEntries[newFieldIndex]
-
-    console.log({ row, field, newFieldIndex, fieldIndex, visibleFieldEntries })
 
     if (row && field) {
       dispatch('setSelectedCell', { rowId: row.id, fieldId: parseInt(field[0]) })
@@ -1336,10 +1335,10 @@ export const actions = {
       commit('SET_SELECTED_CELL', { rowId: -1, fieldId: -1 })
     }
 
-    const tailRowIndex = getters.getOriginalMultiSelectTailRowIndex
-    const tailFieldIndex = getters.getOriginalMultiSelectTailFieldIndex
-    const headRowIndex = getters.getOriginalMultiSelectHeadRowIndex
-    const headFieldIndex = getters.getOriginalMultiSelectHeadFieldIndex
+    const tailRowIndex = getters.getMultiSelectTailRowIndex
+    const tailFieldIndex = getters.getMultiSelectTailFieldIndex
+    const headRowIndex = getters.getMultiSelectHeadRowIndex
+    const headFieldIndex = getters.getMultiSelectHeadFieldIndex
 
     const [newRowTailIndex, newFieldTailIndex] = updatePositionFn[direction](
       tailRowIndex,
@@ -2638,43 +2637,15 @@ export const getters = {
     ]
   },
   getMultiSelectHeadFieldIndex(state) {
-    // Return the leftmost
-    return Math.min(
-      state.multiSelectHeadFieldIndex,
-      state.multiSelectTailFieldIndex
-    )
-  },
-  getMultiSelectHeadRowIndex(state) {
-    // Return the topmost
-    return Math.min(
-      state.multiSelectHeadRowIndex,
-      state.multiSelectTailRowIndex
-    )
-  },
-  getMultiSelectTailFieldIndex(state) {
-    // Return the rightmost
-    return Math.max(
-      state.multiSelectHeadFieldIndex,
-      state.multiSelectTailFieldIndex
-    )
-  },
-  getMultiSelectTailRowIndex(state) {
-    // Return the bottommost
-    return Math.max(
-      state.multiSelectHeadRowIndex,
-      state.multiSelectTailRowIndex
-    )
-  },
-  getOriginalMultiSelectHeadFieldIndex(state) {
     return state.multiSelectHeadFieldIndex
   },
-  getOriginalMultiSelectTailFieldIndex(state) {
+  getMultiSelectTailFieldIndex(state) {
     return state.multiSelectTailFieldIndex
   },
-  getOriginalMultiSelectHeadRowIndex(state) {
+  getMultiSelectHeadRowIndex(state) {
     return state.multiSelectHeadRowIndex
   },
-  getOriginalMultiSelectTailRowIndex(state) {
+  getMultiSelectTailRowIndex(state) {
     return state.multiSelectTailRowIndex
   },
   getMultiSelectStartRowIndex(state) {
