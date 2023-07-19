@@ -307,25 +307,11 @@ export const mutations = {
   },
   UPDATE_MULTISELECT(state, { position, rowIndex, fieldIndex }) {
     if (position === 'head') {
-      if (rowIndex >= 0 && fieldIndex >= 0) {
-        state.multiSelectHeadRowIndex = rowIndex
-        state.multiSelectHeadFieldIndex = fieldIndex
-      }
+      state.multiSelectHeadRowIndex = rowIndex
+      state.multiSelectHeadFieldIndex = fieldIndex
     } else if (position === 'tail') {
-      // TODO:
-      // Limit selection to 200 rows (199 since rows start at index 0)
-      // This limit is set by the backend
-      // if (Math.abs(state.multiSelectHeadRowIndex - rowIndex) <= 199) {
-      //   state.multiSelectTailRowIndex = rowIndex
-      //   state.multiSelectTailFieldIndex = fieldIndex
-      // }
-      // TODO: also do the same for fields
-      if (
-        rowIndex < state.rowsEndIndex
-      ) {
-        state.multiSelectTailRowIndex = rowIndex
-        state.multiSelectTailFieldIndex = fieldIndex
-      }
+      state.multiSelectTailRowIndex = rowIndex
+      state.multiSelectTailFieldIndex = fieldIndex
     }
     console.log('UPDATE_MULTISELECT')
     console.log({
@@ -1265,10 +1251,10 @@ export const actions = {
     const rows = getters.getRows
     // TODO: visible fields?
     const fields = rootGetters['field/getAll']
-    
+
     const row = rows[newRowIndex]
     const field = fields[newFieldIndex]
-    
+
     if (row && field) {
       dispatch('setSelectedCell', { rowId: row.id, fieldId: field.id })
     }
@@ -1284,23 +1270,23 @@ export const actions = {
     commit('CLEAR_MULTISELECT')
     commit('SET_MULTISELECT_ACTIVE', false)
   },
-  multiSelectStart({ getters, commit }, { rowId, fieldIndex }) {
+  multiSelectStart({ getters, commit, dispatch }, { rowId, fieldIndex }) {
     commit('CLEAR_MULTISELECT')
 
     const rowIndex = getters.getRowIndexById(rowId)
     // Set the head and tail index to highlight the first cell
-    commit('UPDATE_MULTISELECT', { position: 'head', rowIndex, fieldIndex })
-    commit('UPDATE_MULTISELECT', { position: 'tail', rowIndex, fieldIndex })
+    dispatch('updateMultipleSelectIndexes', { position: 'head', rowIndex, fieldIndex })
+    dispatch('updateMultipleSelectIndexes', { position: 'tail', rowIndex, fieldIndex })
 
     // Update the store to show that the mouse is being held for multi-select
     commit('SET_MULTISELECT_HOLDING', true)
     // Do not enable multi-select if only a single cell is selected
     commit('SET_MULTISELECT_ACTIVE', false)
   },
-  multiSelectShiftClick({ state, getters, commit }, { rowId, fieldIndex }) {
+  multiSelectShiftClick({ state, getters, commit, dispatch }, { rowId, fieldIndex }) {
     commit('SET_MULTISELECT_ACTIVE', true)
 
-    commit('UPDATE_MULTISELECT', {
+    dispatch('updateMultipleSelectIndexes', {
       position: 'tail',
       rowIndex: getters.getRowIndexById(rowId),
       fieldIndex,
@@ -1316,12 +1302,12 @@ export const actions = {
 
     if (!getters.isMultiSelectActive) {
       commit('SET_MULTISELECT_ACTIVE', true)
-      commit('UPDATE_MULTISELECT', {
+      dispatch('updateMultipleSelectIndexes', {
         position: 'head',
         rowIndex: getters.getMultiSelectStartRowIndex,
         fieldIndex: getters.getMultiSelectStartFieldIndex,
       })
-      commit('UPDATE_MULTISELECT', {
+      dispatch('updateMultipleSelectIndexes', {
         position: 'tail',
         rowIndex: getters.getMultiSelectStartRowIndex,
         fieldIndex: getters.getMultiSelectStartFieldIndex,
@@ -1333,7 +1319,7 @@ export const actions = {
     const tailFieldIndex = getters.getOriginalMultiSelectTailFieldIndex
     const headRowIndex = getters.getOriginalMultiSelectHeadRowIndex
     const headFieldIndex = getters.getOriginalMultiSelectHeadFieldIndex
-    
+
     const [newRowTailIndex, newFieldTailIndex] = updatePositionFn[direction](
       tailRowIndex,
       tailFieldIndex
@@ -1376,21 +1362,18 @@ export const actions = {
       }
     }
 
-    commit('UPDATE_MULTISELECT', {
+    dispatch('updateMultipleSelectIndexes', {
       position: positionToMove,
       rowIndex: positionToMove === 'tail' ? newRowTailIndex : newRowHeadIndex,
       fieldIndex:
         positionToMove === 'tail' ? newFieldTailIndex : newFieldHeadIndex,
     })
   },
-  multiSelectHold({ getters, commit }, { rowId, fieldIndex }) {
+  multiSelectHold({ getters, commit, dispatch }, { rowId, fieldIndex }) {
     if (getters.isMultiSelectHolding) {
-      // Unselect single cell
       commit('SET_SELECTED_CELL', { rowId: -1, fieldId: -1 })
-      // TODO:
-      console.log('restarting SET_SELECTED_CELL')
-
-      commit('UPDATE_MULTISELECT', {
+      
+      dispatch('updateMultipleSelectIndexes', {
         position: 'tail',
         rowIndex: getters.getRowIndexById(rowId),
         fieldIndex,
@@ -1885,17 +1868,15 @@ export const actions = {
    * Set the multiple select indexes using the row and field head and tail indexes.
    */
   setMultipleSelect(
-    { commit },
+    { commit, dispatch },
     { rowHeadIndex, fieldHeadIndex, rowTailIndex, fieldTailIndex }
   ) {
-    // TODO: ? is the start index set here?
-
-    commit('UPDATE_MULTISELECT', {
+    dispatch('updateMultipleSelectIndexes', {
       position: 'head',
       rowIndex: rowHeadIndex,
       fieldIndex: fieldHeadIndex,
     })
-    commit('UPDATE_MULTISELECT', {
+    dispatch('updateMultipleSelectIndexes', {
       position: 'tail',
       rowIndex: rowTailIndex,
       fieldIndex: fieldTailIndex,
@@ -1904,6 +1885,39 @@ export const actions = {
     // Unselect a single selected cell because we've just updated the multiple
     // selected and we don't want that to conflict.
     commit('SET_SELECTED_CELL', { rowId: -1, fieldId: -1 })
+  },
+  /**
+   * Action to update head or tail (position) indexes for row and field
+   * multiple select operations.
+   *
+   * It will prevent updating selection to nonsense indexes by doing nothing
+   * if a provided index isn't correct.
+   */
+  updateMultipleSelectIndexes(
+    { commit, getters },
+    { position, rowIndex, fieldIndex }
+  ) {
+    // Limit selection to 200 rows (199 since rows start at index 0)
+    if (Math.abs(getters.getMultiSelectHeadRowIndex - rowIndex) > 199) {
+      return
+    }
+
+    if (rowIndex < 0 || fieldIndex < 0) {
+      return
+    }
+
+    if (
+      rowIndex > getters.getRowsEndIndex - 1 ||
+      fieldIndex > getters.getNumberOfVisibleFields - 1
+    ) {
+      return
+    }
+
+    commit('UPDATE_MULTISELECT', {
+      position,
+      rowIndex,
+      fieldIndex,
+    })
   },
   /**
    * This action is used by the grid view to change multiple cells when pasting
@@ -2543,6 +2557,10 @@ export const getters = {
   },
   getAllFieldOptions(state) {
     return state.fieldOptions
+  },
+  getNumberOfVisibleFields(state) {
+    return Object.values(state.fieldOptions).filter((fo) => fo.hidden === false)
+      .length
   },
   isFirst: (state) => (id) => {
     const index = state.rows.findIndex((row) => row.id === id)
