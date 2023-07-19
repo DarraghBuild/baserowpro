@@ -326,8 +326,6 @@ export const mutations = {
     state.multiSelectHolding = value
   },
   SET_MULTISELECT_ACTIVE(state, value) {
-    // TODO: should set start index?
-    console.log('SET_MULTISELECT_ACTIVE')
     state.multiSelectActive = value
   },
   CLEAR_MULTISELECT(state) {
@@ -1224,13 +1222,10 @@ export const actions = {
   setSelectedCell({ commit, getters, rootGetters }, { rowId, fieldId }) {
     commit('SET_SELECTED_CELL', { rowId, fieldId })
 
-    const bufferIndex = getters.getRows.findIndex((r) => r.id === rowId)
-    if (bufferIndex !== -1) {
-      commit(
-        'SET_MULTISELECT_START_ROW_INDEX',
-        getters.getRowsStartIndex + bufferIndex
-      )
-      // TODO: visible fields?
+    const rowIndex = getters.getRowIndexById(rowId)
+
+    if (rowIndex !== -1) {
+      commit('SET_MULTISELECT_START_ROW_INDEX', rowIndex)
       commit(
         'SET_MULTISELECT_START_FIELD_INDEX',
         rootGetters['field/getAll'].findIndex((f) => f.id === fieldId)
@@ -1274,16 +1269,28 @@ export const actions = {
     commit('CLEAR_MULTISELECT')
 
     const rowIndex = getters.getRowIndexById(rowId)
+
     // Set the head and tail index to highlight the first cell
-    dispatch('updateMultipleSelectIndexes', { position: 'head', rowIndex, fieldIndex })
-    dispatch('updateMultipleSelectIndexes', { position: 'tail', rowIndex, fieldIndex })
+    dispatch('updateMultipleSelectIndexes', {
+      position: 'head',
+      rowIndex,
+      fieldIndex,
+    })
+    dispatch('updateMultipleSelectIndexes', {
+      position: 'tail',
+      rowIndex,
+      fieldIndex,
+    })
 
     // Update the store to show that the mouse is being held for multi-select
     commit('SET_MULTISELECT_HOLDING', true)
     // Do not enable multi-select if only a single cell is selected
     commit('SET_MULTISELECT_ACTIVE', false)
   },
-  multiSelectShiftClick({ state, getters, commit, dispatch }, { rowId, fieldIndex }) {
+  multiSelectShiftClick(
+    { state, getters, commit, dispatch },
+    { rowId, fieldIndex }
+  ) {
     commit('SET_MULTISELECT_ACTIVE', true)
 
     dispatch('updateMultipleSelectIndexes', {
@@ -1372,7 +1379,7 @@ export const actions = {
   multiSelectHold({ getters, commit, dispatch }, { rowId, fieldIndex }) {
     if (getters.isMultiSelectHolding) {
       commit('SET_SELECTED_CELL', { rowId: -1, fieldId: -1 })
-      
+
       dispatch('updateMultipleSelectIndexes', {
         position: 'tail',
         rowIndex: getters.getRowIndexById(rowId),
@@ -1907,7 +1914,7 @@ export const actions = {
     }
 
     if (
-      rowIndex > getters.getRowsEndIndex - 1 ||
+      rowIndex > getters.getRowsLength + getters.getBufferStartIndex - 1 ||
       fieldIndex > getters.getNumberOfVisibleFields - 1
     ) {
       return
