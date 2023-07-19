@@ -1226,10 +1226,14 @@ export const actions = {
 
     if (rowIndex !== -1) {
       commit('SET_MULTISELECT_START_ROW_INDEX', rowIndex)
-      
-      const sortedFieldEntries = Object.entries(getters.getAllFieldOptions).sort((a, b) => a[1].order - b[1].order)
-      const visibleFieldEntries = sortedFieldEntries.filter((entry) => entry[1].hidden === false)
-      
+
+      const sortedFieldEntries = Object.entries(
+        getters.getAllFieldOptions
+      ).sort((a, b) => a[1].order - b[1].order)
+      const visibleFieldEntries = sortedFieldEntries.filter(
+        (entry) => entry[1].hidden === false
+      )
+
       commit(
         'SET_MULTISELECT_START_FIELD_INDEX',
         visibleFieldEntries.findIndex((f) => parseInt(f[0]) === fieldId)
@@ -1248,22 +1252,32 @@ export const actions = {
     )
 
     const rows = getters.getAllRows
-    
+
     // TODO: refactor to getter
-    const sortedFieldEntries = Object.entries(getters.getAllFieldOptions).sort((a, b) => a[1].order - b[1].order)
-    const visibleFieldEntries = sortedFieldEntries.filter((entry) => entry[1].hidden === false)
+    const sortedFieldEntries = Object.entries(getters.getAllFieldOptions).sort(
+      (a, b) => a[1].order - b[1].order
+    )
+    const visibleFieldEntries = sortedFieldEntries.filter(
+      (entry) => entry[1].hidden === false
+    )
 
     const row = rows[newRowIndex - getters.getBufferStartIndex]
     const field = visibleFieldEntries[newFieldIndex]
 
     if (row && field) {
-      dispatch('setSelectedCell', { rowId: row.id, fieldId: parseInt(field[0]) })
+      dispatch('setSelectedCell', {
+        rowId: row.id,
+        fieldId: parseInt(field[0]),
+      })
     } else {
       const oldRow = rows[rowIndex - getters.getBufferStartIndex]
       const oldField = visibleFieldEntries[fieldIndex]
 
       if (oldRow && oldField) {
-        dispatch('setSelectedCell', { rowId: oldRow.id, fieldId: parseInt(oldField[0]) })
+        dispatch('setSelectedCell', {
+          rowId: oldRow.id,
+          fieldId: parseInt(oldField[0]),
+        })
       }
     }
     dispatch('clearAndDisableMultiSelect')
@@ -1305,12 +1319,7 @@ export const actions = {
     { rowId, fieldIndex }
   ) {
     commit('SET_MULTISELECT_ACTIVE', true)
-
-    dispatch('updateMultipleSelectIndexes', {
-      position: 'tail',
-      rowIndex: getters.getRowIndexById(rowId),
-      fieldIndex,
-    })
+    dispatch('setMultiSelectHeadOrTail', { rowId, fieldIndex })
   },
   multiSelectShiftChange({ getters, commit, dispatch }, { direction }) {
     if (
@@ -1391,16 +1400,43 @@ export const actions = {
   },
   multiSelectHold({ getters, commit, dispatch }, { rowId, fieldIndex }) {
     if (getters.isMultiSelectHolding) {
-      commit('SET_SELECTED_CELL', { rowId: -1, fieldId: -1 })
+      dispatch('setMultiSelectHeadOrTail', { rowId, fieldIndex })
+    }
+  },
+  setMultiSelectHeadOrTail(
+    { getters, commit, dispatch },
+    { rowId, fieldIndex }
+  ) {
+    commit('SET_SELECTED_CELL', { rowId: -1, fieldId: -1 })
 
+    const rowIndex = getters.getRowIndexById(rowId)
+
+    if (
+      getters.getMultiSelectHeadRowIndex > rowIndex ||
+      getters.getMultiSelectHeadFieldIndex > fieldIndex
+    ) {
+      // head would come after tail
+      // set tail to be the head and set new head
       dispatch('updateMultipleSelectIndexes', {
         position: 'tail',
-        rowIndex: getters.getRowIndexById(rowId),
+        rowIndex: getters.getMultiSelectHeadRowIndex,
+        fieldIndex: getters.getMultiSelectHeadFieldIndex,
+      })
+      dispatch('updateMultipleSelectIndexes', {
+        position: 'head',
+        rowIndex,
         fieldIndex,
       })
-
-      commit('SET_MULTISELECT_ACTIVE', true)
+    } else {
+      // we only need to update tail
+      dispatch('updateMultipleSelectIndexes', {
+        position: 'tail',
+        rowIndex,
+        fieldIndex,
+      })
     }
+
+    commit('SET_MULTISELECT_ACTIVE', true)
   },
   /**
    * Returns the fields and rows necessaries to extract data from the selection.
