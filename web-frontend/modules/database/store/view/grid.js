@@ -1308,6 +1308,8 @@ export const actions = {
       rowIndex,
       fieldIndex,
     })
+    commit('SET_MULTISELECT_START_ROW_INDEX', rowIndex)
+    commit('SET_MULTISELECT_START_FIELD_INDEX', fieldIndex)
 
     // Update the store to show that the mouse is being held for multi-select
     commit('SET_MULTISELECT_HOLDING', true)
