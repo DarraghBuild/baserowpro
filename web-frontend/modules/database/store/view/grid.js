@@ -1410,31 +1410,25 @@ export const actions = {
     commit('SET_SELECTED_CELL', { rowId: -1, fieldId: -1 })
 
     const rowIndex = getters.getRowIndexById(rowId)
+    const startRowIndex = getters.getMultiSelectStartRowIndex
+    const startFieldIndex = getters.getMultiSelectStartFieldIndex
 
-    if (
-      getters.getMultiSelectHeadRowIndex > rowIndex ||
-      getters.getMultiSelectHeadFieldIndex > fieldIndex
-    ) {
-      // head would come after tail
-      // set tail to be the head and set new head
-      dispatch('updateMultipleSelectIndexes', {
-        position: 'tail',
-        rowIndex: getters.getMultiSelectHeadRowIndex,
-        fieldIndex: getters.getMultiSelectHeadFieldIndex,
-      })
-      dispatch('updateMultipleSelectIndexes', {
-        position: 'head',
-        rowIndex,
-        fieldIndex,
-      })
-    } else {
-      // we only need to update tail
-      dispatch('updateMultipleSelectIndexes', {
-        position: 'tail',
-        rowIndex,
-        fieldIndex,
-      })
-    }
+    const newHeadRowIndex = Math.min(startRowIndex, rowIndex)
+    const newHeadFieldIndex = Math.min(startFieldIndex, fieldIndex)
+    const newTailRowIndex = Math.max(startRowIndex, rowIndex)
+    const newTailFieldIndex = Math.max(startFieldIndex, fieldIndex)
+
+    dispatch('updateMultipleSelectIndexes', {
+      position: 'head',
+      rowIndex: newHeadRowIndex,
+      fieldIndex: newHeadFieldIndex,
+    })
+
+    dispatch('updateMultipleSelectIndexes', {
+      position: 'tail',
+      rowIndex: newTailRowIndex,
+      fieldIndex: newTailFieldIndex,
+    })
 
     commit('SET_MULTISELECT_ACTIVE', true)
   },
