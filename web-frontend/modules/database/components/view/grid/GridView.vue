@@ -1011,6 +1011,8 @@ export default {
       }
     },
     keyDownEvent(event) {
+      event.preventDefault()
+
       const arrowKeys = ['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown']
       const arrowShiftKeysMapping = {
         ArrowLeft: 'previous',

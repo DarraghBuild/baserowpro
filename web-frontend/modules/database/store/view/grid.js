@@ -1949,6 +1949,7 @@ export const actions = {
     { commit, getters },
     { position, rowIndex, fieldIndex }
   ) {
+    // TODO: take from env var
     // Limit selection to 200 rows (199 since rows start at index 0)
     if (Math.abs(getters.getMultiSelectHeadRowIndex - rowIndex) > 199) {
       return
