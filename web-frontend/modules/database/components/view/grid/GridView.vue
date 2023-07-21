@@ -1072,8 +1072,14 @@ export default {
 
         if (element) {
           this.scrollToCellElement(element, scrollDirection, field)
+        } else {
+          // jumping from primary field to the first next field
+          if (fieldIndex === 1 && scrollDirection === 'horizontal') {
+            this.horizontalScroll(0)
+            this.$refs.scrollbars.updateHorizontal()
+          }
         }
-
+        
         return
       }
 
