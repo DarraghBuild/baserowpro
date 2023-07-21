@@ -322,7 +322,6 @@ export const mutations = {
     // })
   },
   SET_MULTISELECT_HOLDING(state, value) {
-    console.log('SET_MULTISELECT_HOLDING')
     state.multiSelectHolding = value
   },
   SET_MULTISELECT_ACTIVE(state, value) {
@@ -1227,6 +1226,9 @@ export const actions = {
     if (rowIndex !== -1) {
       commit('SET_MULTISELECT_START_ROW_INDEX', rowIndex)
 
+      // TODO: fix sort by id also
+      // see orderedFieldOptions
+    
       const sortedFieldEntries = Object.entries(
         getters.getAllFieldOptions
       ).sort((a, b) => a[1].order - b[1].order)
@@ -1399,6 +1401,13 @@ export const actions = {
       fieldIndex:
         positionToMove === 'tail' ? newFieldTailIndex : newFieldHeadIndex,
     })
+
+    return { 
+      position: positionToMove,
+      rowIndex: positionToMove === 'tail' ? newRowTailIndex : newRowHeadIndex,
+      fieldIndex:
+        positionToMove === 'tail' ? newFieldTailIndex : newFieldHeadIndex,
+    }
   },
   multiSelectHold({ getters, commit, dispatch }, { rowId, fieldIndex }) {
     if (getters.isMultiSelectHolding) {
@@ -2611,6 +2620,23 @@ export const getters = {
   getAllFieldOptions(state) {
     return state.fieldOptions
   },
+  getOrderedFieldOptions(state, getters) {
+    return Object.entries(getters.getAllFieldOptions)
+      .map(([fieldIdStr, options]) => [parseInt(fieldIdStr), options])
+      .sort(([a, { order: orderA }], [b, { order: orderB }]) => {
+        // First by order.
+        if (orderA > orderB) {
+          return 1
+        } else if (orderA < orderB) {
+          return -1
+        }
+
+        return a - b
+      })
+  },
+  getOrderedVisibleFieldOptions(state, getters) {
+    return getters.getOrderedFieldOptions.filter(([fieldId, options]) => options.hidden === false)
+  },
   getNumberOfVisibleFields(state) {
     return Object.values(state.fieldOptions).filter((fo) => fo.hidden === false)
       .length
@@ -2695,6 +2721,17 @@ export const getters = {
       return getters.getBufferStartIndex + bufferIndex
     }
     return -1
+  },
+  getRowIdByIndex: (state, getters) => (rowIndex) => {
+    const row = state.rows[rowIndex - getters.getBufferStartIndex]
+    if (row) {
+      return row.id
+    }
+    return -1
+  },
+  getFieldIdByIndex: (state, getters) => (fieldIndex) => {
+    const orderedFieldOptions = getters.getOrderedVisibleFieldOptions
+    return orderedFieldOptions[fieldIndex][0]
   },
   // Check if all the multi-select rows are within the row buffer
   areMultiSelectRowsWithinBuffer(state, getters) {

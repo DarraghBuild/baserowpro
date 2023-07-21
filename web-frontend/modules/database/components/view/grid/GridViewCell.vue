@@ -24,6 +24,8 @@
         props.multiSelectPosition.bottom,
     }"
     :style="data.style"
+    :data-row-id="props.row.id"
+    :data-field-id="props.field.id"
     @click.exact="$options.methods.select($event, parent, props.field.id)"
     @mousedown.left="$options.methods.cellMouseDownLeft($event, listeners)"
     @mouseover="$options.methods.cellMouseover($event, listeners)"
