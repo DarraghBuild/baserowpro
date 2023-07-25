@@ -535,9 +535,7 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
             base_queryset = view_model.objects.all()
 
         try:
-            view = base_queryset.select_related("table__database__workspace").get(
-                pk=view_id
-            )
+            view = base_queryset.get(pk=view_id)
         except View.DoesNotExist as exc:
             raise ViewDoesNotExist(
                 f"The view with id {view_id} does not exist."

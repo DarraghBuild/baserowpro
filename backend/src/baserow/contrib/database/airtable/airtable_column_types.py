@@ -321,19 +321,7 @@ class MultipleAttachmentAirtableColumnType(AirtableColumnType):
         value,
         files_to_download,
     ):
-        new_value = []
-        for file in value:
-            file_name = "_".join(file["url"].split("/")[-3:])
-            files_to_download[file_name] = file["url"]
-            new_value.append(
-                DatabaseExportSerializedStructure.file_field_value(
-                    name=file_name,
-                    visible_name=file["filename"],
-                    original_name=file["filename"],
-                )
-            )
-
-        return new_value
+        return []
 
 
 class SelectAirtableColumnType(AirtableColumnType):
