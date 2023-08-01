@@ -23,10 +23,9 @@ from baserow.api.pagination import PageNumberPagination
 from baserow.api.schemas import get_error_schema
 
 
-class AdminListingView(
+class APIListingView(
     APIView, SearchableViewMixin, SortableViewMixin, FilterableViewMixin
 ):
-    permission_classes = (IsAdminUser,)
     serializer_class = None
     search_fields: List[str] = ["id"]
     filters_field_mapping: Dict[str, str] = {}
@@ -139,3 +138,7 @@ class AdminListingView(
                 401: None,
             },
         }
+
+
+class AdminListingView(APIListingView):
+    permission_classes = (IsAdminUser,)

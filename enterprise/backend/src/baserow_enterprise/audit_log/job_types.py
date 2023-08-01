@@ -197,9 +197,9 @@ class AuditLogExportJobType(JobType):
         :progress: The progress object that can be used to update the progress bar.
         """
 
-        LicenseHandler.raise_if_user_doesnt_have_feature_instance_wide(
-            AUDIT_LOG, job.user
-        )
+        # LicenseHandler.raise_if_user_doesnt_have_feature_instance_wide(
+        #     AUDIT_LOG, job.user
+        # )
 
         queryset = self.get_filtered_queryset(job)
 

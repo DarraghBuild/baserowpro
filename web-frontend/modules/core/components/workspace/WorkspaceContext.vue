@@ -31,6 +31,26 @@
         </a>
       </li>
       <li
+        v-if="
+          $hasPermission('workspace.read_audit_log', workspace, workspace.id)
+        "
+      >
+        <a
+          @click="
+            $router.push({
+              name: 'workspace-audit-log',
+              params: {
+                workspaceId: workspace.id,
+              },
+            })
+            hide()
+          "
+        >
+          <i class="context__menu-icon fas fa-fw fa-history"></i>
+          {{ $t('workspaceContext.auditLog') }}
+        </a>
+      </li>
+      <li
         v-if="$hasPermission('workspace.read_trash', workspace, workspace.id)"
       >
         <a @click="showWorkspaceTrashModal">

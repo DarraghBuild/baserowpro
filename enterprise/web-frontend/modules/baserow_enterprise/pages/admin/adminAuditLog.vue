@@ -98,7 +98,7 @@ import LongTextField from '@baserow_enterprise/components/crudTable/fields/LongT
 import AuditLogExportModal from '@baserow_enterprise/components/admin/modals/AuditLogExportModal'
 
 export default {
-  name: 'AuditLogAdminTable',
+  name: 'AdminAuditLogAdmin',
   components: {
     AuditLogExportModal,
     CrudTable,

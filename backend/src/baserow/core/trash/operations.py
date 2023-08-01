@@ -5,6 +5,10 @@ class ReadWorkspaceTrashOperationType(WorkspaceCoreOperationType):
     type = "workspace.read_trash"
 
 
+class ReadWorkspaceAuditLogOperationType(WorkspaceCoreOperationType):
+    type = "workspace.read_audit_log"
+
+
 class ReadApplicationTrashOperationType(ApplicationOperationType):
     type = "application.read_trash"
 

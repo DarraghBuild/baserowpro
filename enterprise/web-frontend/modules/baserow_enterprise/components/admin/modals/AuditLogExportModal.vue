@@ -67,7 +67,6 @@ import error from '@baserow/modules/core/mixins/error'
 import moment from '@baserow/modules/core/moment'
 import { getHumanPeriodAgoCount } from '@baserow/modules/core/utils/date'
 import ExportLoadingBar from '@baserow/modules/database/components/export/ExportLoadingBar'
-import AuditLogAdminService from '@baserow_enterprise/services/auditLogAdmin'
 import AuditLogExportForm from '@baserow_enterprise/components/admin/forms/AuditLogExportForm'
 
 const MAX_EXPORT_FILES = 4
@@ -78,6 +77,10 @@ export default {
   mixins: [modal, error],
   props: {
     filters: {
+      type: Object,
+      required: true,
+    },
+    service: {
       type: Object,
       required: true,
     },
@@ -93,7 +96,7 @@ export default {
   },
   async fetch() {
     this.loading = true
-    const jobs = await AuditLogAdminService(this.$client).getLastExportJobs(
+    const jobs = await this.service.getLastExportJobs(
       MAX_EXPORT_FILES
     )
     this.lastFinishedJobs = jobs.filter((job) => job.state === 'finished')
@@ -156,9 +159,7 @@ export default {
       )
 
       try {
-        const { data } = await AuditLogAdminService(
-          this.$client
-        ).startExportCsvJob({ ...values, ...filters })
+        const { data } = await this.service.startExportCsvJob({ ...values, ...filters })
         this.lastFinishedJobs = this.lastFinishedJobs.slice(
           0,
           MAX_EXPORT_FILES - 1
@@ -172,9 +173,7 @@ export default {
     },
     async getJobInfo() {
       try {
-        const { data } = await AuditLogAdminService(
-          this.$client
-        ).getExportJobInfo(this.job.id)
+        const { data } = await this.service.getExportJobInfo(this.job.id)
         this.job = data
 
         if (this.jobIsRunning) {

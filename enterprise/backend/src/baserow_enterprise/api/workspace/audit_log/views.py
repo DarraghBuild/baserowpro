@@ -1,8 +1,13 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import translation
+from baserow.core.actions import DeleteWorkspaceActionType, OrderWorkspacesActionType
+from baserow_enterprise.api.admin.audit_log.serializers import (
+    AuditLogExportJobRequestSerializer,
+    AuditLogExportJobResponseSerializer,
+)
 
-from baserow_premium.api.admin.views import AdminListingView
+from baserow_premium.api.admin.views import APIListingView
 from baserow_premium.license.handler import LicenseHandler
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAdminUser
@@ -28,27 +33,19 @@ from baserow_enterprise.audit_log.models import AuditLogEntry
 from baserow_enterprise.features import AUDIT_LOG
 
 from .serializers import (
-    AuditLogActionTypeSerializer,
-    AuditLogExportJobRequestSerializer,
-    AuditLogExportJobResponseSerializer,
-    AdminAuditLogQueryParamsSerializer,
-    AdminAuditLogSerializer,
+    AuditLogQueryParamsSerializer,
+    AuditLogSerializer,
     AuditLogUserSerializer,
-    AuditLogWorkspaceSerializer,
+    AuditLogActionTypeSerializer,
 )
 
 User = get_user_model()
 
 
-# Admin
-
-
-class AdminAuditLogView(AdminListingView):
-    permission_classes = (IsAdminUser,)
-    serializer_class = AdminAuditLogSerializer
+class WorkspaceAuditLogView(APIListingView):
+    serializer_class = AuditLogSerializer
     filters_field_mapping = {
         "user_id": "user_id",
-        "workspace_id": "workspace_id",
         "action_type": "action_type",
         "from_timestamp": "action_timestamp__gte",
         "to_timestamp": "action_timestamp__lte",
@@ -56,7 +53,6 @@ class AdminAuditLogView(AdminListingView):
     }
     sort_field_mapping = {
         "user": "user_email",
-        "workspace": "workspace_name",
         "type": "action_type",
         "timestamp": "action_timestamp",
         "ip_address": "ip_address",
@@ -64,7 +60,7 @@ class AdminAuditLogView(AdminListingView):
     default_order_by = "-action_timestamp"
 
     def get_queryset(self, request):
-        return AuditLogEntry.objects.all()
+        return AuditLogEntry.objects.filter(workspace_id=self.kwargs["workspace_id"])
 
     def get_serializer(self, request, *args, **kwargs):
         return super().get_serializer(
@@ -74,71 +70,24 @@ class AdminAuditLogView(AdminListingView):
     @extend_schema(
         tags=["Admin"],
         operation_id="admin_audit_log",
-        description="Lists all audit log entries.",
-        **AdminListingView.get_extend_schema_parameters(
+        description="Lists all audit log entries for the given workspace id.",
+        **APIListingView.get_extend_schema_parameters(
             "audit_log_entries", serializer_class, [], sort_field_mapping
         ),
     )
-    @validate_query_parameters(AdminAuditLogQueryParamsSerializer)
-    def get(self, request, query_params):
-        LicenseHandler.raise_if_user_doesnt_have_feature_instance_wide(
-            AUDIT_LOG, request.user
-        )
+    @validate_query_parameters(AuditLogQueryParamsSerializer)
+    def get(self, request, workspace_id: int, query_params):
+        self.workspace_id = workspace_id
         with translation.override(request.user.profile.language):
             return super().get(request)
 
 
-class AdminAuditLogUserFilterView(AdminListingView):
-    permission_classes = (IsAdminUser,)
-    serializer_class = AuditLogUserSerializer
-    search_fields = ["email"]
-    default_order_by = "email"
-
-    def get_queryset(self, request):
-        return User.objects.all()
-
-    @extend_schema(
-        tags=["Admin"],
-        operation_id="admin_audit_log_users",
-        description="List all users that have performed an action in the audit log.",
-        **AdminListingView.get_extend_schema_parameters(
-            "users", serializer_class, search_fields, {}
-        ),
-    )
-    def get(self, request):
-        LicenseHandler.raise_if_user_doesnt_have_feature_instance_wide(
-            AUDIT_LOG, request.user
-        )
-        return super().get(request)
-
-
-class AdminAuditLogWorkspaceFilterView(AdminListingView):
-    permission_classes = (IsAdminUser,)
-    serializer_class = AuditLogWorkspaceSerializer
-    search_fields = ["name"]
-    default_order_by = "name"
-
-    def get_queryset(self, request):
-        return Workspace.objects.filter(template__isnull=True)
-
-    @extend_schema(
-        tags=["Admin"],
-        operation_id="admin_audit_log_workspaces",
-        description="List all distinct workspace names related to an audit log entry.",
-        **AdminListingView.get_extend_schema_parameters(
-            "workspaces", serializer_class, search_fields, {}
-        ),
-    )
-    def get(self, request):
-        LicenseHandler.raise_if_user_doesnt_have_feature_instance_wide(
-            AUDIT_LOG, request.user
-        )
-        return super().get(request)
-
-
-class AdminAuditLogActionTypeFilterView(APIView):
-    permission_classes = (IsAdminUser,)
+class AuditLogActionTypeFilterView(APIView):
     serializer_class = AuditLogActionTypeSerializer
+    exclude_types = [
+        DeleteWorkspaceActionType.type,
+        OrderWorkspacesActionType.type,
+    ]
 
     def filter_action_types(self, action_types, search):
         search_lower = search.lower()
@@ -149,23 +98,25 @@ class AdminAuditLogActionTypeFilterView(APIView):
         ]
 
     @extend_schema(
-        tags=["Admin"],
-        operation_id="admin_audit_log_types",
+        tags=["Workspace"],
+        operation_id="workspace_audit_log_types",
         description="List all distinct action types related to an audit log entry.",
     )
-    def get(self, request):
-        LicenseHandler.raise_if_user_doesnt_have_feature_instance_wide(
-            AUDIT_LOG, request.user
-        )
-
+    def get(self, request, workspace_id: int):
         # Since action's type is translated at runtime and there aren't that
         # many, we can fetch them all and filter them in memory to match the
         # search query on the translated value.
         with translation.override(request.user.profile.language):
             search = request.GET.get("search")
 
+            filtered_action_types = [
+                action_type
+                for action_type in action_type_registry.get_all()
+                if action_type.type not in self.exclude_types
+            ]
+
             action_types = AuditLogActionTypeSerializer(
-                action_type_registry.get_all(), many=True
+                filtered_action_types, many=True
             ).data
 
             if search:
@@ -181,9 +132,28 @@ class AdminAuditLogActionTypeFilterView(APIView):
             )
 
 
-class AdminAsyncAuditLogExportView(APIView):
-    permission_classes = (IsAdminUser,)
+class AuditLogUserFilterView(APIListingView):
+    serializer_class = AuditLogUserSerializer
+    search_fields = ["email"]
+    default_order_by = "email"
 
+    def get_queryset(self, request):
+        return User.objects.filter(workspaceuser__workspace_id=self.workspace_id)
+
+    @extend_schema(
+        tags=["Workspace"],
+        operation_id="workspace_audit_log_users",
+        description="List all users that have performed an action in the audit log.",
+        **APIListingView.get_extend_schema_parameters(
+            "users", serializer_class, search_fields, {}
+        ),
+    )
+    def get(self, request, workspace_id: int):
+        self.workspace_id = workspace_id
+        return super().get(request)
+
+
+class AsyncAuditLogExportView(APIView):
     @extend_schema(
         parameters=[CLIENT_SESSION_ID_SCHEMA_PARAMETER],
         tags=["Audit log export"],
@@ -200,12 +170,10 @@ class AdminAsyncAuditLogExportView(APIView):
     @transaction.atomic
     @map_exceptions({MaxJobCountExceeded: ERROR_MAX_JOB_COUNT_EXCEEDED})
     @validate_body(AuditLogExportJobRequestSerializer)
-    def post(self, request, data):
+    def post(self, request, workspace_id, data):
         """Creates a job to export the filtered audit log entries to a CSV file."""
 
-        LicenseHandler.raise_if_user_doesnt_have_feature_instance_wide(
-            AUDIT_LOG, request.user
-        )
+        data["filter_workspace_id"] = workspace_id
 
         csv_export_job = JobHandler().create_and_start_job(
             request.user, AuditLogExportJobType.type, **data
