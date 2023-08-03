@@ -3,7 +3,19 @@ import json
 import os
 from io import BytesIO
 from pathlib import Path
-from typing import IO, Any, Dict, List, NewType, Optional, Tuple, Union, cast
+from typing import (
+    IO,
+    Any,
+    Dict,
+    Generator,
+    Iterable,
+    List,
+    NewType,
+    Optional,
+    Tuple,
+    Union,
+    cast,
+)
 from urllib.parse import urljoin, urlparse
 from zipfile import ZIP_DEFLATED, ZipFile
 
@@ -166,12 +178,35 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
         settings_instance.save()
         return settings_instance
 
-    def check_multiple_permissions(
+    def check_multiple_permissions_raising_on_any_failure(
         self,
-        checks: List[PermissionCheck],
+        checks: Iterable[PermissionCheck],
         workspace: Optional[Workspace] = None,
         include_trash: bool = False,
-        return_permissions_exceptions: bool = False,
+    ):
+        """
+        Exactly the same as check_and_return_results_for_multiple_permissions so see
+        that method's docstring for more info, other than this one returns nothing and
+        will raise on the first permission check failure it encounters.
+        """
+
+        for check, result in self._generate_checks_for_multiple_permissions(
+            checks,
+            workspace,
+            include_trash,
+            return_permissions_exceptions_instead_of_false_for_failure=True,
+        ):
+            if not result:
+                raise PermissionDenied(check.actor)
+            elif isinstance(result, PermissionException):
+                raise result
+
+    def check_and_return_results_for_multiple_permissions(
+        self,
+        checks: Iterable[PermissionCheck],
+        workspace: Optional[Workspace] = None,
+        include_trash: bool = False,
+        return_permissions_exceptions_instead_of_false_for_failure: bool = False,
     ) -> Dict[PermissionCheck, Union[bool, PermissionException]]:
         """
         Given a list of permission to check, returns True for each check for which the
@@ -193,11 +228,40 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
         :param workspace: The optional workspace in which the operations take place.
         :param include_trash: If true then also checks if the given workspace has been
             trashed instead of raising a DoesNotExist exception.
+        :param return_permissions_exceptions_instead_of_false_for_failure: By default
+            this function returns values in the result dict of True/False. If instead
+            of False you want an exception which can be raised pass this parameter as
+            True.
         :return: A dictionary with one entry for each check of the parameter as key and
             whether the operation is allowed or not as value.
         """
 
-        result = {}
+        return dict(
+            self._generate_checks_for_multiple_permissions(
+                checks,
+                workspace,
+                include_trash,
+                return_permissions_exceptions_instead_of_false_for_failure,
+            )
+        )
+
+    # noinspection PyMethodMayBeStatic
+    def _generate_checks_for_multiple_permissions(
+        self,
+        checks: Iterable[PermissionCheck],
+        workspace: Optional[Workspace] = None,
+        include_trash: bool = False,
+        return_permissions_exceptions_instead_of_false_for_failure: bool = False,
+    ) -> Generator[
+        Tuple[PermissionCheck, Union[bool, PermissionException]], None, None
+    ]:
+        """
+        Internal helper method which is a generator to support easily raising on
+        the very first failure in check_multiple_permissions_raising_on_any_failure
+        or alternatively collecting all the generated results into a dict in
+        check_and_return_results_for_multiple_permissions.
+        """
+
         undetermined_checks = set(checks)
         for permission_manager_name in settings.PERMISSION_MANAGERS:
             if not undetermined_checks:
@@ -222,23 +286,22 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
                 if check_result is not None:
                     if (
                         isinstance(check_result, PermissionException)
-                        and not return_permissions_exceptions
+                        and not return_permissions_exceptions_instead_of_false_for_failure
                     ):
-                        result[check] = False
+                        yield check, False
                     else:
-                        result[check] = check_result
+                        yield check, check_result
 
                     undetermined_checks.remove(check)
 
         # Permission denied by default to all non handled check
         for undetermined_check in undetermined_checks:
-            result[undetermined_check] = (
+            result = (
                 PermissionDenied(undetermined_check.actor)
-                if return_permissions_exceptions
+                if return_permissions_exceptions_instead_of_false_for_failure
                 else False
             )
-
-        return result
+            yield undetermined_check, result
 
     def check_permission_for_multiple_actors(
         self,
@@ -264,7 +327,7 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
         """
 
         checks = [PermissionCheck(actor, operation_name, context) for actor in actors]
-        checked = self.check_multiple_permissions(
+        checked = self.check_and_return_results_for_multiple_permissions(
             checks, workspace, include_trash=include_trash
         )
 
@@ -321,11 +384,11 @@ class CoreHandler(metaclass=baserow_trace_methods(tracer)):
 
         check = PermissionCheck(actor, operation_name, context)
 
-        allowed = self.check_multiple_permissions(
+        allowed = self.check_and_return_results_for_multiple_permissions(
             [check],
             workspace,
             include_trash=include_trash,
-            return_permissions_exceptions=True,
+            return_permissions_exceptions_instead_of_false_for_failure=True,
         ).get(check, None)
 
         if allowed is True:

@@ -871,7 +871,9 @@ class FieldType(
             FieldDependencyHandler,
         )
 
-        FieldDependencyHandler.rebuild_dependencies(field, field_cache)
+        FieldDependencyHandler.rebuild_dependencies_returning_new_dependencies(
+            field, field_cache
+        )
         for (
             dependant_field,
             dependant_field_type,
@@ -1367,7 +1369,9 @@ class FieldType(
             FieldDependencyHandler,
         )
 
-        FieldDependencyHandler.rebuild_dependencies(field, field_cache)
+        FieldDependencyHandler.rebuild_dependencies_returning_new_dependencies(
+            field, field_cache
+        )
         for (
             dependant_field,
             dependant_field_type,

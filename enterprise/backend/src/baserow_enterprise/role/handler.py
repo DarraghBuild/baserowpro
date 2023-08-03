@@ -733,9 +733,11 @@ class RoleAssignmentHandler:
                 raise ScopeNotExist()
 
         # Do we have the permission to change roles for all scopes
-        user_permission_for_scopes = CoreHandler().check_multiple_permissions(
-            permission_to_check,
-            workspace=workspace,
+        user_permission_for_scopes = (
+            CoreHandler().check_and_return_results_for_multiple_permissions(
+                permission_to_check,
+                workspace=workspace,
+            )
         )
 
         if not all(user_permission_for_scopes.values()):

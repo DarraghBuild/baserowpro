@@ -1,15 +1,19 @@
 from typing import Iterable, List, Optional, Tuple
 
+from django.contrib.auth.models import AbstractUser
 from django.db.models import Q
 
 from baserow.contrib.database.fields.dependencies.dependency_rebuilder import (
     break_dependencies_for_field,
-    rebuild_field_dependencies,
+    rebuild_field_dependencies_returning_new_dependencies,
     update_fields_with_broken_references,
 )
 from baserow.contrib.database.fields.field_cache import FieldCache
 from baserow.contrib.database.fields.models import Field, LinkRowField
 from baserow.contrib.database.fields.registries import FieldType, field_type_registry
+from baserow.core.handler import CoreHandler
+from baserow.core.models import Workspace
+from baserow.core.types import PermissionCheck
 
 from .models import FieldDependency
 
@@ -35,16 +39,19 @@ class FieldDependencyHandler:
         ]
 
     @classmethod
-    def rebuild_dependencies(cls, field, field_cache: FieldCache):
+    def rebuild_dependencies_returning_new_dependencies(
+        cls, field, field_cache: FieldCache
+    ) -> List[FieldDependency]:
         """
         Rebuilds this fields dependencies based off field_type.get_field_dependencies.
 
         :param field: The field to rebuild its field dependencies for.
         :param field_cache: A field cache which will be used to lookup fields.
+        :return: Any new dependencies created by the rebuild.
         """
 
         update_fields_with_broken_references(field)
-        rebuild_field_dependencies(field, field_cache)
+        return rebuild_field_dependencies_returning_new_dependencies(field, field_cache)
 
     @classmethod
     def break_dependencies_delete_dependants(cls, field):
@@ -160,3 +167,52 @@ class FieldDependencyHandler:
             )
             dependants.append(field_dep_tuple)
         return dependants
+
+    @classmethod
+    def rebuild_and_raise_if_user_doesnt_have_permissions_after(
+        cls,
+        workspace: Workspace,
+        user: AbstractUser,
+        field: Field,
+        field_cache: FieldCache,
+        field_operation_name: str,
+    ):
+        new_dependencies = (
+            FieldDependencyHandler.rebuild_dependencies_returning_new_dependencies(
+                field, field_cache
+            )
+        )
+        FieldDependencyHandler.raise_if_user_doesnt_have_operation_on_dependencies_in_other_tables(
+            workspace, user, field, new_dependencies, field_operation_name
+        )
+
+    @classmethod
+    def raise_if_user_doesnt_have_operation_on_dependencies_in_other_tables(
+        cls,
+        workspace: Workspace,
+        user: AbstractUser,
+        field: Field,
+        dependencies: List[FieldDependency],
+        field_operation_name: str,
+    ):
+        """
+        For a list of dependencies checks the provided user has the provided operation
+        on each of the dependency fields raising if they do not. It skips and
+        dependencies that point at the same table assuming the user already has rights
+        on fields in the table `field` is in.
+        """
+
+        perm_checks = []
+        for dep in dependencies:
+            dependency_field = dep.dependency
+            if dependency_field.table_id != field.table_id:
+                perm_checks.append(
+                    PermissionCheck(
+                        actor=user,
+                        operation_name=field_operation_name,
+                        context=dependency_field,
+                    )
+                )
+        CoreHandler().check_multiple_permissions_raising_on_any_failure(
+            perm_checks, workspace
+        )

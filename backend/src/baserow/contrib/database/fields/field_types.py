@@ -2069,7 +2069,7 @@ class LinkRowFieldType(FieldType):
         id_mapping: Dict[str, Any],
     ):
         if field.link_row_related_field:
-            FieldDependencyHandler().rebuild_dependencies(
+            FieldDependencyHandler().rebuild_dependencies_returning_new_dependencies(
                 field.link_row_related_field, field_cache
             )
         super().after_import_serialized(field, field_cache, id_mapping)
@@ -3626,7 +3626,9 @@ class FormulaFieldType(ReadOnlyFieldType):
         expr = FormulaHandler.recalculate_formula_and_get_update_expression(
             field, old_field, field_cache
         )
-        FieldDependencyHandler.rebuild_dependencies(field, field_cache)
+        FieldDependencyHandler.rebuild_dependencies_returning_new_dependencies(
+            field, field_cache
+        )
         update_collector.add_field_with_pending_update_statement(
             field, expr, via_path_to_starting_table=via_path_to_starting_table
         )

@@ -172,7 +172,9 @@ def test_check_multiple_permissions(data_fixture):
     database = data_fixture.create_database_application(user=admin, workspace=workspace)
 
     checks = []
-    result = CoreHandler().check_multiple_permissions(checks, workspace)
+    result = CoreHandler().check_and_return_results_for_multiple_permissions(
+        checks, workspace
+    )
 
     assert result == {}
 
@@ -327,7 +329,9 @@ def test_check_multiple_permissions(data_fixture):
     ]
 
     # All together
-    result = CoreHandler().check_multiple_permissions(checks, workspace)
+    result = CoreHandler().check_and_return_results_for_multiple_permissions(
+        checks, workspace
+    )
 
     permission_result = [result[check] for check in checks]
 

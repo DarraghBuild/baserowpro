@@ -249,7 +249,9 @@ def test_run_file_import_task_for_special_fields(data_fixture, patch_filefield_s
         formula=f"lookup('{link_field.name}', '{number_field.name}')*2",
         formula_type="number",
     )
-    FieldDependencyHandler.rebuild_dependencies(formula_field, FieldCache())
+    FieldDependencyHandler.rebuild_dependencies_returning_new_dependencies(
+        formula_field, FieldCache()
+    )
 
     # single and multiple select fields
     multiple_select_field = data_fixture.create_multiple_select_field(

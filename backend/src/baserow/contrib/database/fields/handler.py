@@ -308,7 +308,9 @@ class FieldHandler(metaclass=baserow_trace_methods(tracer)):
 
         field_cache = FieldCache()
         instance.save(field_cache=field_cache, raise_if_invalid=True)
-        FieldDependencyHandler.rebuild_dependencies(instance, field_cache)
+        FieldDependencyHandler.rebuild_and_raise_if_user_doesnt_have_permissions_after(
+            workspace, user, instance, field_cache, UpdateFieldOperationType.type
+        )
 
         # Add the field to the table schema.
         with safe_django_schema_editor(atomic=False) as schema_editor:
@@ -458,7 +460,9 @@ class FieldHandler(metaclass=baserow_trace_methods(tracer)):
         field = set_allowed_attrs(field_values, allowed_fields, field)
 
         field.save(field_cache=field_cache, raise_if_invalid=True)
-        FieldDependencyHandler.rebuild_dependencies(field, field_cache)
+        FieldDependencyHandler.rebuild_and_raise_if_user_doesnt_have_permissions_after(
+            workspace, user, field, field_cache, UpdateFieldOperationType.type
+        )
         # If no converter is found we are going to convert to field using the
         # lenient schema editor which will alter the field's type and set the data
         # value to null if it can't be converted.
@@ -981,7 +985,9 @@ class FieldHandler(metaclass=baserow_trace_methods(tracer)):
 
             field.save(field_cache=field_cache)
 
-            FieldDependencyHandler.rebuild_dependencies(field, field_cache)
+            FieldDependencyHandler.rebuild_dependencies_returning_new_dependencies(
+                field, field_cache
+            )
             for (
                 dependant_field,
                 dependant_field_type,

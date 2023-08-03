@@ -153,7 +153,9 @@ class FieldFixtures:
             self.create_model_field(kwargs["table"], field)
 
         if setup_dependencies:
-            FieldDependencyHandler().rebuild_dependencies(field, FieldCache())
+            FieldDependencyHandler().rebuild_dependencies_returning_new_dependencies(
+                field, FieldCache()
+            )
 
         return field
 
@@ -307,7 +309,9 @@ class FieldFixtures:
                 model.objects_and_trash.all().update(**{f"{field.db_column}": expr})
 
         if setup_dependencies:
-            FieldDependencyHandler().rebuild_dependencies(field, FieldCache())
+            FieldDependencyHandler().rebuild_dependencies_returning_new_dependencies(
+                field, FieldCache()
+            )
 
         return field
 
@@ -329,6 +333,8 @@ class FieldFixtures:
             self.create_model_field(kwargs["table"], field)
 
         if setup_dependencies:
-            FieldDependencyHandler().rebuild_dependencies(field, FieldCache())
+            FieldDependencyHandler().rebuild_dependencies_returning_new_dependencies(
+                field, FieldCache()
+            )
 
         return field
