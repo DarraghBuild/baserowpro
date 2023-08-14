@@ -51,6 +51,11 @@ class FileImportJob(JobWithUserIpAddress, JobWithWebsocketId, JobWithUndoRedoIds
     first_row_header = models.BooleanField(
         default=False, help_text="Is the first row of the provided data the header?"
     )
+    ai_description = models.TextField(
+        default=None,
+        null=True,
+        help_text="An AI description of what the table data should look like.",
+    )
     report = models.JSONField(
         default=default_report,
         help_text="The import error report.",

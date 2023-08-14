@@ -14,7 +14,7 @@
           @input="changed($event.target.value)"
         ></textarea>
         <div v-if="$v.content.$error" class="error">
-          {{ $t('error.fieldRequired') }}
+          {{ $t('error.inputRequired') }}
         </div>
       </div>
     </div>

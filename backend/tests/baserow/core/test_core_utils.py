@@ -33,6 +33,7 @@ from baserow.core.utils import (
     to_snake_case,
     truncate_middle,
     unique_dicts_in_list,
+    markdown_table_to_object,
 )
 
 
@@ -511,3 +512,72 @@ def nested_dict():
 def test_get_nested_value_from_dict(nested_dict, value_path, expected_result):
     result = get_nested_value_from_dict(nested_dict, value_path)
     assert result == expected_result
+
+
+def test_markdown_table_to_object_with_separator():
+    table = """| Planet | Name | Orbital Period | Distance From Sun (average) | Surface Temperature | Moons |
+| Mercury | 384458 km | 87.96 Earth Days | 2.01 x 10^7 km | -17.3°C | 0 |
+| Venus | 108332 km | 224.71 Earth Days | 1.46 x 10^8 km | 46.7°C | 0 |
+"""
+
+    assert markdown_table_to_object(table) == [
+        [
+            "Planet",
+            "Name",
+            "Orbital Period",
+            "Distance From Sun (average)",
+            "Surface Temperature",
+            "Moons"
+        ],
+        [
+            "Mercury",
+            "384458 km",
+            "87.96 Earth Days",
+            "2.01 x 10^7 km",
+            "-17.3°C",
+            "0"
+        ],
+        [
+            "Venus",
+            "108332 km",
+            "224.71 Earth Days",
+            "1.46 x 10^8 km",
+            "46.7°C",
+            "0"
+        ]
+    ]
+
+
+def test_markdown_table_to_object_without_separator():
+    table = """| Planet | Name | Orbital Period | Distance From Sun (average) | Surface Temperature | Moons |
+|---------|-----------|------------------|----------------|---------|---|
+| Mercury | 384458 km | 87.96 Earth Days | 2.01 x 10^7 km | -17.3°C | 0 |
+| Venus | 108332 km | 224.71 Earth Days | 1.46 x 10^8 km | 46.7°C | 0 |
+"""
+
+    assert markdown_table_to_object(table) == [
+        [
+            "Planet",
+            "Name",
+            "Orbital Period",
+            "Distance From Sun (average)",
+            "Surface Temperature",
+            "Moons"
+        ],
+        [
+            "Mercury",
+            "384458 km",
+            "87.96 Earth Days",
+            "2.01 x 10^7 km",
+            "-17.3°C",
+            "0"
+        ],
+        [
+            "Venus",
+            "108332 km",
+            "224.71 Earth Days",
+            "1.46 x 10^8 km",
+            "46.7°C",
+            "0"
+        ],
+    ]

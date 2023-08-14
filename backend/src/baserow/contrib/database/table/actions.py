@@ -43,6 +43,7 @@ class CreateTableActionType(UndoableActionType):
         name: str,
         data: Optional[List[List[Any]]] = None,
         first_row_header: bool = True,
+        ai_description: Optional[str] = None,
         progress: Optional[Progress] = None,
     ) -> Table:
         """
@@ -57,6 +58,7 @@ class CreateTableActionType(UndoableActionType):
         :param first_row_header: Indicates if the first row are the fields. The names
             of these rows are going to be used as fields. If `fields` is provided,
             this options is ignored.
+        :param ai_description: @TODO docs
         :param progress: An optional progress instance if you want to track the progress
             of the task.
         :return: The created table and the error report.
@@ -69,6 +71,7 @@ class CreateTableActionType(UndoableActionType):
             data=data,
             first_row_header=first_row_header,
             fill_example=True,
+            ai_description=ai_description,
             progress=progress,
         )
 

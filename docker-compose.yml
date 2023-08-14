@@ -156,6 +156,7 @@ x-backend-variables: &backend-variables
   BASEROW_DISABLE_LOCKED_MIGRATIONS:
   BASEROW_USE_PG_FULLTEXT_SEARCH:
   BASEROW_AUTO_VACUUM:
+  BASEROW_LLAMA_AI_ENABLED:
 
 services:
   # A caddy reverse proxy sitting in-front of all the services. Responsible for routing
@@ -219,6 +220,7 @@ services:
       POSTHOG_HOST:
       BASEROW_UNIQUE_ROW_VALUES_SIZE_LIMIT:
       BASEROW_ROW_PAGE_SIZE_LIMIT:
+      BASEROW_LLAMA_AI_ENABLED:
     depends_on:
       - backend
     networks:
@@ -305,6 +307,16 @@ services:
     command: chown 9999:9999 -R /baserow/media
     volumes:
       - media:/baserow/media
+    networks:
+      local:
+
+  llama:
+    image: ghcr.io/abetlen/llama-cpp-python:latest
+    restart: unless-stopped
+    environment:
+      MODEL: ${BASEROW_LLAMA_MODEL:-/models/llama-2-7b-chat.ggmlv3.q4_0.bin}
+    volumes:
+      - ./models:/models
     networks:
       local:
 

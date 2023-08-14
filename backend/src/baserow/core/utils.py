@@ -923,3 +923,16 @@ def transaction_on_commit_if_not_already(func):
     funcs = set(func for _, func in get_connection().run_on_commit or [])
     if func not in funcs:
         transaction.on_commit(func)
+
+
+def markdown_table_to_object(inp):
+    lines = inp.split('\n')
+    table = []
+    for i1, line in enumerate(lines):
+        if not line.startswith("|---") and line != "":
+            line = line.split('|')
+            table.append([
+                value.strip() for i2, value in enumerate(line)
+                if i2 > 0 and i2 < len(line) - 1
+            ])
+    return table

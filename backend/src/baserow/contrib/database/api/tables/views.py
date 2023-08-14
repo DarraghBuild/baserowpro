@@ -238,6 +238,7 @@ class TablesView(APIView):
             name=data["name"],
             data=data["data"],
             first_row_header=data["first_row_header"],
+            ai_description=data["ai_description"],
         )
 
         serializer = TableSerializer(table)
@@ -300,6 +301,7 @@ class AsyncCreateTableView(APIView):
             context=database,
         )
 
+        sync = data["data"] is None and data["ai_description"] is None
         file_import_job = JobHandler().create_and_start_job(
             request.user,
             "file_import",
@@ -307,7 +309,8 @@ class AsyncCreateTableView(APIView):
             name=data["name"],
             data=data["data"],
             first_row_header=data["first_row_header"],
-            sync=True if data["data"] is None else False,
+            ai_description=data["ai_description"],
+            sync=sync,
         )
 
         serializer = job_type_registry.get_serializer(file_import_job, JobSerializer)

@@ -1172,6 +1172,9 @@ if POSTHOG_ENABLED:
 else:
     posthog.disabled = True
 
+BASEROW_LLAMA_AI_ENABLED = str_to_bool(os.getenv("BASEROW_LLAMA_AI_ENABLED", "false"))
+BASEROW_LLAMA_API_URL = os.getenv("BASEROW_LLAMA_API_URL", "http://llama:8000")
+
 # Indicates whether we are running the tests or not. Set to True in the test.py settings
 # file used by pytest.ini
 TESTS = False

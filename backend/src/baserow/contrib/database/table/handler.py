@@ -35,7 +35,8 @@ from baserow.core.handler import CoreHandler
 from baserow.core.registries import ImportExportConfig, application_type_registry
 from baserow.core.telemetry.utils import baserow_trace_methods
 from baserow.core.trash.handler import TrashHandler
-from baserow.core.utils import ChildProgressBuilder, Progress, find_unused_name
+from baserow.core.utils import ChildProgressBuilder, Progress, find_unused_name, markdown_table_to_object
+from baserow.core.llama import make_llama_chat_completion_request
 
 from .constants import ROW_NEEDS_BACKGROUND_UPDATE_COLUMN_NAME, TABLE_CREATION
 from .exceptions import (
@@ -135,6 +136,7 @@ class TableHandler(metaclass=baserow_trace_methods(tracer)):
         data: Optional[List[List[Any]]] = None,
         first_row_header: bool = True,
         fill_example: bool = False,
+        ai_description: Optional[str] = None,
         progress: Optional[Progress] = None,
     ):
         """
@@ -152,6 +154,7 @@ class TableHandler(metaclass=baserow_trace_methods(tracer)):
             of these rows are going to be used as fields. If `fields` is provided,
             this options is ignored.
         :param fill_example: Fill the table with example field and data.
+        :param ai_description: @TODO
         :param progress: An optional progress instance if you want to track the progress
             of the task.
         :return: The created table and the error report.
@@ -176,7 +179,9 @@ class TableHandler(metaclass=baserow_trace_methods(tracer)):
             )
         else:
             with translation.override(user.profile.language):
-                if fill_example:
+                if ai_description is not None:
+                    fields, data = self.get_table_field_and_data_from_ai(ai_description)
+                elif fill_example:
                     fields, data = self.get_example_table_field_and_data()
                 else:
                     fields, data = self.get_minimal_table_field_and_data()
@@ -332,6 +337,32 @@ class TableHandler(metaclass=baserow_trace_methods(tracer)):
         result = [[str(value) for value in row] for row in data]
 
         return fields_with_type, result
+
+    def get_table_field_and_data_from_ai(self, description):
+        response = make_llama_chat_completion_request(
+            question=(
+                f"Generate a markdown table that has 6 columns and 10 rows matching "
+                f"the following description: {description}"
+            ),
+            system_role=(
+                "You are a helpful assistant, always responding in a structured "
+                "markdown table without providing additional text."
+            ),
+            max_tokens=1000,
+        )
+
+        table_start_index = response.find("|")
+
+        if table_start_index == -1:
+            raise Exception("No markdown table found.")
+
+        markdown_table = markdown_table_to_object(response[table_start_index:])
+        fields = [
+            (field, "text", {})
+            for field in markdown_table[0]
+        ]
+
+        return fields, markdown_table[1:]
 
     def get_example_table_field_and_data(self):
         """

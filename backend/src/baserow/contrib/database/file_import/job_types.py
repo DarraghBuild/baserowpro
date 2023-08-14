@@ -63,6 +63,7 @@ class FileImportJobType(JobType):
         "name",
         "table_id",
         "first_row_header",
+        "ai_description",
         "report",
     ]
 
@@ -145,6 +146,7 @@ class FileImportJobType(JobType):
                 name=job.name,
                 data=data,
                 first_row_header=job.first_row_header,
+                ai_description=job.ai_description,
                 progress=progress,
             )
 

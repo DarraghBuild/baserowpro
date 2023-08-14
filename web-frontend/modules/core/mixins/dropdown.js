@@ -114,6 +114,10 @@ export default {
   },
   methods: {
     getDropdownItemComponents() {
+      if (this.$refs.items) {
+        console.log(this.$refs.items.children[0])
+      }
+
       return this.$children.filter((child) => child.isDropdownItem === true)
     },
     focusout(event) {
@@ -273,7 +277,7 @@ export default {
     search(query) {
       this.hasItems = query === ''
       this.getDropdownItemComponents().forEach((item) => {
-        if (item.search(query)) {
+        if (item.search(this)) {
           this.hasItems = true
         }
       })

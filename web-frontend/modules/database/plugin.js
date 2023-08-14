@@ -78,6 +78,7 @@ import {
   PasteImporterType,
   XMLImporterType,
   JSONImporterType,
+  AIImporterType,
 } from '@baserow/modules/database/importerTypes'
 import {
   RowsCreatedWebhookEventType,
@@ -424,6 +425,7 @@ export default (context) => {
   app.$registry.register('importer', new PasteImporterType(context))
   app.$registry.register('importer', new XMLImporterType(context))
   app.$registry.register('importer', new JSONImporterType(context))
+  app.$registry.register('importer', new AIImporterType(context))
   app.$registry.register('settings', new APITokenSettingsType(context))
   app.$registry.register('exporter', new CSVTableExporterType(context))
   app.$registry.register(

@@ -57,7 +57,7 @@
           </template>
         </div>
         <div v-if="$v.filename.$error" class="error">
-          {{ $t('error.fieldRequired') }}
+          {{ $t('error.inputRequired') }}
         </div>
       </div>
     </div>

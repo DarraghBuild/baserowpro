@@ -34,10 +34,17 @@ class TableCreateSerializer(serializers.ModelSerializer):
         "field names are going to be the values of the first row. Otherwise "
         'they will be called "Field N"',
     )
+    ai_description = serializers.CharField(
+        default=None,
+        help_text=(
+            "Optionally provide an english description of how the table data should "
+            "look like. AI will then generate the table for you."
+        )
+    )
 
     class Meta:
         model = Table
-        fields = ("name", "data", "first_row_header")
+        fields = ("name", "data", "first_row_header", "ai_description")
         extra_kwargs = {
             "data": {"required": False},
             "first_row_header": {"required": False},

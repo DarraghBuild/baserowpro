@@ -135,3 +135,5 @@ field-diagrams/
 # actually a node module and so we ignore it.
 premium/web-frontend/package.json
 .local/
+
+models/**.bin

@@ -4,6 +4,7 @@ import TableCSVImporter from '@baserow/modules/database/components/table/TableCS
 import TablePasteImporter from '@baserow/modules/database/components/table/TablePasteImporter'
 import TableXMLImporter from '@baserow/modules/database/components/table/TableXMLImporter'
 import TableJSONImporter from '@baserow/modules/database/components/table/TableJSONImporter'
+import TableAIImporter from '@baserow/modules/database/components/table/TableAIImporter'
 
 export class ImporterType extends Registerable {
   /**
@@ -123,5 +124,25 @@ export class JSONImporterType extends ImporterType {
 
   getFormComponent() {
     return TableJSONImporter
+  }
+}
+
+
+export class AIImporterType extends ImporterType {
+  static getType() {
+    return 'ai'
+  }
+
+  getIconClass() {
+    return 'magic'
+  }
+
+  getName() {
+    const { i18n } = this.app
+    return i18n.t('importerType.ai')
+  }
+
+  getFormComponent() {
+    return TableAIImporter
   }
 }

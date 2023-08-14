@@ -197,3 +197,7 @@ services:
       local:
     ports:
       - "4318:4318"
+
+  llama:
+    ports:
+      - "9000:8000" # web ui

@@ -91,6 +91,7 @@ export default function CoreModule(options) {
       process.env.BASEROW_UNIQUE_ROW_VALUES_SIZE_LIMIT ?? 100,
     BASEROW_ROW_PAGE_SIZE_LIMIT:
       parseInt(process.env.BASEROW_ROW_PAGE_SIZE_LIMIT) ?? 200,
+    BASEROW_LLAMA_AI_ENABLED: process.env.BASEROW_LLAMA_AI_ENABLED ?? 'false',
   }
 
   const locales = [
