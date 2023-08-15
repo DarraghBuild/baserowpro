@@ -22,6 +22,12 @@ import { getDefaultSearchModeFromEnv } from '@baserow/modules/database/utils/sea
 const ORDER_STEP = '1'
 const ORDER_STEP_BEFORE = '0.00000000000000000001'
 
+// Keeps a reference to row update function
+// to prevent race condition. It will make sure
+// that the update call is called with the latest
+// values.
+let lastUpdateCall = null
+
 export function populateRow(row, metadata = {}) {
   row._ = {
     metadata,
@@ -404,7 +410,7 @@ export const mutations = {
     const currentValue = row._.metadata[rowMetadataType]
     Vue.set(row._.metadata, rowMetadataType, updateFunction(currentValue))
   },
-  FINALIZE_ROWS_IN_BUFFER(state, { oldRows, newRows }) {
+  FINALIZE_ROWS_IN_BUFFER(state, { oldRows, newRows, fields }) {
     const stateRowsCopy = { ...state.rows }
 
     for (let i = 0; i < oldRows.length; i++) {
@@ -420,8 +426,11 @@ export const mutations = {
       stateRowsCopy[index].id = newRow.id
       stateRowsCopy[index].order = new BigNumber(newRow.order)
       stateRowsCopy[index]._.loading = false
+
       Object.keys(newRow).forEach((key) => {
-        stateRowsCopy[index][key] = newRow[key]
+        if (fields.includes(key)) {
+          stateRowsCopy[index][key] = newRow[key]
+        }
       })
     }
 
@@ -1574,7 +1583,7 @@ export const actions = {
     })
   },
   async createNewRows(
-    { commit, getters, dispatch },
+    { commit, getters, rootGetters, dispatch },
     { view, table, fields, rows = {}, before = null, selectPrimaryCell = false }
   ) {
     // Create an object of default field values that can be used to fill the row with
@@ -1683,9 +1692,14 @@ export const actions = {
         before !== null ? before.id : null
       )
 
+      const allFields = rootGetters['field/getAll']
+      const fieldsToFinalize = allFields
+        .filter((field) => field.read_only)
+        .map((field) => `field_${field.id}`)
       commit('FINALIZE_ROWS_IN_BUFFER', {
         oldRows: rowsPopulated,
         newRows: data.items,
+        fields: fieldsToFinalize,
       })
 
       for (let i = 0; i < data.items.length; i += 1) {
@@ -1921,26 +1935,44 @@ export const actions = {
     const values = {}
     values[`field_${field.id}`] = newValue
 
-    try {
-      const updatedRow = await RowService(this.$client).update(
-        table.id,
-        row.id,
-        values
-      )
-      commit('UPDATE_ROW_IN_BUFFER', { row, values: updatedRow.data })
-      dispatch('onRowChange', { view, row, fields })
-      dispatch('fetchAllFieldAggregationData', {
-        view,
-      })
-    } catch (error) {
-      commit('UPDATE_ROW_IN_BUFFER', {
-        row,
-        values: { ...valuesBeforeOptimisticUpdate },
-      })
-
-      dispatch('onRowChange', { view, row, fields })
-      throw error
+    const runUpdate = async () => {
+      lastUpdateCall = null
+      try {
+        const updatedRow = await RowService(this.$client).update(
+          table.id,
+          row.id,
+          values
+        )
+        commit('UPDATE_ROW_IN_BUFFER', { row, values: updatedRow.data })
+        dispatch('onRowChange', { view, row, fields })
+        dispatch('fetchAllFieldAggregationData', {
+          view,
+        })
+      } catch (error) {
+        commit('UPDATE_ROW_IN_BUFFER', {
+          row,
+          values: { ...valuesBeforeOptimisticUpdate },
+        })
+        dispatch('onRowChange', { view, row, fields })
+        throw error
+      }
     }
+
+    const timeout = () => {
+      return new Promise((resolve) => setTimeout(resolve, 500))
+    }
+
+    const runUpdateWhenRowReady = async () => {
+      if (row._.loading) {
+        await timeout()
+        await runUpdateWhenRowReady()
+      } else if (lastUpdateCall) {
+        await lastUpdateCall()
+      }
+    }
+
+    lastUpdateCall = runUpdate
+    await runUpdateWhenRowReady()
   },
   /**
    * Set the multiple select indexes using the row and field head and tail indexes.
@@ -2168,6 +2200,7 @@ export const actions = {
     { commit, getters, dispatch },
     { view, fields, row, values, metadata }
   ) {
+    console.log('updatedExistingRow')
     const oldRow = clone(row)
     const newRow = Object.assign(clone(row), values)
     populateRow(oldRow, metadata)
