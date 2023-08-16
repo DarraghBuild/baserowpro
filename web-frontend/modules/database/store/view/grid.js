@@ -2200,7 +2200,6 @@ export const actions = {
     { commit, getters, dispatch },
     { view, fields, row, values, metadata }
   ) {
-    console.log('updatedExistingRow')
     const oldRow = clone(row)
     const newRow = Object.assign(clone(row), values)
     populateRow(oldRow, metadata)
