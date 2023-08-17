@@ -22,11 +22,12 @@ import { getDefaultSearchModeFromEnv } from '@baserow/modules/database/utils/sea
 const ORDER_STEP = '1'
 const ORDER_STEP_BEFORE = '0.00000000000000000001'
 
-// Keeps a reference to row update function
+// Keeps references to row update functions
 // to prevent race condition. It will make sure
 // that the update call is called with the latest
 // values.
-let lastUpdateCall = null
+// The key should be rows's id or temp id
+const lastUpdateCalls = {}
 
 export function populateRow(row, metadata = {}) {
   row._ = {
@@ -1630,6 +1631,7 @@ export const actions = {
       row.id = uuid()
       row.order = order
       row._.loading = true
+      row._.temp_id = row.id
 
       order = new BigNumber(order).plus(new BigNumber(step)).toString()
 
@@ -1936,7 +1938,8 @@ export const actions = {
     values[`field_${field.id}`] = newValue
 
     const runUpdate = async () => {
-      lastUpdateCall = null
+      const rowId = row._.temp_id ?? row.id
+      lastUpdateCalls[rowId] = null
       try {
         const updatedRow = await RowService(this.$client).update(
           table.id,
@@ -1963,6 +1966,8 @@ export const actions = {
     }
 
     const runUpdateWhenRowReady = async () => {
+      const rowId = row._.temp_id ?? row.id
+      const lastUpdateCall = lastUpdateCalls[rowId]
       if (row._.loading) {
         await timeout()
         await runUpdateWhenRowReady()
@@ -1971,7 +1976,8 @@ export const actions = {
       }
     }
 
-    lastUpdateCall = runUpdate
+    const rowId = row._.temp_id ?? row.id
+    lastUpdateCalls[rowId] = runUpdate
     await runUpdateWhenRowReady()
   },
   /**
