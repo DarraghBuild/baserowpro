@@ -1,7 +1,12 @@
 import type { PlaywrightTestConfig } from '@playwright/test';
 import { devices } from '@playwright/test';
+import { setDefaultResultOrder } from 'dns'
 
 require('dotenv').config()
+
+  // Ensure in Node 18 `localhost` resolves to `127.0.0.1` and not IPV6 `::1` by default
+  // as our internal services are listening on `127.0.0.0` and not `::1`
+setDefaultResultOrder('ipv4first')
 
 export const baserowConfig = {
   PUBLIC_WEB_FRONTEND_URL: process.env.PUBLIC_WEB_FRONTEND_URL ? process.env.PUBLIC_WEB_FRONTEND_URL : 'http://localhost:3000',

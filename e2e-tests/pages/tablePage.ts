@@ -1,7 +1,7 @@
 import {expect, Locator, Page} from "@playwright/test";
 import {BaserowPage} from "./baserowPage";
 import {Table} from "../fixtures/table";
-
+import {Header} from "../components/gridHeader";
 const TEST_IMAGE_FILE_PATH = 'assets/testuploadimage.png';
 
 export class TablePage extends BaserowPage {
@@ -24,9 +24,11 @@ export class TablePage extends BaserowPage {
     private readonly searchInput: Locator;
     readonly rowIdDivsMatchingSearch: Locator;
     readonly firstRowIdDiv: Locator;
+    readonly header: Header
 
     constructor(page: Page) {
         super(page);
+        this.header = new Header(page)
         this.projectsTextLocator = this.page.locator('text=Projects');
         this.addColumnLocator = this.page.locator('.grid-view__add-column');
         this.searchButtonIcon = this.page.locator('.header__search-icon');
@@ -103,16 +105,14 @@ export class TablePage extends BaserowPage {
 
     async clearSearchInput(){
         await this.searchInput.click()
-        await this.page.keyboard.press('Control+A');
-        await this.page.keyboard.press('Backspace');
+        await this.searchInput.fill('')
         await this.waitForLoadingOverlayToDisappear()
     }
 
     async openSearchContextAndSearchFor(searchTerm){
         await this.searchButtonIcon.click()
         await this.searchInput.click()
-        await this.page.keyboard.press('Control+A');
-        await this.page.keyboard.press('Backspace');
+        await this.searchInput.fill('')
         await this.page.keyboard.type(searchTerm.toString())
         await this.page.keyboard.press('Enter');
         await this.waitForLoadingOverlayToDisappear()

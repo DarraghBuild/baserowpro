@@ -15,3 +15,11 @@ export class Table {
 export async function updateRows(user: User, table: Table, rowValues: any): Promise<void> {
     await getClient(user).patch(`database/rows/table/${table.id}/batch/?user_field_names=true`, {items: rowValues})
 }
+
+export async function createRows(user: User, table: Table, rowValues: any): Promise<void> {
+    await getClient(user).post(`database/rows/table/${table.id}/batch/?user_field_names=true`, {items: rowValues})
+}
+
+export async function deleteRows(user: User, table: Table, rowValues: any): Promise<void> {
+    await getClient(user).post(`database/rows/table/${table.id}/batch-delete/?user_field_names=true`, {items: rowValues})
+}
