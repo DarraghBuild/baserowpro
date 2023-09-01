@@ -67,7 +67,7 @@ freezegun==1.1.0
     # via -r dev.in
 gitdb==4.0.9
     # via gitpython
-gitpython==3.1.27
+gitpython==3.1.33
     # via bandit
 gprof2dot==2021.2.21
     # via django-silk
