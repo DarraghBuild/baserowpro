@@ -744,7 +744,9 @@ class UpdateRowsActionType(UndoableActionType):
             result.original_rows_values_by_id,
             result.updated_row_fields_metadata_by_row_id,
         )
-        cls.register_action(user, params, cls.scope(table.id), workspace=workspace)
+        cls.register_action(
+            user, params, cls.scope(table.id), workspace=workspace, table=table
+        )
 
         return updated_rows
 

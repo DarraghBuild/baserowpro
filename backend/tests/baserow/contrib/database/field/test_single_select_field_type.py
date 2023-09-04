@@ -22,6 +22,7 @@ from baserow.contrib.database.rows.handler import RowHandler
 from baserow.contrib.database.views.handler import ViewHandler
 from baserow.core.handler import CoreHandler
 from baserow.core.registries import ImportExportConfig
+from baserow.test_utils.helpers import AnyInt
 
 
 @pytest.mark.django_db
@@ -1105,3 +1106,102 @@ def test_single_select_adjacent_row(data_fixture):
 
     assert previous_row.id == row_a.id
     assert next_row.id == row_c.id
+
+
+@pytest.mark.django_db
+@pytest.mark.field_single_select
+@pytest.mark.row_history
+def test_serialize_single_select_value_row_history(data_fixture):
+    user = data_fixture.create_user()
+    table = data_fixture.create_database_table(user=user)
+    field_handler = FieldHandler()
+    field = field_handler.create_field(
+        user=user,
+        table=table,
+        type_name="single_select",
+        name="Single select",
+        select_options=[
+            {"value": "Option 1", "color": "blue"},
+            {"value": "Option 2", "color": "red"},
+            {"value": "Option 3", "color": "white"},
+            {"value": "Option 4", "color": "green"},
+        ],
+    )
+    value = field.select_options.all()[0]
+
+    assert SingleSelectFieldType().serialize_row_history_value(field, value) == {
+        "color": "blue",
+        "id": AnyInt(),
+        "value": "Option 1",
+    }
+
+
+@pytest.mark.django_db
+@pytest.mark.field_single_select
+@pytest.mark.row_history
+def test_single_select_serialize_row_history_values(
+    data_fixture, django_assert_num_queries
+):
+    user = data_fixture.create_user()
+    table = data_fixture.create_database_table(user=user)
+    field_handler = FieldHandler()
+    field = field_handler.create_field(
+        user=user,
+        table=table,
+        type_name="single_select",
+        name="Single select",
+        select_options=[
+            {"value": "Option 1", "color": "blue"},
+            {"value": "Option 2", "color": "red"},
+            {"value": "Option 3", "color": "white"},
+            {"value": "Option 4", "color": "green"},
+        ],
+    )
+
+    values_by_row = {
+        1: field.select_options.all()[0].id,
+        2: field.select_options.all()[1].id,
+        3: None,
+    }
+
+    with django_assert_num_queries(1):
+        assert SingleSelectFieldType().serialize_row_history_values(
+            field, values_by_row
+        ) == {
+            1: {
+                "color": "blue",
+                "id": AnyInt(),
+                "value": "Option 1",
+            },
+            2: {
+                "color": "red",
+                "id": AnyInt(),
+                "value": "Option 2",
+            },
+            3: None,
+        }
+
+    # test string values
+
+    values_by_row = {
+        1: field.select_options.all()[0].value,
+        2: field.select_options.all()[1].value,
+        3: None,
+    }
+
+    with django_assert_num_queries(1):
+        assert SingleSelectFieldType().serialize_row_history_values(
+            field, values_by_row
+        ) == {
+            1: {
+                "color": "blue",
+                "id": AnyInt(),
+                "value": "Option 1",
+            },
+            2: {
+                "color": "red",
+                "id": AnyInt(),
+                "value": "Option 2",
+            },
+            3: None,
+        }

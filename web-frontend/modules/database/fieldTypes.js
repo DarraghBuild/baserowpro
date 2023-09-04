@@ -83,6 +83,10 @@ import RowCardFieldURL from '@baserow/modules/database/components/card/RowCardFi
 import RowCardFieldMultipleCollaborators from '@baserow/modules/database/components/card/RowCardFieldMultipleCollaborators'
 
 import RowHistoryFieldText from '@baserow/modules/database/components/row/RowHistoryFieldText'
+import RowHistoryFieldMultipleCollaborators from '@baserow/modules/database/components/row/RowHistoryFieldMultipleCollaborators'
+import RowHistoryFieldFile from '@baserow/modules/database/components/row/RowHistoryFieldFile'
+import RowHistoryFieldMultipleSelect from '@baserow/modules/database/components/row/RowHistoryFieldMultipleSelect'
+import RowHistoryFieldSingleSelect from '@baserow/modules/database/components/row/RowHistoryFieldSingleSelect'
 
 import FormViewFieldLinkRow from '@baserow/modules/database/components/view/form/FormViewFieldLinkRow'
 
@@ -837,6 +841,10 @@ export class LinkRowFieldType extends FieldType {
     return RowCardFieldLinkRow
   }
 
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldText
+  }
+
   getEmptyValue(field) {
     return []
   }
@@ -1025,6 +1033,10 @@ export class NumberFieldType extends FieldType {
 
   getCardComponent() {
     return RowCardFieldNumber
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldText
   }
 
   getSortIndicator() {
@@ -1220,6 +1232,10 @@ export class RatingFieldType extends FieldType {
     return RowCardFieldRating
   }
 
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldText
+  }
+
   getSortIndicator() {
     return ['text', '1', '9']
   }
@@ -1342,6 +1358,10 @@ export class BooleanFieldType extends FieldType {
     return RowCardFieldBoolean
   }
 
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldText
+  }
+
   getEmptyValue(field) {
     return false
   }
@@ -1418,6 +1438,10 @@ class BaseDateFieldType extends FieldType {
 
   getCardComponent() {
     return RowCardFieldDate
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldText
   }
 
   getSort(name, order) {
@@ -1777,6 +1801,10 @@ export class URLFieldType extends FieldType {
     return RowCardFieldURL
   }
 
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldText
+  }
+
   prepareValueForPaste(field, clipboardData) {
     const value = clipboardData
     return isValidURL(value) ? value : ''
@@ -1862,6 +1890,10 @@ export class EmailFieldType extends FieldType {
 
   getCardComponent() {
     return RowCardFieldEmail
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldText
   }
 
   prepareValueForPaste(field, clipboardData) {
@@ -1955,6 +1987,10 @@ export class FileFieldType extends FieldType {
 
   getRowEditFieldComponent() {
     return RowEditFieldFile
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldFile
   }
 
   getFormViewFieldComponentProperties({ $store, $client, slug }) {
@@ -2136,6 +2172,10 @@ export class SingleSelectFieldType extends FieldType {
 
   getRowEditFieldComponent() {
     return RowEditFieldSingleSelect
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldSingleSelect
   }
 
   getFormViewFieldComponentProperties() {
@@ -2332,6 +2372,10 @@ export class MultipleSelectFieldType extends FieldType {
 
   getCardComponent() {
     return RowCardFieldMultipleSelect
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldMultipleSelect
   }
 
   getSort(name, order) {
@@ -2558,6 +2602,10 @@ export class PhoneNumberFieldType extends FieldType {
 
   getCardComponent() {
     return RowCardFieldPhoneNumber
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldText
   }
 
   prepareValueForPaste(field, clipboardData) {
@@ -2892,6 +2940,10 @@ export class MultipleCollaboratorsFieldType extends FieldType {
 
   getCardComponent() {
     return RowCardFieldMultipleCollaborators
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldMultipleCollaborators
   }
 
   prepareValueForUpdate(field, value) {

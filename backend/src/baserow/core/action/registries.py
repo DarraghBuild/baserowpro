@@ -236,6 +236,7 @@ class ActionType(
         workspace: Optional[Workspace] = None,
         timestamp: Optional[datetime] = None,
         action_command_type: ActionCommandType = ActionCommandType.DO,
+        **kwargs,
     ):
         """
         Sends the action done signal. This is a separate method so that it can
@@ -268,6 +269,7 @@ class ActionType(
             scope=scope,
             action_group=action_group,
             action_uuid=str(uuid4()),
+            **kwargs,
         )
 
     @classmethod
@@ -331,6 +333,7 @@ class UndoableActionTypeMixin:
         params: Any,
         scope: ActionScopeStr,
         workspace: Optional[Workspace] = None,
+        **kwargs,
     ) -> Optional[Action]:
         """
         Registers a new action in the database using the untrusted client session id
@@ -358,7 +361,12 @@ class UndoableActionTypeMixin:
         )
 
         cls.send_action_done_signal(
-            user, dataclasses.asdict(params), scope, workspace, action.created_on
+            user,
+            dataclasses.asdict(params),
+            scope,
+            workspace,
+            action.created_on,
+            **kwargs,
         )
 
         return action

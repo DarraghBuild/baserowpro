@@ -2425,6 +2425,9 @@ class FileFieldType(FieldType):
                 [f'{file["visible_name"]} ({file["url"]})' for file in files]
             )
 
+    def serialize_row_history_value(self, field: Field, value: any) -> any:
+        return [{"name": v["name"], "visible_name": v["visible_name"]} for v in value]
+
     def get_human_readable_value(self, value, field_object):
         file_names = []
         for file in value:
@@ -2687,8 +2690,10 @@ class SingleSelectFieldType(SelectOptionBaseFieldType):
         invalid_values_by_index.update(invalid_values_by_index)
 
         # Query database with all these gathered values
-        select_options = SelectOption.objects.filter(field=instance).filter(
-            Q(id__in=unique_ids) | Q(value__in=unique_names)
+        select_options = list(
+            SelectOption.objects.filter(field=instance).filter(
+                Q(id__in=unique_ids) | Q(value__in=unique_names)
+            )
         )
 
         # Create a map {id|value -> option}
@@ -2724,6 +2729,32 @@ class SingleSelectFieldType(SelectOptionBaseFieldType):
                 values_by_row[row_index] = option_map[value]
 
         return values_by_row
+
+    def serialize_to_input_value(self, field: Field, value: any) -> any:
+        return value.id
+
+    def serialize_row_history_value(self, field: Field, value: any) -> any:
+        if value is None:
+            return value
+
+        select_option = value
+        serialized = {
+            "id": select_option.id,
+            "value": select_option.value,
+            "color": select_option.color,
+        }
+
+        return serialized
+
+    def serialize_row_history_values(self, field, values_by_row):
+        prepared_values_by_row = self.prepare_value_for_db_in_bulk(
+            field, values_by_row, continue_on_error=False
+        )
+
+        return {
+            k: self.serialize_row_history_value(field, v)
+            for (k, v) in prepared_values_by_row.items()
+        }
 
     def get_serializer_help_text(self, instance):
         return (
@@ -3087,6 +3118,60 @@ class MultipleSelectFieldType(SelectOptionBaseFieldType):
             return result
         else:
             return list_to_comma_separated_string(result)
+
+    def serialize_row_history_values(self, field: Field, values_by_row: dict[id, any]):
+        # Create a map {value -> row_indexes} for ids and strings
+        id_map = defaultdict(list)
+        name_map = defaultdict(list)
+        for row_index, values in values_by_row.items():
+            for value in values:
+                if isinstance(value, int):
+                    id_map[value].append(row_index)
+                elif isinstance(value, str):
+                    name_map[value].append(row_index)
+                else:
+                    raise AllProvidedValuesMustBeIntegersOrStrings(values)
+
+        if id_map:
+            options = SelectOption.objects.filter(field=field, id__in=id_map.keys())
+
+            cache = {}
+            for select_option in options:
+                cache[select_option.id] = select_option
+
+            values_by_row = {
+                k: self.serialize_row_history_value(field, [cache[i] for i in set(v)])
+                for k, v in values_by_row.items()
+            }
+
+        if name_map:
+            options = SelectOption.objects.filter(
+                field=field, value__in=name_map.keys()
+            )
+
+            cache = {}
+            for select_option in options:
+                cache[select_option.value] = select_option
+
+            values_by_row = {
+                k: self.serialize_row_history_value(field, [cache[i] for i in set(v)])
+                for k, v in values_by_row.items()
+            }
+
+        return values_by_row
+
+    def serialize_row_history_value(self, field: Field, value: any) -> any:
+        if len(value) == 0:
+            return []
+
+        return [
+            {
+                "id": select_option.id,
+                "value": select_option.value,
+                "color": select_option.color,
+            }
+            for select_option in value
+        ]
 
     def get_human_readable_value(self, value, field_object):
         export_value = self.get_export_value(value, field_object, rich_value=True)
@@ -4432,6 +4517,54 @@ class MultipleCollaboratorsFieldType(FieldType):
         if len(export_value) == 0:
             return ""
         return ", ".join(export_value)
+
+    def serialize_row_history_value(self, field: Field, value) -> any:
+        if value is None or len(value) == 0:
+            return []
+
+        serialized = [
+            {
+                "id": user.id,
+                "name": user.first_name,
+            }
+            for user in value
+        ]
+        return serialized
+
+    def serialize_row_history_values(self, field: Field, values_by_row: dict[id, any]):
+        all_user_ids = set()
+        for row_index, values in values_by_row.items():
+            user_ids = [v["id"] for v in values]
+            all_user_ids = all_user_ids.union(user_ids)
+            values_by_row[row_index] = user_ids
+
+        workspace = field.table.database.workspace
+        workspace_users = WorkspaceUser.objects.filter(
+            user_id__in=all_user_ids, workspace_id=workspace.id
+        ).prefetch_related("user")
+
+        cache = {}
+        for workspace_user in workspace_users:
+            cache[workspace_user.user.id] = workspace_user.user
+
+        values_by_row = {
+            k: self.serialize_row_history_value(field, [cache[i] for i in v])
+            for k, v in values_by_row.items()
+        }
+
+        return values_by_row
+
+    def serialize_to_input_value(self, field: Field, value: any) -> any:
+        if value is None or len(value) == 0:
+            return []
+
+        serialized = [
+            {
+                "id": user_id,
+            }
+            for user_id in value
+        ]
+        return serialized
 
     def get_model_field(self, instance, **kwargs):
         return None

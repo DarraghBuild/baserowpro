@@ -753,6 +753,38 @@ class FieldType(
 
         return False
 
+    def serialize_row_history_value(self, field: Field, value: any) -> any:
+        """
+        Should return serialized value for storing row history.
+
+        :param field: The field instance which stores the values.
+        :param value: The field's value that should be serialized for
+            storing as history entry.
+        """
+
+        return value
+
+    def serialize_row_history_values(
+        self, field: Field, values_by_row: dict[id, any]
+    ) -> dict[id, any]:
+        """
+        Serializes multiple-row values for storing row history.
+
+        :param field: The field instance which stores the values.
+        :param values_by_row: All values to serialize, organized in a dict with
+            row ids as keys.
+        """
+
+        values_by_row = {
+            k: self.serialize_row_history_value(field, v)
+            for k, v in values_by_row.items()
+        }
+
+        return values_by_row
+
+    def serialize_to_input_value(self, field: Field, value: any) -> any:
+        return value
+
     def export_serialized(
         self, field: Field, include_allowed_fields: bool = True
     ) -> Dict[str, Any]:

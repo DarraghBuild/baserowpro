@@ -6,11 +6,13 @@ import pytest
 from faker import Faker
 
 from baserow.contrib.database.fields.field_types import MultipleCollaboratorsFieldType
+from baserow.contrib.database.fields.handler import FieldHandler
 from baserow.contrib.database.fields.models import MultipleCollaboratorsField
 from baserow.contrib.database.rows.handler import RowHandler
 from baserow.contrib.database.views.handler import ViewHandler
 from baserow.core.handler import CoreHandler
 from baserow.core.registries import ImportExportConfig
+from baserow.test_utils.helpers import AnyInt
 
 
 @pytest.mark.django_db
@@ -450,3 +452,82 @@ def test_multiple_collaborators_field_adjacent_row(data_fixture):
 
     assert previous_row.id == row_c.id
     assert next_row.id == row_a.id
+
+
+@pytest.mark.django_db
+@pytest.mark.field_multiple_collaborators
+@pytest.mark.row_history
+def test_serialize_multiple_collaborators_value_row_history(data_fixture):
+    workspace = data_fixture.create_workspace()
+    database = data_fixture.create_database_application(workspace=workspace)
+    user = data_fixture.create_user(workspace=workspace)
+    user2 = data_fixture.create_user(workspace=workspace)
+    table = data_fixture.create_database_table(user=user, database=database)
+    field_handler = FieldHandler()
+    field = field_handler.create_field(
+        user=user,
+        table=table,
+        type_name="multiple_collaborators",
+        name="Multiple collaborators",
+    )
+
+    assert MultipleCollaboratorsFieldType().serialize_row_history_value(
+        field, [user, user2]
+    ) == [
+        {
+            "id": AnyInt(),
+            "name": user.first_name,
+        },
+        {
+            "id": AnyInt(),
+            "name": user2.first_name,
+        },
+    ]
+
+    assert MultipleCollaboratorsFieldType().serialize_row_history_value(field, []) == []
+
+
+@pytest.mark.django_db
+@pytest.mark.field_multiple_collaborators
+@pytest.mark.row_history
+def test_multiple_collaborators_prepare_row_history_values_in_bulk(
+    data_fixture, django_assert_num_queries
+):
+    workspace = data_fixture.create_workspace()
+    database = data_fixture.create_database_application(workspace=workspace)
+    user = data_fixture.create_user(workspace=workspace)
+    user2 = data_fixture.create_user(workspace=workspace)
+    user3 = data_fixture.create_user(workspace=workspace)
+    table = data_fixture.create_database_table(user=user, database=database)
+    field_handler = FieldHandler()
+    field = field_handler.create_field(
+        user=user,
+        table=table,
+        type_name="multiple_collaborators",
+        name="Multiple collaborators",
+    )
+
+    values_by_row = {
+        1: [{"id": user2.id}, {"id": user3.id}],
+        2: [{"id": user.id}],
+        3: [],
+        # 4: None, TODO: can None be passed in API?
+    }
+
+    with django_assert_num_queries(2):
+        assert MultipleCollaboratorsFieldType().serialize_row_history_values(
+            field, values_by_row
+        ) == {
+            1: [
+                {
+                    "id": AnyInt(),
+                    "name": user2.first_name,
+                },
+                {
+                    "id": AnyInt(),
+                    "name": user3.first_name,
+                },
+            ],
+            2: [{"id": AnyInt(), "name": user.first_name}],
+            3: [],
+        }

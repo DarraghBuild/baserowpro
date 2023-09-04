@@ -1,3 +1,5 @@
+from collections import defaultdict
+from copy import deepcopy
 from datetime import datetime
 from typing import Any, Dict, List, NamedTuple, NewType, Optional
 
@@ -7,6 +9,7 @@ from django.dispatch import receiver
 
 from opentelemetry import trace
 
+from baserow.contrib.database.table.models import GeneratedTableModel
 from baserow.core.action.signals import ActionCommandType, action_done
 from baserow.core.telemetry.utils import baserow_trace
 
@@ -61,8 +64,12 @@ class RowHistoryHandler:
         )
 
     @classmethod
-    def _extract_fields_diff(
-        cls, before_values: Dict[str, Any], after_values: Dict[str, Any]
+    def _extract_row_diff(
+        cls,
+        before_values: Dict[str, Any],
+        after_values: Dict[str, Any],
+        fields_metadata,
+        model: GeneratedTableModel,
     ) -> Optional[RowChangeDiff]:
         """
         Extracts the fields that have changed between the before and after values of a
@@ -86,6 +93,7 @@ class RowHistoryHandler:
 
         before_fields = {k: v for k, v in before_values.items() if k in changed_fields}
         after_fields = {k: v for k, v in after_values.items() if k in changed_fields}
+
         return RowChangeDiff(list(changed_fields), before_fields, after_fields)
 
     @classmethod
@@ -102,6 +110,38 @@ class RowHistoryHandler:
             )
 
     @classmethod
+    def prepare_values(cls, table_model: GeneratedTableModel, values):
+        field_names = set()
+        for value in values:
+            field_names = field_names | value.keys()
+
+        field_names.remove("id")
+
+        prepared_values_by_field = defaultdict(dict)
+        for field_name in field_names:
+            values_by_row = {}
+            for value in values:
+                prepared_values_by_field[field_name][value["id"]] = value[field_name]
+
+        for field_name, values_by_row in prepared_values_by_field.items():
+            field = table_model.get_field_object(field_name)
+            field_type = field["type"]
+            prepared_values_by_field[
+                field_name
+            ] = field_type.serialize_row_history_values(field["field"], values_by_row)
+
+        prepared_values = []
+        for value in values:
+            new_value = deepcopy(value)
+            for field_name in field_names:
+                if field_name in value:
+                    prepared_value = prepared_values_by_field[field_name][value["id"]]
+                    new_value[field_name] = prepared_value
+            prepared_values.append(new_value)
+
+        return prepared_values
+
+    @classmethod
     @baserow_trace(tracer)
     def record_history_from_update_rows_action(
         cls,
@@ -110,8 +150,11 @@ class RowHistoryHandler:
         action_params: Dict[str, Any],
         action_timestamp: datetime,
         action_command_type: ActionCommandType,
+        table,
     ):
         params = UpdateRowsActionType.serialized_to_params(action_params)
+        model = table.get_model()
+
         after_values = params.row_values
         before_values = [
             params.original_rows_values_by_id[r["id"]] for r in after_values
@@ -120,13 +163,16 @@ class RowHistoryHandler:
         if action_command_type == ActionCommandType.UNDO:
             before_values, after_values = after_values, before_values
 
+        before_values = cls.prepare_values(model, before_values)
+        after_values = cls.prepare_values(model, after_values)
+
         row_history_entries = []
         for i, after in enumerate(after_values):
             before = before_values[i]
             fields_metadata = params.updated_rows_fields_metadata_by_id[after["id"]]
             cls._raise_if_ids_mismatch(before, after, fields_metadata)
 
-            diff = cls._extract_fields_diff(before, after)
+            diff = cls._extract_row_diff(before, after, fields_metadata, model)
             if diff is None:
                 continue
 
@@ -184,5 +230,10 @@ def on_action_done_update_row_history(
     if action_type and action_type.type in ROW_HISTORY_ACTIONS:
         add_entry_handler = ROW_HISTORY_ACTIONS[action_type.type]
         add_entry_handler(
-            user, action_uuid, action_params, action_timestamp, action_command_type
+            user,
+            action_uuid,
+            action_params,
+            action_timestamp,
+            action_command_type,
+            kwargs["table"],
         )
