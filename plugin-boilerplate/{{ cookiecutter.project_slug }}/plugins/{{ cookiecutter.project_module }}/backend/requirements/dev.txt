@@ -48,7 +48,7 @@ coverage==6.2
     # via -r dev.in
 debugpy==1.5.1
     # via -r dev.in
-django==3.2.13
+django==3.2.21
     # via
     #   -c base.txt
     #   django-extensions
