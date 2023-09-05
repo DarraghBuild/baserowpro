@@ -157,7 +157,7 @@ class UserProfile(models.Model):
     email_notification_frequency = models.TextField(
         max_length=16,
         choices=EmailNotificationFrequencyOptions.choices,
-        default=EmailNotificationFrequencyOptions.INSTANT,
+        default=EmailNotificationFrequencyOptions.NEVER,
     )
     last_notifications_email_sent_at = models.DateTimeField(
         null=True,

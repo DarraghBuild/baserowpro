@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                     ("weekly", "weekly"),
                     ("never", "never"),
                 ],
-                default="instant",
+                default="never",
                 max_length=16,
             ),
         ),
