@@ -2,9 +2,16 @@
   <div
     class="grid-view__rows"
     :style="{
-      transform: `translateY(${rowsTop}px) translateX(${leftOffset}px)`,
+      transform: `translateX(${leftOffset}px)`,
     }"
   >
+    <div
+      v-for="height in rowsTopHeights"
+      :style="{
+        height: height + 'px',
+      }"
+    ></div>
+
     <GridViewRow
       v-for="(row, index) in rows"
       :key="`row-${row._.persistentId}`"
@@ -22,6 +29,11 @@
       :store-prefix="storePrefix"
       :row-identifier-type="view.row_identifier_type"
       :count="index + rowsStartIndex + bufferStartIndex + 1"
+      :include-group-by="includeGroupBy"
+      :actually-all-the-fields="actuallyAllTheFields"
+      :previous-row="rows[index - 1]"
+      :next-row="rows[index + 1]"
+      :is-very-first-row="index === 0"
       v-on="$listeners"
     />
   </div>
@@ -43,6 +55,10 @@ export default {
       required: true,
     },
     allFields: {
+      type: Array,
+      required: true,
+    },
+    actuallyAllTheFields: {
       type: Array,
       required: true,
     },
@@ -77,6 +93,11 @@ export default {
       required: false,
       default: () => true,
     },
+    includeGroupBy: {
+      type: Boolean,
+      required: false,
+      default: () => false,
+    },
   },
   computed: {
     fieldWidths() {
@@ -85,6 +106,16 @@ export default {
         fieldWidths[field.id] = this.getFieldWidth(field.id)
       })
       return fieldWidths
+    },
+    rowsTopHeights() {
+      let number = this.rowsTop
+      const result = []
+      while (number > 0) {
+        const chunk = Math.min(number, Math.pow(2, 20))
+        result.push(chunk)
+        number -= chunk
+      }
+      return result
     },
   },
   beforeCreate() {

@@ -20,6 +20,18 @@
       @mouseleave="$emit('row-hover', { row, value: false })"
       @contextmenu.prevent="$emit('row-context', { row, event: $event })"
     >
+      <GridGroupByCells
+        v-if="includeGroupBy"
+        :view="view"
+        :store-prefix="storePrefix"
+        :all-fields="actuallyAllTheFields"
+        :workspace-id="workspaceId"
+        :previous-row="previousRow"
+        :next-row="nextRow"
+        :is-very-first-row="isVeryFirstRow"
+        :row="row"
+      ></GridGroupByCells>
+
       <template v-if="includeRowDetails">
         <div
           v-if="
@@ -119,10 +131,18 @@ import GridViewCell from '@baserow/modules/database/components/view/grid/GridVie
 import gridViewHelpers from '@baserow/modules/database/mixins/gridViewHelpers'
 import GridViewRowExpandButton from '@baserow/modules/database/components/view/grid/GridViewRowExpandButton'
 import RecursiveWrapper from '@baserow/modules/database/components/RecursiveWrapper'
+import GridGroupByColumnHeader from '@baserow/modules/database/components/view/grid/GridGroupByColumnHeader.vue'
+import GridGroupByCells from '@baserow/modules/database/components/view/grid/GridGroupByCells.vue'
 
 export default {
   name: 'GridViewRow',
-  components: { GridViewRowExpandButton, GridViewCell, RecursiveWrapper },
+  components: {
+    GridGroupByCells,
+    GridGroupByColumnHeader,
+    GridViewRowExpandButton,
+    GridViewCell,
+    RecursiveWrapper,
+  },
   mixins: [gridViewHelpers],
   provide() {
     return {
@@ -142,6 +162,16 @@ export default {
       type: Object,
       required: true,
     },
+    previousRow: {
+      type: Object,
+      required: false,
+      default: () => undefined,
+    },
+    nextRow: {
+      type: Object,
+      required: false,
+      default: () => undefined,
+    },
     fields: {
       type: Array,
       required: true,
@@ -151,6 +181,10 @@ export default {
       required: true,
     },
     allFields: {
+      type: Array,
+      required: true,
+    },
+    actuallyAllTheFields: {
       type: Array,
       required: true,
     },
@@ -184,6 +218,16 @@ export default {
       type: Boolean,
       required: false,
       default: () => true,
+    },
+    includeGroupBy: {
+      type: Boolean,
+      required: false,
+      default: () => false,
+    },
+    isVeryFirstRow: {
+      type: Boolean,
+      required: false,
+      default: () => false,
     },
   },
   data() {

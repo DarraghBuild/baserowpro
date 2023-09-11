@@ -17,6 +17,7 @@ export default (client) => {
       filters = {},
       includeFields = [],
       excludeFields = [],
+      expandCollapseValues = null,
     }) {
       const include = []
       const params = new URLSearchParams()
@@ -57,6 +58,13 @@ export default (client) => {
         params.append('exclude_fields', excludeFields.join(','))
       }
 
+      if (expandCollapseValues) {
+        params.append(
+          'expand_collapse_values',
+          JSON.stringify(expandCollapseValues)
+        )
+      }
+
       Object.keys(filters).forEach((key) => {
         filters[key].forEach((value) => {
           params.append(key, value)
@@ -84,6 +92,7 @@ export default (client) => {
       publicUrl = false,
       publicAuthToken = null,
       filters = {},
+      expandCollapseValues = null,
     }) {
       const params = new URLSearchParams()
       params.append('count', true)
@@ -109,6 +118,13 @@ export default (client) => {
 
       if (publicAuthToken) {
         addPublicAuthTokenHeader(config, publicAuthToken)
+      }
+
+      if (expandCollapseValues) {
+        params.append(
+          'expand_collapse_values',
+          JSON.stringify(expandCollapseValues)
+        )
       }
 
       const url = publicUrl ? 'public/rows/' : ''

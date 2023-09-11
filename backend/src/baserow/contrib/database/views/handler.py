@@ -2772,6 +2772,42 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
             if key in changed_allowed_keys
         }
 
+    def calculate_categories_for_rows(self, field_names, rows, queryset):
+        qs_per_level: Dict[int, Q] = defaultdict(lambda: Q())
+        unique_groups_per_level: Dict[int, Set[str]] = defaultdict(set)
+        for r in rows:
+            c = []
+            q_f = {}
+            level = 0
+            for f in field_names:
+                v = getattr(r, f)
+                c.append(v)
+                q_f[f] = v
+                t = tuple(c)
+                if t not in unique_groups_per_level[level]:
+                    qs_per_level[level] |= Q(**q_f)
+                    unique_groups_per_level[level].add(t)
+                level += 1
+
+        by_level = {}
+
+        for level, q in qs_per_level.items():
+            level_list = []
+            by_level[level] = level_list
+            field_level_names = field_names[: (level + 1)]
+            queryset = (
+                queryset.values(*field_level_names)
+                .filter(q)
+                .annotate(count=Count("id"))
+                # Check if can use group by
+                .order_by()
+            )
+
+            for r in queryset:
+                count = r.pop("count")
+                level_list.append({"key": r, "aggregations": {"count": count}})
+        return {"groups": by_level}
+
 
 @dataclass
 class PublicViewRows:

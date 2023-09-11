@@ -125,6 +125,8 @@ export const state = () => ({
   // have any matching cells will still be displayed.
   hideRowsNotMatchingSearch: true,
   fieldAggregationData: {},
+  collapsedGroups: {},
+  groups: {},
 })
 
 export const mutations = {
@@ -141,6 +143,8 @@ export const mutations = {
     state.addRowHover = false
     state.activeSearchTerm = ''
     state.hideRowsNotMatchingSearch = true
+    state.groups = {}
+    state.collapsedGroups = {}
   },
   SET_SEARCH(state, { activeSearchTerm, hideRowsNotMatchingSearch }) {
     state.activeSearchTerm = activeSearchTerm.trim()
@@ -174,6 +178,35 @@ export const mutations = {
   },
   SET_ADD_ROW_HOVER(state, value) {
     state.addRowHover = value
+  },
+  SET_GROUP_COLLAPSED(state, { groupKey, collapsed }) {
+    Vue.set(state.collapsedGroups, groupKey, { collapsed, groupKey })
+  },
+  SET_GROUPS(state, newGroups) {
+    if (!newGroups) {
+      return
+    }
+    // For each level in newGroups
+    Object.keys(newGroups).forEach((level) => {
+      // If this level does not exist in state.groups, create it
+      if (!state.groups[level]) {
+        Vue.set(state.groups, level, [])
+      }
+
+      newGroups[level].forEach((newGroup) => {
+        const existingGroupIndex = state.groups[level].findIndex(
+          (group) => JSON.stringify(group.key) === JSON.stringify(newGroup.key)
+        )
+
+        // If this group already exists in state.groups, override it
+        if (existingGroupIndex !== -1) {
+          Vue.set(state.groups[level], existingGroupIndex, newGroup)
+        } else {
+          // Otherwise, add it to state.groups
+          state.groups[level].push(newGroup)
+        }
+      })
+    })
   },
   /**
    * It will add and remove rows to the state based on the provided values. For example
@@ -613,11 +646,13 @@ export const actions = {
           publicAuthToken: rootGetters['page/view/public/getAuthToken'],
           orderBy: getOrderBy(rootGetters, getters.getLastGridId),
           filters: getFilters(rootGetters, getters.getLastGridId),
+          expandCollapseValues: getters.expandCollapseValues,
         })
         .then(({ data }) => {
           data.results.forEach((part, index) => {
             extractMetadataAndPopulateRow(data, index)
           })
+          commit('SET_GROUPS', data.groups)
           commit('ADD_ROWS', {
             rows: data.results,
             prependToRows: prependToBuffer,
@@ -774,11 +809,13 @@ export const actions = {
       publicAuthToken: rootGetters['page/view/public/getAuthToken'],
       orderBy: getOrderBy(rootGetters, getters.getLastGridId),
       filters: getFilters(rootGetters, getters.getLastGridId),
+      expandCollapseValues: getters.expandCollapseValues,
     })
     data.results.forEach((part, index) => {
       extractMetadataAndPopulateRow(data, index)
     })
     commit('CLEAR_ROWS')
+    commit('SET_GROUPS', data.groups)
     commit('ADD_ROWS', {
       rows: data.results,
       prependToRows: 0,
@@ -822,6 +859,7 @@ export const actions = {
         publicUrl: rootGetters['page/view/public/getIsPublic'],
         publicAuthToken: rootGetters['page/view/public/getAuthToken'],
         filters: getFilters(rootGetters, getters.getLastGridId),
+        expandCollapseValues: getters.expandCollapseValues,
       })
       .then((response) => {
         const count = response.data.count
@@ -848,6 +886,7 @@ export const actions = {
             publicAuthToken: rootGetters['page/view/public/getAuthToken'],
             orderBy: getOrderBy(rootGetters, getters.getLastGridId),
             filters: getFilters(rootGetters, getters.getLastGridId),
+            expandCollapseValues: getters.expandCollapseValues,
           })
           .then(({ data }) => ({
             data,
@@ -868,6 +907,7 @@ export const actions = {
           bufferStartIndex: offset,
           bufferLimit: data.results.length,
         })
+        commit('SET_GROUPS', data.groups)
         dispatch('updateSearch', { fields })
         if (includeFieldOptions) {
           if (rootGetters['page/view/public/getIsPublic']) {
@@ -1500,7 +1540,7 @@ export const actions = {
    * will be returned.
    */
   async fetchRowsByIndex(
-    { getters, rootGetters },
+    { getters, rootGetters, commit },
     { startIndex, limit, fields, excludeFields }
   ) {
     if (fields !== undefined) {
@@ -1523,7 +1563,9 @@ export const actions = {
       filters: getFilters(rootGetters, getters.getLastGridId),
       includeFields: fields,
       excludeFields,
+      expandCollapseValues: getters.expandCollapseValues,
     })
+    commit('SET_GROUPS', data.groups)
     return data.results
   },
   setRowHover({ commit }, { row, value }) {
@@ -2553,6 +2595,13 @@ export const actions = {
       fields,
     })
   },
+  setGroupCollapsed(
+    { commit, dispatch },
+    { groupKey, view, fields, collapsed }
+  ) {
+    commit('SET_GROUP_COLLAPSED', { groupKey, collapsed })
+    dispatch('refresh', { view, fields })
+  },
   updateRowMetadata(
     { commit, getters, dispatch },
     { tableId, rowId, rowMetadataType, updateFunction }
@@ -2782,6 +2831,21 @@ export const getters = {
       return orderedFieldOptions[fieldIndex][0]
     }
     return -1
+  },
+  isRowVeryFirstRow: (state, getters) => (rowId) => {
+    const bufferIndex = state.rows.findIndex((r) => r.id === rowId)
+    return getters.getBufferStartIndex === bufferIndex
+  },
+  getGroupInfo: (state) => (level) => {
+    return state.groups ? state.groups[level] : []
+  },
+  getGroupCollapsed: (state) => (key) => {
+    return state.collapsedGroups[key]?.collapsed
+  },
+  expandCollapseValues: (state) => {
+    return Object.entries(state.collapsedGroups)
+      .filter(([_, e]) => e?.collapsed)
+      .map(([k, _]) => JSON.parse(k))
   },
   // Check if all the multi-select rows are within the row buffer
   areMultiSelectRowsWithinBuffer(state, getters) {

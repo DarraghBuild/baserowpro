@@ -2,16 +2,23 @@
   <div
     class="grid-view__placeholder"
     :style="{
-      height: placeholderHeight + 'px',
       width: placeholderWidth + 'px',
     }"
   >
     <div
-      v-for="(value, index) in placeholderPositions"
-      :key="'placeholder-column-' + index"
-      class="grid-view__placeholder-column"
-      :style="{ left: value - 1 + 'px' }"
-    ></div>
+      v-for="height in placeholderHeights"
+      :style="{
+        height: height + 'px',
+        width: placeholderWidth + 'px',
+      }"
+    >
+      <div
+        v-for="(value, index) in placeholderPositions"
+        :key="'placeholder-column-' + index"
+        class="grid-view__placeholder-column"
+        :style="{ left: value - 1 + 'px' }"
+      ></div>
+    </div>
   </div>
 </template>
 
@@ -47,6 +54,16 @@ export default {
       })
       return placeholderPositions
     },
+    placeholderHeights() {
+      let number = this.placeholderHeight
+      const result = []
+      while (number > 0) {
+        const chunk = Math.min(number, this.maxPlaceholderHeight)
+        result.push(chunk)
+        number -= chunk
+      }
+      return result
+    },
     placeholderWidth() {
       let width = this.fields.reduce(
         (value, field) => this.getFieldWidth(field.id) + value,
@@ -56,6 +73,9 @@ export default {
         width += this.gridViewRowDetailsWidth
       }
       return width
+    },
+    maxPlaceholderHeight() {
+      return Math.pow(2, 20)
     },
   },
   beforeCreate() {

@@ -1,5 +1,9 @@
 <template>
   <div class="grid-view__head">
+    <GridGroupByColumnHeader
+      v-for="groupBy in includeGroupBy ? view.group_bys : []"
+      :key="groupBy.field"
+    ></GridGroupByColumnHeader>
     <div
       v-if="includeRowDetails"
       class="grid-view__column"
@@ -70,10 +74,12 @@ import CreateFieldContext from '@baserow/modules/database/components/field/Creat
 import GridViewFieldType from '@baserow/modules/database/components/view/grid/GridViewFieldType'
 import gridViewHelpers from '@baserow/modules/database/mixins/gridViewHelpers'
 import GridViewRowIdentifierDropdown from '@baserow/modules/database/components/view/grid/GridViewRowIdentifierDropdown'
+import GridGroupByColumnHeader from '@baserow/modules/database/components/view/grid/GridGroupByColumnHeader.vue'
 
 export default {
   name: 'GridViewHead',
   components: {
+    GridGroupByColumnHeader,
     GridViewRowIdentifierDropdown,
     GridViewFieldType,
     CreateFieldContext,
@@ -119,6 +125,11 @@ export default {
     readOnly: {
       type: Boolean,
       required: true,
+    },
+    includeGroupBy: {
+      type: Boolean,
+      required: false,
+      default: () => false,
     },
   },
   methods: {

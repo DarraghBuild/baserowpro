@@ -1,0 +1,75 @@
+.grid-group-by__column {
+  height: 33px;
+  width: 200px;
+  border-right: 1px solid $color-neutral-200;
+  display: flex;
+  padding: 3px;
+  align-items: center;
+  background-color: $color-neutral-50;
+  justify-content: space-between;
+}
+
+.grid-group-by__cells {
+  display: flex;
+}
+
+
+.grid-group-by__collapse {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: $color-neutral-200;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: none;
+    color: $color-neutral-600;
+  }
+
+  @include center-text(24px, 13px);
+}
+
+.grid-group-by__column-name {
+  position: relative;
+  font-weight: bold;
+  @extend %ellipsis;
+  margin-right: 5px;
+  margin-left: 5px;
+}
+
+.grid-group-by__count {
+  @include center-text(18px, 11px);
+
+  font-weight: bold;
+  background-color: $color-neutral-200;
+  border-radius: 6px;
+  left: 0;
+  right: auto;
+  margin-right: 10px;
+  padding-left: 6px;
+  padding-right: 6px;
+  width: fit-content;
+}
+
+.grid-group-by__column-value-wrapper {
+  position: relative;
+  @extend %ellipsis;
+  height: 32px;
+  flex-grow: 2;
+}
+
+.grid-group-by__column-header {
+  height: 32px;
+  width: 200px;
+  flex-shrink: 0;
+  border-right: 1px solid $color-neutral-200;
+  background-color: $color-neutral-50;
+}
+
+.grid-group-by__column-header-top {
+  border-top: 1px solid $color-neutral-200;
+}
+
+.grid-group-by__column-header-bottom{
+  border-bottom: 1px solid $color-neutral-200;
+}

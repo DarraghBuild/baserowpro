@@ -85,7 +85,7 @@ class FilterBuilder:
             self._filter(q)
         return self
 
-    def apply_to_queryset(self, queryset):
+    def apply_to_queryset(self, queryset, exclude=False):
         """
         Applies all of the Q and AnnotatedQ filters previously given to this
         FilterBuilder by first applying all annotations from AnnotatedQ's and then
@@ -96,7 +96,11 @@ class FilterBuilder:
         :return: The annotated and filtered queryset.
         """
 
-        return queryset.annotate(**self._annotation).filter(self._q_filters)
+        annotated_qs = queryset.annotate(**self._annotation)
+        if exclude:
+            return annotated_qs.exclude(self._q_filters)
+        else:
+            return annotated_qs.filter(self._q_filters)
 
     def _annotate(self, annotation_dict: Dict[str, Any]) -> "FilterBuilder":
         self._annotation = {**self._annotation, **annotation_dict}

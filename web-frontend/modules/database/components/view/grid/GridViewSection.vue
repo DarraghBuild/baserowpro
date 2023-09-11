@@ -25,6 +25,7 @@
         "
         :read-only="readOnly"
         :store-prefix="storePrefix"
+        :include-group-by="includeGroupBy"
         @field-created="$emit('field-created', $event)"
         @refresh="$emit('refresh', $event)"
         @dragging="
@@ -64,6 +65,8 @@
             :include-row-details="includeRowDetails"
             :read-only="readOnly"
             :store-prefix="storePrefix"
+            :actually-all-the-fields="allFields"
+            :include-group-by="includeGroupBy"
             v-on="$listeners"
           ></GridViewRows>
           <GridViewRowAdd
@@ -196,6 +199,15 @@ export default {
     },
     readOnly: {
       type: Boolean,
+      required: true,
+    },
+    includeGroupBy: {
+      type: Boolean,
+      required: false,
+      default: () => false,
+    },
+    allFields: {
+      type: Array,
       required: true,
     },
   },

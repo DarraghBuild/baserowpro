@@ -1,3 +1,4 @@
+import json
 from decimal import Decimal
 
 from drf_spectacular.openapi import OpenApiParameter, OpenApiTypes
@@ -55,6 +56,7 @@ from baserow.contrib.database.fields.exceptions import (
 from baserow.contrib.database.fields.field_filters import (
     FILTER_TYPE_AND,
     FILTER_TYPE_OR,
+    FilterBuilder,
 )
 from baserow.contrib.database.fields.handler import FieldHandler
 from baserow.contrib.database.rows.registries import row_metadata_registry
@@ -248,6 +250,8 @@ class GridViewView(APIView):
 
         include_fields = request.GET.get("include_fields")
         exclude_fields = request.GET.get("exclude_fields")
+        expand_collapse_values = request.GET.get("expand_collapse_values", "[]")
+        expand_collapse_keys = json.loads(expand_collapse_values)
 
         view_handler = ViewHandler()
         view = view_handler.get_view_as_user(
@@ -278,6 +282,15 @@ class GridViewView(APIView):
             model=model,
         )
 
+        group_bys = list(view.viewgroupby_set.all())
+        collapsed_group_keys = []
+        for expand_collapse_key in expand_collapse_keys:
+            collapsed_group_keys.append(expand_collapse_key)
+
+        queryset = self._exclude_collapsed_groups(
+            collapsed_group_keys, group_bys, model, queryset
+        )
+
         if "count" in request.GET:
             return Response({"count": queryset.count()})
 
@@ -296,6 +309,15 @@ class GridViewView(APIView):
         serializer = serializer_class(page, many=True)
 
         response = paginator.get_paginated_response(serializer.data)
+
+        if view_type.can_group_by and (view.viewgroupby_set):
+            response.data.update(
+                ViewHandler().calculate_categories_for_rows(
+                    [f"field_{gb.field_id}" for gb in view.viewgroupby_set.all()],
+                    page,
+                    queryset,
+                )
+            )
 
         if field_options:
             context = {"fields": [o["field"] for o in model._field_objects.values()]}
@@ -318,6 +340,43 @@ class GridViewView(APIView):
             user=request.user,
         )
         return response
+
+    def _exclude_collapsed_groups(
+        self, collapsed_group_bys, group_bys, model, queryset
+    ):
+        for expand_collapse_key in collapsed_group_bys:
+            filter_builder = FilterBuilder(filter_type="AND")
+            for i, key_value in enumerate(expand_collapse_key):
+                group_by = group_bys[i]
+                group_by_field = group_by.field.specific
+                from baserow.contrib.database.fields.registries import (
+                    field_type_registry,
+                )
+
+                group_by_field_type = field_type_registry.get_by_model(
+                    group_by.field.specific
+                )
+
+                if key_value:
+                    try:
+                        filter_t = view_filter_type_registry.get(
+                            group_by_field_type.type + "_equal"
+                        )
+                    except ViewFilterTypeDoesNotExist:
+                        filter_t = view_filter_type_registry.get("equal")
+                else:
+                    filter_t = view_filter_type_registry.get("empty")
+
+                field_name = group_by_field.db_column
+                model_field = model._meta.get_field(field_name)
+
+                filter_builder.filter(
+                    filter_t.get_filter(
+                        field_name, key_value, model_field, group_by_field
+                    )
+                )
+            queryset = filter_builder.apply_to_queryset(queryset, exclude=True)
+        return queryset
 
     @extend_schema(
         parameters=[

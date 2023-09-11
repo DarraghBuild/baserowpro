@@ -20,6 +20,8 @@
       :database="database"
       :table="table"
       :view="view"
+      :include-group-by="true"
+      :all-fields="fields"
       :include-field-width-handles="false"
       :include-row-details="true"
       :include-grid-view-identifier-dropdown="true"
@@ -91,6 +93,7 @@
       :view="view"
       :include-add-field="true"
       :can-order-fields="true"
+      :all-fields="fields"
       :read-only="
         readOnly ||
         !$hasPermission(
@@ -313,10 +316,12 @@ import { clone } from '@baserow/modules/core/utils/object'
 import copyPasteHelper from '@baserow/modules/database/mixins/copyPasteHelper'
 import GridViewRowsAddContext from '@baserow/modules/database/components/view/grid/fields/GridViewRowsAddContext'
 import { copyToClipboard } from '@baserow/modules/database/utils/clipboard'
+import GridGroupByColumnHeader from '@baserow/modules/database/components/view/grid/GridGroupByColumnHeader.vue'
 
 export default {
   name: 'GridView',
   components: {
+    GridGroupByColumnHeader,
     GridViewRowsAddContext,
     GridViewSection,
     GridViewFieldWidthHandle,
