@@ -87,6 +87,7 @@ import RowHistoryFieldMultipleCollaborators from '@baserow/modules/database/comp
 import RowHistoryFieldFile from '@baserow/modules/database/components/row/RowHistoryFieldFile'
 import RowHistoryFieldMultipleSelect from '@baserow/modules/database/components/row/RowHistoryFieldMultipleSelect'
 import RowHistoryFieldSingleSelect from '@baserow/modules/database/components/row/RowHistoryFieldSingleSelect'
+import RowHistoryFieldBoolean from '@baserow/modules/database/components/row/RowHistoryFieldBoolean'
 
 import FormViewFieldLinkRow from '@baserow/modules/database/components/view/form/FormViewFieldLinkRow'
 
@@ -1359,7 +1360,7 @@ export class BooleanFieldType extends FieldType {
   }
 
   getRowHistoryEntryComponent() {
-    return RowHistoryFieldText
+    return RowHistoryFieldBoolean
   }
 
   getEmptyValue(field) {
