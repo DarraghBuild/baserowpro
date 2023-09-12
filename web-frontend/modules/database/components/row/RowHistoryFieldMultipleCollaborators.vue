@@ -1,20 +1,31 @@
 <template>
   <div class="row-history-entry__field-content">
-    <div
-      v-for="item in allItems"
-      :key="item.id"
-      :class="{
-        'row-history-entry__diff--removed': removedItems.includes(item), 
-        'row-history-entry__diff--added': addedItems.includes(item)
-      }"
-      class="row-history-entry__diff"
-    >
-      {{ item.name }}
-    </div>
+    <ul class="row-history-field-multiple-collaborators__items">
+      <li
+        v-for="item in allItems"
+        :key="item.id"
+        class="row-history-field-multiple-collaborators__item"
+      >
+        <div
+          class="row-history-field-multiple-collaborators__name"
+          :class="{
+            'row-history-field-multiple-collaborators__item--removed': removedItems.includes(item),
+            'row-history-field-multiple-collaborators__item--added': addedItems.includes(item),
+          }"
+        >
+          {{ name(item) }}
+        </div>
+        <div class="row-history-field-multiple-collaborators__initials">
+          {{ initials(name(item)) }}
+        </div>
+      </li>
+    </ul>
   </div>
 </template>
 
 <script>
+import collaboratorName from '@baserow/modules/database/mixins/collaboratorName'
+
 export default {
   name: 'RowHistoryFieldMultipleCollaborators',
   props: {
@@ -27,6 +38,7 @@ export default {
       required: true,
     },
   },
+  mixins: [collaboratorName],
   computed: {
     allItems() {
       return this.removedItems.concat(this.addedItems)
@@ -48,6 +60,14 @@ export default {
           ) === -1
         )
       })
+    },
+  },
+  methods: {
+    name(item) {
+      return this.getCollaboratorName(item, this.store)
+    },
+    initials(name) {
+      return name.slice(0, 1).toUpperCase()
     },
   },
 }

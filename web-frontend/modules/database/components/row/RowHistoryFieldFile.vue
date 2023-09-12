@@ -4,8 +4,8 @@
       v-for="item in allItems"
       :key="item.id"
       :class="{
-        'row-history-entry__diff--removed': removedItems.includes(item), 
-        'row-history-entry__diff--added': addedItems.includes(item)
+        'row-history-entry__diff--removed': removedItems.includes(item),
+        'row-history-entry__diff--added': addedItems.includes(item),
       }"
       class="row-history-entry__diff"
     >
