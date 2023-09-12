@@ -1,22 +1,15 @@
 <template>
   <div class="row-history-entry__field-content">
-    <div v-if="removedItems">
-      <div
-        v-for="item in removedItems"
-        :key="item.id"
-        class="row-history-entry__diff row-history-entry__diff--removed"
-      >
-        {{ item.visible_name }}
-      </div>
-    </div>
-    <div v-if="addedItems">
-      <div
-        v-for="item in addedItems"
-        :key="item.id"
-        class="row-history-entry__diff row-history-entry__diff--added"
-      >
-        {{ item.visible_name }}
-      </div>
+    <div
+      v-for="item in allItems"
+      :key="item.id"
+      :class="{
+        'row-history-entry__diff--removed': removedItems.includes(item), 
+        'row-history-entry__diff--added': addedItems.includes(item)
+      }"
+      class="row-history-entry__diff"
+    >
+      {{ item.visible_name }}
     </div>
   </div>
 </template>
@@ -35,6 +28,9 @@ export default {
     },
   },
   computed: {
+    allItems() {
+      return this.removedItems.concat(this.addedItems)
+    },
     removedItems() {
       return this.entry.before[this.fieldIdentifier].filter((before) => {
         return (

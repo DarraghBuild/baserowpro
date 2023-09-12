@@ -12,7 +12,7 @@
 }
 
 .row-history-entry__content {
-  padding: 10px 14px 10px 14px;
+  padding: 10px 14px 0 14px;
   border: 1px solid #d9dbde;
   border-radius: 3px;
   background-color: #f0f0f0;
@@ -56,14 +56,11 @@
   margin-bottom: 10px;
 
   &:not(:first-child) {
-    margin-top: 14px;
+    margin-top: 4px;
   }
 }
 
 .row-history-entry__field-content {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
   overflow: hidden;
 }
 
@@ -77,10 +74,6 @@
   line-height: 18px; /* 150% */
   margin-right: 4px;
   margin-bottom: 10px;
-
-  &:last-of-type {
-    margin-bottom: 0;
-  }
 }
 
 .row-history-entry__diff--removed {
