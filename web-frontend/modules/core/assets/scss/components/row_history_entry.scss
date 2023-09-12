@@ -1,7 +1,11 @@
 .row-history-entry {
   display: flex;
   flex-direction: column;
-  margin: 20px;
+  margin: 24px 20px 0 20px;
+}
+
+.row-history-entry--first {
+  margin: 24px 20px 24px 20px;
 }
 
 .row-history-entry__header {
