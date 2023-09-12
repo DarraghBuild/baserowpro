@@ -1,0 +1,42 @@
+$baserow-icon-prefix: "baserow-icon-";
+
+// This list must contain all the svg icons in the `modules/core/assets/icons` that must
+// automatically become under `baserow-icon-$icon`. All the icons must be designed on a
+// 24px by 24px grid.
+$baserow-icons: "cloud", "no-lock-in", "scalable", "calendar-view";
+
+@mixin baserow-icon($name) {
+  &::before {
+    mask-image: url('@baserow/modules/core/assets/icons/' + $name + '.svg');
+    -webkit-mask-image: url('@baserow/modules/core/assets/icons/' + $name + '.svg');
+  }
+}
+
+%icon {
+  @extend *[class^="iconoir-"];
+}
+
+*[class^="baserow-icon-"],
+*[class*=" baserow-icon-"]  {
+  @extend %icon;
+}
+
+@each $icon in $baserow-icons {
+  .#{$baserow-icon-prefix}#{$icon} {
+    @include baserow-icon($icon);
+  }
+}
+
+// Example of using an iconoir icon directly in scss, without the need of adding an
+// element with `iconoir-` class. This must be removed later on.
+.example-extension-of-iconoir {
+  @extend %icon;
+  @extend .iconoir-lock;
+}
+
+// Example of using a baserow icon directly in scss, without the need of adding an
+// element with `baserow-icon-` class. This must be removed later on.
+.example-extension-of-baserow-icon {
+  @extend %icon;
+  @extend .baserow-icon-cloud;
+}

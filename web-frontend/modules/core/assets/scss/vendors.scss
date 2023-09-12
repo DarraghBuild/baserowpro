@@ -5,3 +5,7 @@ $fa-font-path: '~@fortawesome/fontawesome-free/webfonts';
 @import '~@fortawesome/fontawesome-free/scss/fontawesome.scss';
 @import '~@fortawesome/fontawesome-free/scss/solid.scss';
 @import '~@fortawesome/fontawesome-free/scss/brands.scss';
+
+// Importing Iconoir directly in scss so that we can can @extend all the icons wherever
+// we want.
+@import '~iconoir/css/iconoir';

@@ -3,6 +3,44 @@
     <Toasts></Toasts>
     <div class="style-guide__wrapper">
       <div class="style-guide">
+        <!--
+        the icons are for demo purposes only, they must be removed from this page.
+        -->
+        <i class="iconoir-lock" style="font-size: 40px; color: blue"></i>
+        <i
+          class="iconoir-3d-rect-corner-to-corner"
+          style="font-size: 40px; color: blue"
+        ></i>
+        <i class="iconoir-add-circle" style="font-size: 40px; color: blue"></i>
+        <br />
+        <i class="baserow-icon-cloud" style="font-size: 40px; color: blue"></i>
+        <i
+          class="baserow-icon-no-lock-in"
+          style="font-size: 40px; color: blue"
+        ></i>
+        <i
+          class="baserow-icon-scalable"
+          style="font-size: 40px; color: blue"
+        ></i>
+        <i
+          class="baserow-icon-calendar-view"
+          style="font-size: 40px; color: blue"
+        ></i>
+        <br />
+        <i
+          class="example-extension-of-iconoir"
+          style="font-size: 40px; color: blue"
+        ></i>
+        <br />
+        <i
+          class="example-extension-of-baserow-icon"
+          style="font-size: 40px; color: blue"
+        ></i>
+        <br />
+        <br />
+        <!--
+        until here must be removed.
+        -->
         <div class="margin-bottom-3">
           <h1>&lt;h1&gt;Heading 1&lt;/h1&gt;</h1>
           <h2>&lt;h2&gt;Heading 2&lt;/h2&gt;</h2>
