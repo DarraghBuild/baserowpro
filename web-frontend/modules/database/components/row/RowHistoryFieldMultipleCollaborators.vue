@@ -9,8 +9,10 @@
         <div
           class="row-history-field-multiple-collaborators__name"
           :class="{
-            'row-history-field-multiple-collaborators__item--removed': removedItems.includes(item),
-            'row-history-field-multiple-collaborators__item--added': addedItems.includes(item),
+            'row-history-field-multiple-collaborators__item--removed':
+              removedItems.includes(item),
+            'row-history-field-multiple-collaborators__item--added':
+              addedItems.includes(item),
           }"
         >
           {{ name(item) }}
@@ -28,6 +30,7 @@ import collaboratorName from '@baserow/modules/database/mixins/collaboratorName'
 
 export default {
   name: 'RowHistoryFieldMultipleCollaborators',
+  mixins: [collaboratorName],
   props: {
     entry: {
       type: Object,
@@ -38,7 +41,6 @@ export default {
       required: true,
     },
   },
-  mixins: [collaboratorName],
   computed: {
     allItems() {
       return this.removedItems.concat(this.addedItems)
