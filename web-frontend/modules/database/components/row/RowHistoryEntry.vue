@@ -27,6 +27,7 @@
 
 <script>
 import moment from '@baserow/modules/core/moment'
+import collaboratorName from '@baserow/modules/database/mixins/collaboratorName'
 
 export default {
   name: 'RowHistoryEntry',
@@ -40,12 +41,16 @@ export default {
       required: true,
     },
   },
+  mixins: [collaboratorName],
   computed: {
     name() {
-      return this.entry.user.name
+      if (this.entry.user.id === this.$store.getters['auth/getUserObject'].id) {
+        return this.$t('rowHistorySidebar.you')
+      }
+      return this.getCollaboratorName(this.entry.user, this.store)
     },
     initials() {
-      return this.name.slice(0, 1).toUpperCase()
+      return this.getCollaboratorName(this.entry.user, this.store).slice(0, 1).toUpperCase()
     },
     timestampTooltip() {
       return this.getLocalizedMoment(this.entry.timestamp).format('L LT')
