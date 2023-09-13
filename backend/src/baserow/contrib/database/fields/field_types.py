@@ -3173,7 +3173,9 @@ class MultipleSelectFieldType(SelectOptionBaseFieldType):
         self, row, field_name, value, id_mapping, cache, files_zip, storage
     ):
         mapped_values = [
-            id_mapping["database_field_select_options"][item] for item in value
+            id_mapping["database_field_select_options"][item]
+            for item in value
+            if item in id_mapping["database_field_select_options"]
         ]
         getattr(row, field_name).set(mapped_values)
 
