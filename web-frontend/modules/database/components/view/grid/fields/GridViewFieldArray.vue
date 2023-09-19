@@ -20,10 +20,11 @@
 <script>
 import FunctionalGridViewFieldArray from '@baserow/modules/database/components/view/grid/fields/FunctionalGridViewFieldArray'
 import gridField from '@baserow/modules/database/mixins/gridField'
+import FileFieldModal from '@baserow/modules/database/components/field/FileFieldModal.vue'
 
 export default {
   name: 'GridViewFieldArray',
-  components: { FunctionalGridViewFieldArray },
+  components: { FileFieldModal, FunctionalGridViewFieldArray },
   mixins: [gridField],
   props: {
     selected: {
