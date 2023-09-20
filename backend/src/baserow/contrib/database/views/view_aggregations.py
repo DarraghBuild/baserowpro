@@ -44,6 +44,7 @@ from baserow.contrib.database.formula import (
     BaserowFormulaTextType,
 )
 
+from ..formula.types.formula_types import BaserowFormulaSingleFileType
 from .registries import ViewAggregationType
 from .utils import AnnotatedAggregation
 
@@ -93,6 +94,7 @@ class EmptyCountViewAggregationType(ViewAggregationType):
             BaserowFormulaNumberType.type,
             BaserowFormulaDateType.type,
             BaserowFormulaBooleanType.type,
+            FormulaFieldType.array_of(BaserowFormulaSingleFileType.type),
         ),
     ]
 

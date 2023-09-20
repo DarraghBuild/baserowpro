@@ -2,7 +2,8 @@ from typing import TYPE_CHECKING, Any, Dict, List, NoReturn, Optional, Union
 from zipfile import ZipFile
 
 from django.contrib.auth.models import AbstractUser
-from django.contrib.postgres.fields import ArrayField, JSONField
+from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import JSONField as PostgresJSONField
 from django.core.exceptions import ValidationError
 from django.core.files.storage import Storage
 from django.db import models as django_models
@@ -11,6 +12,7 @@ from django.db.models import (
     CharField,
     DurationField,
     Expression,
+    JSONField,
     Q,
     QuerySet,
 )
@@ -279,7 +281,7 @@ class FieldType(
         :return: A Q filter.
         """
 
-        fs = [
+        empty_is_null_model_field_types = [
             ManyToManyField,
             ForeignKey,
             DurationField,
@@ -287,7 +289,7 @@ class FieldType(
             DurationFieldUsingPostgresFormatting,
         ]
         # If the model_field is a ManyToMany field we only have to check if it is None.
-        if any(isinstance(model_field, f) for f in fs):
+        if any(isinstance(model_field, f) for f in empty_is_null_model_field_types):
             return Q(**{f"{field_name}": None})
 
         if isinstance(model_field, BooleanField):
@@ -296,7 +298,11 @@ class FieldType(
         q = Q(**{f"{field_name}__isnull": True})
         q = q | Q(**{f"{field_name}": None})
 
-        if isinstance(model_field, JSONField):
+        empty_is_empty_list_or_object_model_field_types = [JSONField, PostgresJSONField]
+        if any(
+            isinstance(model_field, f)
+            for f in empty_is_empty_list_or_object_model_field_types
+        ):
             q = q | Q(**{f"{field_name}": []}) | Q(**{f"{field_name}": {}})
 
         # If the model field accepts an empty string as value we are going to add
