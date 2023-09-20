@@ -71,6 +71,7 @@ import {
 } from '@baserow/modules/builder/dataProviderTypes'
 
 import { MainThemeConfigBlock } from '@baserow/modules/builder/themeConfigBlockTypes'
+import { NotificationWorkflowActionType } from '@baserow/modules/builder/workflowActionTypes'
 
 export default (context) => {
   const { store, app, isDev } = context
@@ -183,4 +184,9 @@ export default (context) => {
   )
 
   app.$registry.register('themeConfigBlock', new MainThemeConfigBlock(context))
+
+  app.$registry.register(
+    'workflowAction',
+    new NotificationWorkflowActionType(context)
+  )
 }
