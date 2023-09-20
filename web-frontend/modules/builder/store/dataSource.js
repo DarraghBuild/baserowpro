@@ -273,6 +273,12 @@ const getters = {
   getPageDataSources: (state) => (page) => {
     return page.dataSources
   },
+  getPageCollectionDataSources: (state) => (page) => {
+    return page.dataSources.filter(
+      (dataSource) =>
+        this.$registry.get('service', dataSource.type).isCollection
+    )
+  },
 }
 
 export default {
