@@ -106,7 +106,7 @@ class BaserowFormulaTextType(
         )
 
 
-class BaserowFormulaCharType(BaserowFormulaBaseTextType, BaserowFormulaValidType):
+class BaserowFormulaCharType(BaserowFormulaTextType, BaserowFormulaValidType):
     type = "char"
     baserow_field_type = "text"
     can_order_by_in_array = True
@@ -116,8 +116,13 @@ class BaserowFormulaCharType(BaserowFormulaBaseTextType, BaserowFormulaValidType
             field_name, "value", "text", output_field=models.TextField()
         )
 
+    def placeholder_empty_baserow_expression(
+        self,
+    ) -> "BaserowExpression[BaserowFormulaValidType]":
+        return formula_function_registry.get("tovarchar")(literal(""))
 
-class BaserowFormulaLinkType(BaserowFormulaTextType):
+
+class BaserowFormulaLinkType(BaserowFormulaValidType):
     type = "link"
     baserow_field_type = None
     can_order_by = False
@@ -587,7 +592,7 @@ class BaserowFormulaDateType(BaserowFormulaValidType):
 
     def unwrap_at_field_level(self, expr: "BaserowFunctionCall[BaserowFormulaType]"):
         unwrapped = super().unwrap_at_field_level(expr)
-        return expr.args[0].with_valid_type(unwrapped.expression_type)
+        return unwrapped.args[0].with_valid_type(unwrapped.expression_type)
 
     def cast_to_text(
         self,
