@@ -9,16 +9,18 @@
       </div>
     </template>
     <template #default>
-      This is where you will be able to define your actions in the future :)
+      <WorkflowAction />
     </template>
   </Expandable>
 </template>
 
 <script>
 import { Event } from '@baserow/modules/builder/eventTypes'
+import WorkflowAction from '@baserow/modules/core/components/workflowActions/WorkflowAction.vue'
 
 export default {
   name: 'Event',
+  components: { WorkflowAction },
   props: {
     event: {
       type: Event,
