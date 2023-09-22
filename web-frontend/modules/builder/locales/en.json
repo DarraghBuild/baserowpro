@@ -293,6 +293,12 @@
         "errorTooltip": "Invalid reference"
     },
     "workflowActionTypes": {
-      "notificationLabel": "Show Notification"
+        "notificationLabel": "Show Notification"
+    },
+    "notificationWorkflowActionForm": {
+        "titleLabel": "Title",
+        "titlePlaceholder": "Enter text...",
+        "descriptionLabel": "Description",
+        "descriptionPlaceholder": "Enter text..."
     }
 }
