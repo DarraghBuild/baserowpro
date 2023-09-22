@@ -289,6 +289,9 @@
     "eventTypes": {
         "clickLabel": "On click"
     },
+    "getFormulaComponent": {
+        "errorTooltip": "Invalid reference"
+    },
     "workflowActionTypes": {
       "notificationLabel": "Show Notification"
     }

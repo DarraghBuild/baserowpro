@@ -184,11 +184,6 @@ export default {
       required: true,
     },
   },
-  data() {
-    return {
-      addOpen: false,
-    }
-  },
   computed: {
     /**
      * Calculates the total amount of available fields.
