@@ -184,6 +184,13 @@ class BuilderConfig(AppConfig):
 
         theme_config_block_registry.register(MainThemeConfigBlockType())
 
+        from .workflow_actions.registries import builder_workflow_action_type_registry
+        from .workflow_actions.workflow_action_types import (
+            NotificationWorkflowActionType,
+        )
+
+        builder_workflow_action_type_registry.register(NotificationWorkflowActionType())
+
         from .domains.receivers import connect_to_domain_pre_delete_signal
 
         connect_to_domain_pre_delete_signal()
