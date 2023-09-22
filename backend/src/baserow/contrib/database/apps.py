@@ -521,6 +521,7 @@ class DatabaseConfig(AppConfig):
         from .tokens.object_scopes import TokenObjectScopeType
         from .views.object_scopes import (
             DatabaseViewDecorationObjectScopeType,
+            DatabaseViewFilterGroupObjectScopeType,
             DatabaseViewFilterObjectScopeType,
             DatabaseViewGroupByObjectScopeType,
             DatabaseViewObjectScopeType,
@@ -535,6 +536,7 @@ class DatabaseConfig(AppConfig):
         object_scope_type_registry.register(DatabaseViewSortObjectScopeType())
         object_scope_type_registry.register(DatabaseViewGroupByObjectScopeType())
         object_scope_type_registry.register(DatabaseViewFilterObjectScopeType())
+        object_scope_type_registry.register(DatabaseViewFilterGroupObjectScopeType())
         object_scope_type_registry.register(TokenObjectScopeType())
 
         from baserow.contrib.database.views.operations import (
@@ -589,11 +591,13 @@ class DatabaseConfig(AppConfig):
             CreateAndUsePersonalViewOperationType,
             CreatePublicViewOperationType,
             CreateViewDecorationOperationType,
+            CreateViewFilterGroupOperationType,
             CreateViewFilterOperationType,
             CreateViewGroupByOperationType,
             CreateViewOperationType,
             CreateViewSortOperationType,
             DeleteViewDecorationOperationType,
+            DeleteViewFilterGroupOperationType,
             DeleteViewFilterOperationType,
             DeleteViewGroupByOperationType,
             DeleteViewOperationType,
@@ -609,6 +613,7 @@ class DatabaseConfig(AppConfig):
             ReadAggregationsViewOperationType,
             ReadViewDecorationOperationType,
             ReadViewFieldOptionsOperationType,
+            ReadViewFilterGroupOperationType,
             ReadViewFilterOperationType,
             ReadViewGroupByOperationType,
             ReadViewOperationType,
@@ -616,6 +621,7 @@ class DatabaseConfig(AppConfig):
             ReadViewSortOperationType,
             RestoreViewOperationType,
             UpdateViewDecorationOperationType,
+            UpdateViewFilterGroupOperationType,
             UpdateViewFilterOperationType,
             UpdateViewGroupByOperationType,
             UpdateViewOperationType,
@@ -710,6 +716,10 @@ class DatabaseConfig(AppConfig):
         operation_type_registry.register(ListenToAllDatabaseTableEventsOperationType())
         operation_type_registry.register(UseTokenOperationType())
         operation_type_registry.register(UpdateTokenOperationType())
+        operation_type_registry.register(CreateViewFilterGroupOperationType())
+        operation_type_registry.register(UpdateViewFilterGroupOperationType())
+        operation_type_registry.register(DeleteViewFilterGroupOperationType())
+        operation_type_registry.register(ReadViewFilterGroupOperationType())
 
         from baserow.core.registries import permission_manager_type_registry
 

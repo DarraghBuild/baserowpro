@@ -319,9 +319,39 @@ class ViewFilterManager(models.Manager):
         return super().get_queryset().filter(~trashed_Q)
 
 
+class ViewFilterGroup(HierarchicalModelMixin, models.Model):
+    filter_type = models.CharField(
+        max_length=3,
+        choices=FILTER_TYPES,
+        default=FILTER_TYPE_AND,
+        help_text="Indicates whether all the rows should apply to all filters (AND) "
+        "or to any filter (OR).",
+    )
+    parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
+    view = models.ForeignKey(
+        View,
+        on_delete=models.CASCADE,
+        help_text="The view to which the filter applies. "
+        "Each view can have his own filters.",
+    )
+
+    class Meta:
+        ordering = ("id",)
+
+    def get_parent(self):
+        return self.view
+
+
 class ViewFilter(HierarchicalModelMixin, models.Model):
     objects = ViewFilterManager()
 
+    view_filter_group = models.ForeignKey(
+        ViewFilterGroup,
+        on_delete=models.CASCADE,
+        null=True,
+        help_text="The view to which the filter applies. Each view can have his own "
+        "filters.",
+    )
     view = models.ForeignKey(
         View,
         on_delete=models.CASCADE,
@@ -777,6 +807,29 @@ class FormViewFieldOptionsConditionManager(models.Manager):
         return super().get_queryset().filter(~Q(field__trashed=True))
 
 
+class FormViewFieldOptionsConditionGroup(HierarchicalModelMixin, models.Model):
+    filter_type = models.CharField(
+        max_length=3,
+        choices=FILTER_TYPES,
+        default=FILTER_TYPE_AND,
+        help_text="Indicates whether all (AND) or any (OR) of the conditions should "
+        "match before shown.",
+    )
+    field_option = models.ForeignKey(
+        FormViewFieldOptions,
+        on_delete=models.CASCADE,
+        help_text="The form view option where the condition is related to.",
+        related_name="filter_groups",
+    )
+    parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
+
+    def get_parent(self):
+        return self.field_option
+
+    class Meta:
+        ordering = ("id",)
+
+
 class FormViewFieldOptionsCondition(HierarchicalModelMixin, models.Model):
     field_option = models.ForeignKey(
         FormViewFieldOptions,
@@ -799,6 +852,12 @@ class FormViewFieldOptionsCondition(HierarchicalModelMixin, models.Model):
         max_length=255,
         blank=True,
         help_text="The filter value that must be compared to the field's value.",
+    )
+    filter_group = models.ForeignKey(
+        FormViewFieldOptionsConditionGroup,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name="conditions",
     )
     objects = FormViewFieldOptionsConditionManager()
 

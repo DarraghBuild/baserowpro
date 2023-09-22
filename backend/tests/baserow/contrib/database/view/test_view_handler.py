@@ -943,19 +943,19 @@ def test_get_filter(data_fixture):
     handler = ViewHandler()
 
     with pytest.raises(ViewFilterDoesNotExist):
-        handler.get_filter(user=user, view_filter_id=99999)
+        handler.get_filter(user=user, view_filter_group_id=99999)
 
     with pytest.raises(UserNotInWorkspace):
-        handler.get_filter(user=user_2, view_filter_id=equal_filter.id)
+        handler.get_filter(user=user_2, view_filter_group_id=equal_filter.id)
 
     with pytest.raises(AttributeError):
         handler.get_filter(
             user=user,
-            view_filter_id=equal_filter.id,
+            view_filter_group_id=equal_filter.id,
             base_queryset=ViewFilter.objects.prefetch_related("UNKNOWN"),
         )
 
-    view_filter = handler.get_filter(user=user, view_filter_id=equal_filter.id)
+    view_filter = handler.get_filter(user=user, view_filter_group_id=equal_filter.id)
 
     assert view_filter.id == equal_filter.id
     assert view_filter.view_id == equal_filter.view_id
@@ -1955,7 +1955,7 @@ def test_public_view_row_checker_runs_expected_queries_on_init(
         view=public_grid_view, field=filtered_field, type="equal", value="FilterValue"
     )
     model = table.get_model()
-    num_queries = 6
+    num_queries = 7
     with django_assert_num_queries(num_queries):
         # First query to get the public views, second query to get their filters.
         ViewHandler().get_public_views_row_checker(

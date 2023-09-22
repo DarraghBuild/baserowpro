@@ -16,7 +16,7 @@
           <div
             class="conditional-color-value-provider-form__color-handle"
             data-sortable-handle
-          />
+          ></div>
           <a
             :ref="`colorSelect-${color.id}`"
             class="conditional-color-value-provider-form__color-color"
@@ -25,7 +25,7 @@
           >
             <i class="iconoir-nav-arrow-down"></i>
           </a>
-          <div :style="{ flex: 1 }" />
+          <div :style="{ flex: 1 }" ></div>
           <a
             v-if="options.colors.length > 1"
             class="conditional-color-value-provider-form__color-trash-link"
@@ -44,22 +44,33 @@
           v-show="color.filters.length !== 0"
           class="conditional-color-value-provider-form__color-filters"
           :filters="color.filters"
+          :filterGroups="color.filter_groups"
           :disable-filter="false"
           :filter-type="color.operator"
           :fields="fields"
           :view="view"
           :read-only="readOnly"
+          @addFilter="addFilter(color, $event)"
           @deleteFilter="deleteFilter(color, $event)"
           @updateFilter="updateFilter(color, $event)"
           @selectOperator="updateColor(color, { operator: $event })"
+          @deleteFilterGroup="deleteFilterGroup(color, $event)"
+          @selectFilterGroupOperator="updateFilterGroupOperator(color, $event)"
         />
         <a
           class="conditional-color-value-provider-form__color-filter-add"
           @click.prevent="addFilter(color)"
         >
           <i class="iconoir-plus"></i>
-          {{ $t('conditionalColorValueProviderForm.addCondition') }}</a
+          {{ $t('conditionalColorValueProviderForm.addCondition') }}
+        </a>
+        <a
+          class="conditional-color-value-provider-form__color-filter-add"
+          @click.prevent="addFilterGroup(color)"
         >
+          <i class="iconoir-plus"></i>
+          {{ $t('conditionalColorValueProviderForm.addConditionGroup') }}
+        </a>
         <ColorSelectContext
           :ref="`colorContext-${color.id}`"
           @selected="updateColor(color, { color: $event })"
@@ -158,7 +169,54 @@ export default {
         colors: newColors,
       })
     },
-    addFilter(color) {
+    addFilterGroup(color) {
+      const filterGroup = ConditionalColorValueProviderType.getDefaultFilterGroupConf()
+      const newColors = this.options.colors.map((colorConf) => {
+        if (colorConf.id === color.id) {
+          return {
+            ...colorConf,
+            filter_groups: [...(colorConf.filter_groups || []), filterGroup],
+            filters: [
+              ...colorConf.filters,
+              ConditionalColorValueProviderType.getDefaultFilterConf(
+                this.$registry,
+                {
+                  fields: this.fields,
+                  filterGroupId: filterGroup.id,
+                }
+              ),
+            ],
+          }
+        }
+        return colorConf
+      })
+
+      this.$emit('update', {
+        colors: newColors,
+      })
+    },
+    updateFilterGroupOperator(color, { value, filterGroup }) {
+      const newColors = this.options.colors.map((colorConf) => {
+        if (colorConf.id === color.id) {
+          const newFilterGroups = colorConf.filter_groups.map((group) => {
+            if (group.id === filterGroup.id) {
+              return { ...group, filter_type: value }
+            }
+            return group
+          })
+          return {
+            ...colorConf,
+            filter_groups: newFilterGroups,
+          }
+        }
+        return colorConf
+      })
+
+      this.$emit('update', {
+        colors: newColors,
+      })
+    },
+    addFilter(color, filterGroupId = null) {
       const newColors = this.options.colors.map((colorConf) => {
         if (colorConf.id === color.id) {
           return {
@@ -169,6 +227,7 @@ export default {
                 this.$registry,
                 {
                   fields: this.fields,
+                  filterGroupId,
                 }
               ),
             ],
@@ -211,6 +270,28 @@ export default {
           return {
             ...colorConf,
             filters: newFilters,
+          }
+        }
+        return colorConf
+      })
+
+      this.$emit('update', {
+        colors: newColors,
+      })
+    },
+    deleteFilterGroup(color, filterGroup) {
+      const newColors = this.options.colors.map((colorConf) => {
+        if (colorConf.id === color.id) {
+          const newFilters = colorConf.filters.filter((filterConf) => {
+            return filterConf.filter_group !== filterGroup.id
+          })
+          const newFilterGroups = colorConf.filter_groups.filter((group) => {
+            return group.id !== filterGroup.id
+          })
+          return {
+            ...colorConf,
+            filters: newFilters,
+            filter_groups: newFilterGroups,
           }
         }
         return colorConf

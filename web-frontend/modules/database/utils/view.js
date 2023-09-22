@@ -4,6 +4,7 @@ import { maxPossibleOrderValue } from '@baserow/modules/database/viewTypes'
 import { escapeRegExp } from '@baserow/modules/core/utils/string'
 import { SearchModes } from '@baserow/modules/database/utils/search'
 import { convertStringToMatchBackendTsvectorData } from '@baserow/modules/database/search/regexes'
+import filter from '../services/filter'
 
 /**
  * Generates a sort function based on the provided sortings.
@@ -86,6 +87,57 @@ export function filterHiddenFieldsFunction(fieldOptions) {
   }
 }
 
+const TreeGroupNode = class {
+  constructor(filterType, parent = null) {
+    this.filterType = filterType
+    this.parent = parent
+    this.filters = []
+    this.children = []
+    if (parent) {
+      parent.children.push(this)
+    }
+  }
+
+  addFilter({ viewFilterType, filterValue, field, fieldType }) {
+    this.filters.push({ viewFilterType, filterValue, field, fieldType })
+  }
+
+  matches(rowValues) {
+    for (const child of this.children) {
+      const matches = child.matches(rowValues)
+      if (this.filterType === 'AND' && !matches) {
+        return false
+      } else if (this.filterType === 'OR' && matches) {
+        return true
+      }
+    }
+    for (const filter of this.filters) {
+      const { viewFilterType, filterValue, field, fieldType } = filter
+      const rowValue = rowValues[`field_${field.id}`]
+      const matches = viewFilterType.matches(
+        rowValue,
+        filterValue,
+        field,
+        fieldType
+      )
+      if (this.filterType === 'AND' && !matches) {
+        return false
+      } else if (this.filterType === 'OR' && matches) {
+        return true
+      }
+    }
+    if (this.filterType === 'AND') {
+      // When this point has been reached with an `AND` filter type it means that
+      // the row matches all the filters and therefore we can mark it as valid.
+      return true
+    } else if (this.filterType === 'OR') {
+      // When this point has been reached with an `OR` filter type it means that
+      // the row matches none of the filters and therefore we can mark it as invalid.
+      return false
+    }
+  }
+}
+
 /**
  * A helper function that checks if the provided row values match the provided view
  * filters. Returning false indicates that the row should not be visible for that
@@ -95,6 +147,7 @@ export const matchSearchFilters = (
   $registry,
   filterType,
   filters,
+  filterGroups,
   fields,
   values
 ) => {
@@ -104,35 +157,33 @@ export const matchSearchFilters = (
     return true
   }
 
-  for (const i in filters) {
-    const filter = filters[i]
-    const filterValue = filter.value
-    const rowValue = values[`field_${filter.field}`]
-    const field = fields.find((f) => f.id === filter.field)
-    const fieldType = $registry.get('field', field.type)
-    const matches = $registry
-      .get('viewFilter', filter.type)
-      .matches(rowValue, filterValue, field, fieldType)
-    if (filterType === 'AND' && !matches) {
-      // With an `AND` filter type, the row must match all the filters, so if
-      // one of the filters doesn't match we can mark it as isvalid.
-      return false
-    } else if (filterType === 'OR' && matches) {
-      // With an 'OR' filter type, the row only has to match one of the filters,
-      // that is the case here so we can mark it as valid.
-      return true
-    }
+  const rootGroup = new TreeGroupNode(filterType)
+  const filterGroupsById = { '': rootGroup }
+
+  for (const filterGroup of filterGroups || []) {
+    const parent = filterGroupsById[filterGroup.parent || '']
+    filterGroupsById[filterGroup.id] = new TreeGroupNode(
+      filterGroup.filter_type,
+      parent
+    )
   }
 
-  if (filterType === 'AND') {
-    // When this point has been reached with an `AND` filter type it means that
-    // the row matches all the filters and therefore we can mark it as valid.
-    return true
-  } else if (filterType === 'OR') {
-    // When this point has been reached with an `OR` filter type it means that
-    // the row matches none of the filters and therefore we can mark it as invalid.
-    return false
+  for (const filter of filters) {
+    const filterValue = filter.value
+    const field = fields.find((f) => f.id === filter.field)
+    const fieldType = $registry.get('field', field.type)
+    const viewFilterType = $registry.get('viewFilter', filter.type)
+    const filterGroup = filterGroupsById[filter.filter_group || '']
+    if (filterGroup) {
+      filterGroup.addFilter({
+        viewFilterType,
+        filterValue,
+        field,
+        fieldType,
+      })
+    }
   }
+  return rootGroup.matches(values)
 }
 
 function _fullTextSearch(registry, field, value, activeSearchTerm) {

@@ -30,7 +30,7 @@
   display: grid;
   align-items: center;
   // 142px = 20 + 72 + 10 * 4 (gaps)
-  grid-template-columns: 20px 72px calc(50% - 132px) 22% 28%;
+  grid-template-columns: 72px calc(50% - 132px) 22% 28% 20px;
   padding: 6px 0;
   margin-left: 5px;
   column-gap: 10px;
@@ -51,8 +51,22 @@
   }
 }
 
+.filters__group-item {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.filters__group-filters {
+  width: 100%;
+  min-height: 20px;
+  background-color: $color-neutral-100;
+  padding-bottom: 10px;
+}
+
 .filters__remove {
-  color: $color-neutral-900;
+  color: $color-neutral-500;
   line-height: 30px;
   font-size: 18px;
   position: relative;
@@ -60,7 +74,7 @@
 
   &:hover {
     text-decoration: none;
-    color: $color-neutral-500;
+    color: $color-neutral-900;
   }
 
   .filters__item--loading & {
@@ -157,7 +171,7 @@
   text-align: center;
 }
 
-.filters_footer {
+.filters__footer {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -166,7 +180,7 @@
 
 .filters__add {
   display: inline-block;
-  margin: 12px 0 6px 4px;
+  margin: 12px 12px 6px 4px;
 
   @include flex-align-items(4px);
 

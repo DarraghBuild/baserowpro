@@ -66,19 +66,25 @@ class FilterBuilder:
         self._q_filters = Q()
         self._filter_type = filter_type
 
-    def filter(self, q: OptionallyAnnotatedQ) -> "FilterBuilder":
+    def filter(
+        self, q: Union["FilterBuilder", OptionallyAnnotatedQ]
+    ) -> "FilterBuilder":
         """
-        Adds a Q or AnnotatedQ filter into this builder to be joined together with
-        existing filters based on the builders `filter_type`.
+        Adds a Q, an AnnotatedQ or another FilterBuilder filter into this
+        builder to be joined together with existing filters based on the
+        builders `filter_type`.
 
-        Annotations on provided AnnotatedQ's are merged together with any previously
-        supplied annotations via dict unpacking and merging.
+        Annotations on provided AnnotatedQ's are merged together with any
+        previously supplied annotations via dict unpacking and merging.
 
         :param q: A Q or Annotated Q
         :return: The updated FilterBuilder with the provided filter applied.
         """
 
-        if isinstance(q, AnnotatedQ):
+        if isinstance(q, FilterBuilder):
+            self._annotate(q._annotation)
+            self._filter(q._q_filters)
+        elif isinstance(q, AnnotatedQ):
             self._annotate(q.annotation)
             self._filter(q.q)
         else:

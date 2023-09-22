@@ -6,6 +6,7 @@ from baserow.contrib.database.views.models import (
     View,
     ViewDecoration,
     ViewFilter,
+    ViewFilterGroup,
     ViewGroupBy,
     ViewSort,
 )
@@ -149,6 +150,11 @@ class DatabaseViewFilterObjectScopeType(ObjectScopeType):
 class DatabaseViewGroupByObjectScopeType(ObjectScopeType):
     type = "database_view_group"
     model_class = ViewGroupBy
+
+
+class DatabaseViewFilterGroupObjectScopeType(ObjectScopeType):
+    type = "database_view_filter_group"
+    model_class = ViewFilterGroup
 
     def get_parent_scope(self):
         return object_scope_type_registry.get("database_view")

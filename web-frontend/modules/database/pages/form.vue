@@ -231,6 +231,7 @@ export default {
             this.$registry,
             conditionType,
             conditions,
+            field.filter_groups,
             fieldsBefore,
             visibleValues
           )

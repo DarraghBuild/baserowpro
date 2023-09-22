@@ -17,6 +17,14 @@ export function populateFilter(filter) {
   return filter
 }
 
+export function populateFilterGroup(filterGroup) {
+  filterGroup._ = {
+    hover: false,
+    loading: false,
+  }
+  return filterGroup
+}
+
 export function populateSort(sort) {
   sort._ = {
     hover: false,
@@ -54,6 +62,14 @@ export function populateView(view, registry) {
     })
   } else {
     view.filters = []
+  }
+
+  if (Object.prototype.hasOwnProperty.call(view, 'filter_groups')) {
+    view.filter_groups.forEach((filterGroup) => {
+      populateFilterGroup(filterGroup)
+    })
+  } else {
+    view.filter_groups = []
   }
 
   if (Object.prototype.hasOwnProperty.call(view, 'sortings')) {
@@ -165,6 +181,25 @@ export const mutations = {
     const index = view.filters.findIndex((item) => item.id === id)
     if (index !== -1) {
       view.filters.splice(index, 1)
+    }
+  },
+  ADD_FILTER_GROUP(state, { view, filterGroup }) {
+    view.filter_groups.push(filterGroup)
+  },
+  FINALIZE_FILTER_GROUP(state, { view, oldId, id }) {
+    const index = view.filter_groups.findIndex((item) => item.id === oldId)
+    if (index !== -1) {
+      view.filter_groups[index].id = id
+      view.filter_groups[index]._.loading = false
+    }
+  },
+  UPDATE_FILTER_GROUP(state, { filterGroup, values }) {
+    Object.assign(filterGroup, filterGroup, values)
+  },
+  DELETE_FILTER_GROUP(state, { view, id }) {
+    const index = view.filter_groups.findIndex((item) => item.id === id)
+    if (index !== -1) {
+      view.filter_groups.splice(index, 1)
     }
   },
   DELETE_FIELD_FILTERS(state, { view, fieldId }) {
@@ -606,7 +641,14 @@ export const actions = {
    */
   async createFilter(
     { commit },
-    { view, field, values, emitEvent = true, readOnly = false }
+    {
+      view,
+      field,
+      values,
+      emitEvent = true,
+      readOnly = false,
+      filterGroupId = null,
+    }
   ) {
     // If the type is not provided we are going to choose the first available type.
     if (!Object.prototype.hasOwnProperty.call(values, 'type')) {
@@ -641,6 +683,10 @@ export const actions = {
     populateFilter(filter)
     filter.id = uuid()
     filter._.loading = !readOnly
+    if (filterGroupId != null) {
+      filter.filter_group = filterGroupId
+      values.filter_group = filterGroupId
+    }
 
     commit('ADD_FILTER', { view, filter })
 
@@ -662,6 +708,34 @@ export const actions = {
     }
 
     return { filter }
+  },
+  /**
+   * Creates a new filter group and adds it to the store right away. If the API
+   * call succeeds the filter group ID will be updated, but if it fails it will be
+   * removed from the store.
+   */
+  async createFilterGroup({ commit }, { view, readOnly = false }) {
+    const filterGroup = {}
+    populateFilterGroup(filterGroup)
+    filterGroup.id = uuid()
+    filterGroup._.loading = !readOnly
+    filterGroup.filter_type = 'AND'
+
+    commit('ADD_FILTER_GROUP', { view, filterGroup })
+
+    try {
+      const { data } = await FilterService(this.$client).createGroup(view.id)
+      commit('FINALIZE_FILTER_GROUP', {
+        view,
+        oldId: filterGroup.id,
+        id: data.id,
+      })
+    } catch (error) {
+      commit('DELETE_FILTER_GROUP', { view, id: filterGroup.id })
+      throw error
+    }
+
+    return { filterGroup }
   },
   /**
    * Forcefully create a new view filter without making a request to the backend.
@@ -708,6 +782,43 @@ export const actions = {
     }
   },
   /**
+   *
+   */
+  async updateFilterGroup(
+    { dispatch, commit },
+    { filterGroup, values, readOnly = false }
+  ) {
+    // commit('SET_FILTER_GROUP_LOADING', { filterGroup, value: true })
+
+    const oldValues = {}
+    const newValues = {}
+    Object.keys(values).forEach((name) => {
+      if (Object.prototype.hasOwnProperty.call(filterGroup, name)) {
+        oldValues[name] = filterGroup[name]
+        newValues[name] = values[name]
+      }
+    })
+
+    dispatch('forceUpdateFilterGroup', { filterGroup, values: newValues })
+
+    try {
+      if (!readOnly) {
+        await FilterService(this.$client).updateGroup(filterGroup.id, values)
+      }
+      // commit('SET_FILTER_GROUP_LOADING', { filterGroup, value: false })
+    } catch (error) {
+      dispatch('forceUpdateFilterGroup', { filterGroup, values: oldValues })
+      // commit('SET_FILTER_GROUP_LOADING', { filterGroup, value: false })
+      throw error
+    }
+  },
+  /**
+   * 
+   */
+  forceUpdateFilterGroup({ commit }, { filterGroup, values }) {
+    commit('UPDATE_FILTER_GROUP', { filterGroup, values })
+  },
+  /**
    * Forcefully update an existing view filter without making a request to the backend.
    */
   forceUpdateFilter({ commit }, { filter, values }) {
@@ -735,6 +846,36 @@ export const actions = {
    */
   forceDeleteFilter({ commit }, { view, filter }) {
     commit('DELETE_FILTER', { view, id: filter.id })
+  },
+  /**
+   * Deletes an existing filter. A request to the server will be made first and
+   * after that it will be deleted.
+   */
+  async deleteFilterGroup(
+    { dispatch, commit },
+    { view, filterGroup, readOnly = false, filters = [] }
+  ) {
+    // commit('SET_FILTER_GROUP_LOADING', { filterGroup, value: true })
+
+    try {
+      if (!readOnly) {
+        await FilterService(this.$client).deleteGroup(filterGroup.id)
+      }
+      
+      dispatch('forceDeleteFilterGroup', { view, filterGroup, filters })
+    } catch (error) {
+      // commit('SET_FILTER_LOADING', { filter, value: false })
+      throw error
+    }
+  },
+  /**
+   * Forcefully delete an existing filter without making a request to the backend.
+   */
+  forceDeleteFilterGroup({ commit }, { view, filterGroup, filters = [] }) {
+    filters.forEach((filter) => {
+      commit('DELETE_FILTER', { view, id: filter.id })
+    })
+    commit('DELETE_FILTER_GROUP', { view, id: filterGroup.id })
   },
   /**
    * When a field is deleted the related filters are also automatically deleted in the

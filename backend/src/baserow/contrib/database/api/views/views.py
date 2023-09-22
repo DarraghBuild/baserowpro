@@ -88,6 +88,7 @@ from baserow.contrib.database.views.exceptions import (
     ViewDoesNotExist,
     ViewDoesNotSupportFieldOptions,
     ViewFilterDoesNotExist,
+    ViewFilterGroupDoesNotExist,
     ViewFilterNotSupported,
     ViewFilterTypeNotAllowedForField,
     ViewGroupByDoesNotExist,
@@ -105,6 +106,7 @@ from baserow.contrib.database.views.handler import ViewHandler
 from baserow.contrib.database.views.models import (
     ViewDecoration,
     ViewFilter,
+    ViewFilterGroup,
     ViewGroupBy,
     ViewSort,
 )
@@ -132,6 +134,7 @@ from .errors import (
     ERROR_VIEW_DOES_NOT_EXIST,
     ERROR_VIEW_DOES_NOT_SUPPORT_FIELD_OPTIONS,
     ERROR_VIEW_FILTER_DOES_NOT_EXIST,
+    ERROR_VIEW_FILTER_GROUP_DOES_NOT_EXIST,
     ERROR_VIEW_FILTER_NOT_SUPPORTED,
     ERROR_VIEW_FILTER_TYPE_UNSUPPORTED_FIELD,
     ERROR_VIEW_GROUP_BY_DOES_NOT_EXIST,
@@ -147,6 +150,7 @@ from .errors import (
 )
 from .serializers import (
     CreateViewDecorationSerializer,
+    CreateViewFilterGroupSerializer,
     CreateViewFilterSerializer,
     CreateViewSerializer,
     CreateViewSortSerializer,
@@ -155,10 +159,12 @@ from .serializers import (
     PublicViewAuthRequestSerializer,
     PublicViewAuthResponseSerializer,
     UpdateViewDecorationSerializer,
+    UpdateViewFilterGroupSerializer,
     UpdateViewFilterSerializer,
     UpdateViewSerializer,
     UpdateViewSortSerializer,
     ViewDecorationSerializer,
+    ViewFilterGroupSerializer,
     ViewFilterSerializer,
     ViewSerializer,
     ViewSortSerializer,
@@ -788,7 +794,9 @@ class ViewFiltersView(APIView):
                     "ERROR_VIEW_FILTER_TYPE_UNSUPPORTED_FIELD",
                 ]
             ),
-            404: get_error_schema(["ERROR_VIEW_DOES_NOT_EXIST"]),
+            404: get_error_schema(
+                ["ERROR_VIEW_DOES_NOT_EXIST", "ERROR_VIEW_FILTER_GROUP_DOES_NOT_EXIST"]
+            ),
         },
     )
     @transaction.atomic
@@ -800,6 +808,7 @@ class ViewFiltersView(APIView):
             FieldNotInTable: ERROR_FIELD_NOT_IN_TABLE,
             ViewFilterNotSupported: ERROR_VIEW_FILTER_NOT_SUPPORTED,
             ViewFilterTypeNotAllowedForField: ERROR_VIEW_FILTER_TYPE_UNSUPPORTED_FIELD,
+            ViewFilterGroupDoesNotExist: ERROR_VIEW_FILTER_GROUP_DOES_NOT_EXIST,
         }
     )
     def post(self, request, data, view_id):
@@ -814,6 +823,7 @@ class ViewFiltersView(APIView):
             field,
             data["type"],
             data["value"],
+            data.get("filter_group", None),
         )
 
         serializer = ViewFilterSerializer(view_filter)
@@ -965,6 +975,193 @@ class ViewFilterView(APIView):
         action_type_registry.get_by_type(DeleteViewFilterActionType).do(
             request.user, view_filter
         )
+
+        return Response(status=204)
+
+
+class ViewFilterGroupsView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="view_id",
+                location=OpenApiParameter.PATH,
+                type=OpenApiTypes.INT,
+                description="Creates a filter group for the view related to "
+                "the provided value.",
+            ),
+            CLIENT_SESSION_ID_SCHEMA_PARAMETER,
+            CLIENT_UNDO_REDO_ACTION_GROUP_ID_SCHEMA_PARAMETER,
+        ],
+        tags=["Database table view filters"],
+        operation_id="create_database_table_view_filter_group",
+        description=(
+            "Creates a new filter group for the view related to the provided `view_id` "
+            "parameter if the authorized user has access to the related database's "
+            "workspace. When the rows of a view are requested, for example via the "
+            "`list_database_table_grid_view_rows` endpoint, then only the rows that "
+            "apply to all the filters are going to be returned. A filter compares the "
+            "value of a field to the value of a filter. It depends on the type how "
+            "values are going to be compared."
+        ),
+        request=CreateViewFilterGroupSerializer(),
+        responses={
+            200: ViewFilterGroupSerializer(),
+            400: get_error_schema(
+                [
+                    "ERROR_USER_NOT_IN_GROUP",
+                    "ERROR_REQUEST_BODY_VALIDATION",
+                ]
+            ),
+            404: get_error_schema(["ERROR_VIEW_DOES_NOT_EXIST"]),
+        },
+    )
+    @transaction.atomic
+    @validate_body(CreateViewFilterGroupSerializer)
+    @map_exceptions(
+        {
+            ViewDoesNotExist: ERROR_VIEW_DOES_NOT_EXIST,
+            UserNotInWorkspace: ERROR_USER_NOT_IN_GROUP,
+        }
+    )
+    def post(self, request, data, view_id):
+        """Creates a new filter for the provided view."""
+
+        view = ViewHandler().get_view(view_id)
+
+        view_filter_group = ViewHandler().create_filter_group(
+            request.user, view, **data
+        )
+
+        serializer = ViewFilterGroupSerializer(view_filter_group)
+        return Response(serializer.data)
+
+
+class ViewFilterGroupView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="view_filter_group_id",
+                location=OpenApiParameter.PATH,
+                type=OpenApiTypes.INT,
+                description="Returns the view filter related to the provided value.",
+            )
+        ],
+        tags=["Database table view filters"],
+        operation_id="get_database_table_view_filter_grup",
+        description=(
+            "Returns the existing view filter group if the authorized user has "
+            " access to the related database's workspace."
+        ),
+        responses={
+            200: ViewFilterGroupSerializer(),
+            400: get_error_schema(["ERROR_USER_NOT_IN_GROUP"]),
+            404: get_error_schema(["ERROR_VIEW_FILTER_GROUP_DOES_NOT_EXIST"]),
+        },
+    )
+    @map_exceptions(
+        {
+            ViewFilterGroupDoesNotExist: ERROR_VIEW_FILTER_GROUP_DOES_NOT_EXIST,
+            UserNotInWorkspace: ERROR_USER_NOT_IN_GROUP,
+        }
+    )
+    def get(self, request, view_filter_group_id):
+        """Selects a single filter group and responds with a serialized version."""
+
+        view_filter = ViewHandler().get_filter_group(request.user, view_filter_group_id)
+        serializer = ViewFilterSerializer(view_filter)
+        return Response(serializer.data)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="view_filter_id",
+                location=OpenApiParameter.PATH,
+                type=OpenApiTypes.INT,
+                description="Updates the view filter related to the provided value.",
+            ),
+            CLIENT_SESSION_ID_SCHEMA_PARAMETER,
+            CLIENT_UNDO_REDO_ACTION_GROUP_ID_SCHEMA_PARAMETER,
+        ],
+        tags=["Database table view filters"],
+        operation_id="update_database_table_view_filter",
+        description=(
+            "Updates the existing filter if the authorized user has access to the "
+            "related database's workspace."
+        ),
+        request=UpdateViewFilterGroupSerializer(),
+        responses={
+            200: ViewFilterGroupSerializer(),
+            400: get_error_schema(["ERROR_USER_NOT_IN_GROUP"]),
+            404: get_error_schema(["ERROR_VIEW_FILTER_GROUP_DOES_NOT_EXIST"]),
+        },
+    )
+    @transaction.atomic
+    @validate_body(UpdateViewFilterGroupSerializer)
+    @map_exceptions(
+        {
+            ViewFilterGroupDoesNotExist: ERROR_VIEW_FILTER_DOES_NOT_EXIST,
+            UserNotInWorkspace: ERROR_USER_NOT_IN_GROUP,
+        }
+    )
+    def patch(self, request, data, view_filter_group_id):
+        """Updates the view filter if the user belongs to the workspace."""
+
+        handler = ViewHandler()
+        view_filter_group = handler.get_filter_group(
+            request.user,
+            view_filter_group_id,
+            base_queryset=ViewFilterGroup.objects.select_for_update(of=("self",)),
+        )
+
+        view_filter_group = ViewHandler().update_filter_group(
+            request.user, view_filter_group, data["filter_type"]
+        )
+
+        serializer = ViewFilterGroupSerializer(view_filter_group)
+        return Response(serializer.data)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="view_filter_group_id",
+                location=OpenApiParameter.PATH,
+                type=OpenApiTypes.INT,
+                description="Deletes the filter related to the provided value.",
+            ),
+            CLIENT_SESSION_ID_SCHEMA_PARAMETER,
+            CLIENT_UNDO_REDO_ACTION_GROUP_ID_SCHEMA_PARAMETER,
+        ],
+        tags=["Database table view filters"],
+        operation_id="delete_database_table_view_filter",
+        description=(
+            "Deletes the existing filter group if the authorized user "
+            "has access to the related database's workspace."
+        ),
+        responses={
+            204: None,
+            400: get_error_schema(["ERROR_USER_NOT_IN_GROUP"]),
+            404: get_error_schema(["ERROR_VIEW_FILTER_GROUP_DOES_NOT_EXIST"]),
+        },
+    )
+    @transaction.atomic
+    @map_exceptions(
+        {
+            ViewFilterGroupDoesNotExist: ERROR_VIEW_FILTER_GROUP_DOES_NOT_EXIST,
+            UserNotInWorkspace: ERROR_USER_NOT_IN_GROUP,
+        }
+    )
+    def delete(self, request, view_filter_group_id):
+        """Deletes an existing filter if the user belongs to the workspace."""
+
+        view_filter_group = ViewHandler().get_filter_group(
+            request.user, view_filter_group_id
+        )
+
+        ViewHandler().delete_filter_group(request.user, view_filter_group)
 
         return Response(status=204)
 

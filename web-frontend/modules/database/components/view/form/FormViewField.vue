@@ -101,23 +101,36 @@
           >
             <ViewFieldConditionsForm
               :filters="fieldOptions.conditions"
+              :filter-groups="fieldOptions.filter_groups"
               :disable-filter="readOnly"
               :filter-type="fieldOptions.condition_type"
               :view="view"
               :fields="allowedConditionalFields"
               :read-only="readOnly"
-              @deleteFilter="deleteCondition(fieldOptions.conditions, $event)"
-              @updateFilter="updateCondition(fieldOptions.conditions, $event)"
+              @addFilter="addCondition(fieldOptions, $event)"
+              @deleteFilter="deleteCondition(fieldOptions, $event)"
+              @updateFilter="updateCondition(fieldOptions, $event)"
               @selectOperator="
                 $emit('updated-field-options', { condition_type: $event })
+              "
+              @deleteFilterGroup="deleteConditionGroup(fieldOptions, $event)"
+              @selectFilterGroupOperator="
+                updateConditionGroupOperator(fieldOptions, $event)
               "
             />
             <a
               class="form-view__add-condition"
-              @click="addCondition(fieldOptions.conditions)"
+              @click="addCondition(fieldOptions)"
             >
               <i class="iconoir-plus"></i>
               {{ $t('formViewField.addCondition') }}
+            </a>
+            <a
+              class="form-view__add-condition"
+              @click="addConditionGroup(fieldOptions)"
+            >
+              <i class="fas fa-plus"></i>
+              {{ $t('formViewField.addConditionGroup') }}
             </a>
           </div>
         </div>
@@ -233,7 +246,13 @@ export default {
     resetValue() {
       this.value = this.getFieldType().getEmptyValue(this.field)
     },
-    generateCompatibleCondition() {
+    createConditionGroup() {
+      return {
+        id: 0,
+        filter_type: 'AND',
+      }
+    },
+    generateCompatibleCondition(conditionGroupId = null) {
       const field =
         this.allowedConditionalFields[this.allowedConditionalFields.length - 1]
       const viewFilterTypes = this.$registry.getAll('viewFilter')
@@ -242,12 +261,16 @@ export default {
           return viewFilterType.fieldIsCompatible(field)
         }
       )
-      return {
+      const newCondition = {
         id: 0,
         field: field.id,
         type: compatibleType.type,
         value: '',
       }
+      if (conditionGroupId !== null) {
+        newCondition.filter_group = conditionGroupId
+      }
+      return newCondition
     },
     setShowWhenMatchingConditions(value) {
       const values = { show_when_matching_conditions: value }
@@ -256,26 +279,74 @@ export default {
       }
       this.$emit('updated-field-options', values)
     },
-    addCondition(conditions) {
+    // eslint-disable-next-line camelcase
+    addCondition({ conditions, filter_groups }, conditionGroupId = null) {
       const newConditions = conditions.slice()
-      newConditions.push(this.generateCompatibleCondition())
-      this.$emit('updated-field-options', { conditions: newConditions })
+      newConditions.push(this.generateCompatibleCondition(conditionGroupId))
+      this.$emit('updated-field-options', {
+        conditions: newConditions,
+        filter_groups,
+      })
     },
-    updateCondition(conditions, condition) {
+    addConditionGroup({ conditions, filter_groups: filterGroups }) {
+      const newConditionGroup = this.createConditionGroup()
+      const newConditionGroups = filterGroups.slice()
+      newConditionGroups.push(newConditionGroup)
+
+      const newConditions = conditions.slice()
+      newConditions.push(this.generateCompatibleCondition(newConditionGroup.id))
+      this.$emit('updated-field-options', {
+        filter_groups: newConditionGroups,
+        conditions: newConditions,
+      })
+    },
+    updateConditionGroupOperator(
+      // eslint-disable-next-line camelcase
+      { conditions, filter_groups },
+      { value, filterGroup }
+    ) {
+      // eslint-disable-next-line camelcase
+      filter_groups = clone(filter_groups.slice())
+      filter_groups.forEach((g, index) => {
+        if (g.id === filterGroup.id) {
+          Object.assign(filter_groups[index], { filter_type: value })
+        }
+      })
+      this.$emit('updated-field-options', { conditions, filter_groups })
+    },
+    // eslint-disable-next-line camelcase
+    updateCondition({ conditions, filter_groups }, condition) {
       conditions = clone(conditions.slice())
       conditions.forEach((c, index) => {
         if (c.id === condition.filter.id) {
           Object.assign(conditions[index], condition.values)
         }
       })
-      this.$emit('updated-field-options', { conditions })
+      this.$emit('updated-field-options', { conditions, filter_groups })
     },
-    deleteCondition(conditions, condition) {
+    // eslint-disable-next-line camelcase
+    deleteCondition({ conditions, filter_groups }, condition) {
       // We need to wait for the next tick, otherwise the condition is already deleted
       // before the event completes, resulting in a click outside of the field.
       this.$nextTick(() => {
         conditions = conditions.filter((c) => c.id !== condition.id)
-        this.$emit('updated-field-options', { conditions })
+        this.$emit('updated-field-options', { conditions, filter_groups })
+      })
+    },
+    // eslint-disable-next-line camelcase
+    deleteConditionGroup({ conditions, filter_groups }, filterGroup) {
+      // We need to wait for the next tick, otherwise the condition is already deleted
+      // before the event completes, resulting in a click outside of the field.
+      this.$nextTick(() => {
+        const conditionIdsToRemove = conditions
+          .filter((c) => c.filter_group === filterGroup.id)
+          .map((c) => c.id)
+        conditions = conditions.filter(
+          (c) => !conditionIdsToRemove.includes(c.id)
+        )
+        // eslint-disable-next-line camelcase
+        filter_groups = filter_groups.filter((g) => g.id !== filterGroup.id)
+        this.$emit('updated-field-options', { conditions, filter_groups })
       })
     },
     /**

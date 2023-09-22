@@ -12,21 +12,31 @@
     </div>
     <ViewFieldConditionsForm
       :filters="view.filters"
+      :filter-groups="view.filter_groups"
       :disable-filter="disableFilter"
       :filter-type="view.filter_type"
       :fields="fields"
       :view="view"
       :read-only="readOnly"
       class="filters__items"
+      @addFilter="addFilter($event)"
       @deleteFilter="deleteFilter($event)"
+      @deleteFilterGroup="deleteFilterGroup($event)"
       @updateFilter="updateFilter($event)"
       @selectOperator="updateView(view, { filter_type: $event })"
+      @selectFilterGroupOperator="updateFilterGroupOperator($event)"
     />
-    <div v-if="!disableFilter" class="filters_footer">
-      <a class="filters__add" @click.prevent="addFilter()">
-        <i class="filters__add-icon iconoir-plus"></i>
-        {{ $t('viewFilterContext.addFilter') }}</a
-      >
+    <div v-if="!disableFilter" class="filters__footer">
+      <div>
+        <a class="filters__add" @click.prevent="addFilter()">
+          <i class="filters__add-icon iconoir-plus"></i>
+          {{ $t('viewFilterContext.addFilter') }}</a
+        >
+        <a class="filters__add" @click.prevent="addFilterGroup()">
+          <i class="filters__add-icon iconoir-plus"></i>
+          {{ $t('viewFilterContext.addFilterGroup') }}</a
+        >
+      </div>
       <div v-if="view.filters.length > 0">
         <SwitchInput
           :value="view.filters_disabled"
@@ -72,7 +82,7 @@ export default {
     },
   },
   methods: {
-    async addFilter(values) {
+    async addFilter(filterGroupId = null) {
       try {
         const field = this.getFirstCompatibleField(this.fields)
         if (field === undefined) {
@@ -93,9 +103,25 @@ export default {
             },
             emitEvent: false,
             readOnly: this.readOnly,
+            filterGroupId,
           })
           this.$emit('changed')
         }
+      } catch (error) {
+        notifyIf(error, 'view')
+      }
+    },
+    async addFilterGroup() {
+      try {
+        const { filterGroup } = await this.$store.dispatch(
+          'view/createFilterGroup',
+          {
+            view: this.view,
+            readOnly: this.readOnly,
+          }
+        )
+        await this.addFilter(filterGroup.id)
+        this.$emit('changed')
       } catch (error) {
         notifyIf(error, 'view')
       }
@@ -111,6 +137,18 @@ export default {
         await this.$store.dispatch('view/deleteFilter', {
           view: this.view,
           filter,
+          readOnly: this.readOnly,
+        })
+        this.$emit('changed')
+      } catch (error) {
+        notifyIf(error, 'view')
+      }
+    },
+    async deleteFilterGroup(filterGroup) {
+      try {
+        await this.$store.dispatch('view/deleteFilterGroup', {
+          view: this.view,
+          filterGroup,
           readOnly: this.readOnly,
         })
         this.$emit('changed')
@@ -153,6 +191,22 @@ export default {
       }
 
       this.$store.dispatch('view/setItemLoading', { view, value: false })
+    },
+    async updateFilterGroupOperator({ filterGroup, value }) {
+      // this.$store.dispatch('view/setGroupLoading', { view, value: true })
+
+      try {
+        await this.$store.dispatch('view/updateFilterGroup', {
+          filterGroup,
+          values: { filter_type: value },
+          readOnly: this.readOnly,
+        })
+        this.$emit('changed')
+      } catch (error) {
+        notifyIf(error, 'view')
+      }
+
+      // this.$store.dispatch('view/setItemLoading', { view, value: false })
     },
   },
 }

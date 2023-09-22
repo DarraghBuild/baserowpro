@@ -296,6 +296,7 @@
     },
     "conditionalColorValueProviderForm": {
         "addCondition": "add condition",
+        "addConditionGroup": "add condition group",
         "colorAlwaysApply": "This color applies by default. You can add conditions by clicking on the \"Add condition\" button.",
         "addColor": "add color"
     },

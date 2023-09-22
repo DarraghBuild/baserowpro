@@ -432,6 +432,7 @@
     },
     "viewFilterContext": {
         "addFilter": "Add filter",
+        "addFilterGroup": "Add filter group",
         "disableAllFilters": "all disabled",
         "noFilterTitle": "You have not yet created a filter",
         "noFilterText": "Filters allow you to show rows that apply to your conditions.",
@@ -705,7 +706,8 @@
         "required": "required",
         "descriptionPlaceholder": "Description",
         "showWhenMatchingConditions": "show when conditions are met",
-        "addCondition": "Add condition"
+        "addCondition": "Add condition",
+        "addConditionGroup": "Add condition group"
     },
     "duplicateFieldContext": {
         "duplicate": "Duplicate field",

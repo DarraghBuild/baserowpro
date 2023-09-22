@@ -55,6 +55,7 @@ class CreateViewFilterActionType(UndoableActionType):
         view_filter_id: int
         filter_type: str
         filter_value: str
+        filter_group_id: Optional[int] = None
 
     @classmethod
     def do(
@@ -64,6 +65,7 @@ class CreateViewFilterActionType(UndoableActionType):
         field: Field,
         filter_type: str,
         filter_value: str,
+        filter_group_id: Optional[int] = None,
     ) -> ViewFilter:
         """
         Creates a new filter for the provided view.
@@ -81,7 +83,7 @@ class CreateViewFilterActionType(UndoableActionType):
         """
 
         view_filter = ViewHandler().create_filter(
-            user, view, field, filter_type, filter_value
+            user, view, field, filter_type, filter_value, filter_group_id
         )
 
         workspace = view.table.database.workspace
@@ -97,6 +99,7 @@ class CreateViewFilterActionType(UndoableActionType):
             view_filter.id,
             filter_type,
             filter_value,
+            filter_group_id,
         )
         cls.register_action(user, params, cls.scope(view.id), workspace)
         return view_filter

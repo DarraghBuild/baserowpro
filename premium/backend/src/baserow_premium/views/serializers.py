@@ -33,6 +33,25 @@ class ConditionalColorValueProviderConfColorFilterSerializer(serializers.Seriali
         default="",
         help_text=ViewFilter._meta.get_field("field").help_text,
     )
+    filter_group = serializers.CharField(
+        allow_null=True,
+        required=False,
+        help_text=(
+            "The id of the filter group this filter belongs to. "
+            "If this is null, the filter is not part of a filter group."
+        ),
+    )
+
+
+class ConditionalColorValueProviderConfColorFilterGroupSerializer(
+    serializers.Serializer
+):
+    id = serializers.CharField(help_text="A unique identifier for this condition.")
+    filter_type = serializers.ChoiceField(
+        choices=FILTER_TYPES,
+        default="AND",
+        help_text="The boolean operator used to group all conditions.",
+    )
 
 
 class ConditionalColorValueProviderConfColorSerializer(serializers.Serializer):
@@ -46,6 +65,13 @@ class ConditionalColorValueProviderConfColorSerializer(serializers.Serializer):
             "A list of conditions that the row must meet to get the selected color. "
             "This list of conditions can be empty, in that case, "
             "this color will always match the row values."
+        ),
+    )
+    filter_groups = ConditionalColorValueProviderConfColorFilterGroupSerializer(
+        required=False,
+        many=True,
+        help_text=(
+            "A list of filter groups that the row must meet to get the selected color. "
         ),
     )
     operator = serializers.ChoiceField(

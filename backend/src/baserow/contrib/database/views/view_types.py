@@ -5,7 +5,7 @@ from zipfile import ZipFile
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.core.files.storage import Storage
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.urls import include, path
 
 from rest_framework.serializers import PrimaryKeyRelatedField
@@ -44,6 +44,7 @@ from .models import (
     FormView,
     FormViewFieldOptions,
     FormViewFieldOptionsCondition,
+    FormViewFieldOptionsConditionGroup,
     GalleryView,
     GalleryViewFieldOptions,
     GridView,
@@ -623,15 +624,70 @@ class FormViewType(ViewType):
                 field_option__in=updated_field_options,
             ).select_related("field_option")
         }
+        existing_condition_groups = {
+            g.id: g
+            for g in FormViewFieldOptionsConditionGroup.objects.filter(
+                field_option__in=updated_field_options,
+            )
+        }
 
+        condition_groups_to_create = []
+        condition_group_temp_ids_to_create = []
+        condition_groups_to_update = []
+        condition_group_ids_to_delete = set(existing_condition_groups.keys())
         conditions_to_create = []
         conditions_to_update = []
         condition_ids_to_delete = set(existing_conditions.keys())
 
         for field_id, options in field_options.items():
+            if "filter_groups" not in options:
+                continue
+            numeric_field_id = int(field_id)
+            updated_field_option_instance = updated_field_options_by_field_id[
+                numeric_field_id
+            ]
+
+            for group in options["filter_groups"]:
+                # To avoid another query, we find the existing form condition group
+                # in the prefetched groups.
+                existing_group = existing_condition_groups.get(group["id"], None)
+                if (
+                    existing_group is not None
+                    and existing_group.field_option.field_id == numeric_field_id
+                ):
+                    existing_group.filter_type = group["filter_type"]
+                    condition_groups_to_update.append(existing_group)
+                    condition_group_ids_to_delete.remove(existing_group.id)
+                else:
+                    condition_group_temp_ids_to_create.append(group["id"])
+                    condition_groups_to_create.append(
+                        FormViewFieldOptionsConditionGroup(
+                            field_option=updated_field_option_instance,
+                            filter_type=group["filter_type"],
+                        )
+                    )
+
+        condition_groups_created = []
+        if len(condition_groups_to_create) > 0:
+            condition_groups_created = (
+                FormViewFieldOptionsConditionGroup.objects.bulk_create(
+                    condition_groups_to_create
+                )
+            )
+
+        if len(condition_groups_to_update) > 0:
+            FormViewFieldOptionsConditionGroup.objects.bulk_update(
+                condition_groups_to_update, ["filter_type"]
+            )
+
+        if len(condition_group_ids_to_delete) > 0:
+            FormViewFieldOptionsConditionGroup.objects.filter(
+                id__in=condition_group_ids_to_delete
+            ).delete()
+
+        for field_id, options in field_options.items():
             if "conditions" not in options:
                 continue
-
             numeric_field_id = int(field_id)
             updated_field_option_instance = updated_field_options_by_field_id[
                 numeric_field_id
@@ -647,6 +703,16 @@ class FormViewType(ViewType):
                 # To avoid another query, we find the existing form condition in the
                 # prefetched conditions.
                 existing_condition = existing_conditions.get(condition["id"], None)
+                filter_group_id = condition.get("filter_group", None)
+                if filter_group_id is not None:
+                    if filter_group_id in condition_group_temp_ids_to_create:
+                        filter_group_id = condition_groups_created[
+                            condition_group_temp_ids_to_create.index(filter_group_id)
+                        ].id
+                    elif filter_group_id in existing_condition_groups:
+                        filter_group_id = existing_condition_groups[filter_group_id].id
+                    else:
+                        raise ValueError("Invalid filter group id.")
                 if (
                     existing_condition is not None
                     and existing_condition.field_option.field_id == numeric_field_id
@@ -654,6 +720,7 @@ class FormViewType(ViewType):
                     existing_condition.field_id = condition["field"]
                     existing_condition.type = condition["type"]
                     existing_condition.value = condition["value"]
+                    existing_condition.filter_group_id = filter_group_id
                     conditions_to_update.append(existing_condition)
                     condition_ids_to_delete.remove(existing_condition.id)
                 else:
@@ -663,6 +730,7 @@ class FormViewType(ViewType):
                             field_id=condition["field"],
                             type=condition["type"],
                             value=condition["value"],
+                            filter_group_id=filter_group_id,
                         )
                     )
 
@@ -678,6 +746,11 @@ class FormViewType(ViewType):
             FormViewFieldOptionsCondition.objects.filter(
                 id__in=condition_ids_to_delete
             ).delete()
+
+        # Delete all groups that have no conditions
+        FormViewFieldOptionsConditionGroup.objects.filter(
+            field_option__field_id__in=field_ids
+        ).annotate(count=Count("conditions")).filter(count=0).delete()
 
     def export_serialized(
         self,
