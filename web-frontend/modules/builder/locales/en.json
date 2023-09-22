@@ -288,5 +288,8 @@
     },
     "eventTypes": {
         "clickLabel": "On click"
+    },
+    "workflowActionTypes": {
+      "notificationLabel": "Show Notification"
     }
 }

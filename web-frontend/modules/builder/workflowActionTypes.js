@@ -9,4 +9,8 @@ export class NotificationWorkflowActionType extends WorkflowActionType {
   get form() {
     return NotificationWorkflowActionForm
   }
+
+  get label() {
+    return this.app.i18n.t('workflowActionTypes.notificationLabel')
+  }
 }

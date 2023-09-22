@@ -9,7 +9,10 @@
       </div>
     </template>
     <template #default>
-      <WorkflowAction />
+      <WorkflowAction
+        class="margin-top-2"
+        :available-workflow-actions="availableWorkflowActions"
+      />
     </template>
   </Expandable>
 </template>
@@ -24,6 +27,10 @@ export default {
   props: {
     event: {
       type: Event,
+      required: true,
+    },
+    availableWorkflowActions: {
+      type: Array,
       required: true,
     },
   },

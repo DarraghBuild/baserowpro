@@ -4,4 +4,8 @@ export class WorkflowActionType extends Registerable {
   get form() {
     return null
   }
+
+  get label() {
+    return null
+  }
 }
