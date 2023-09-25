@@ -21,6 +21,7 @@ from .user import UserFixtures
 from .user_file import UserFileFixtures
 from .view import ViewFixtures
 from .webhook import TableWebhookFixture
+from .workflow_action import WorkflowActionFixture
 from .workspace import WorkspaceFixtures
 
 
@@ -49,6 +50,7 @@ class Fixtures(
     ServiceFixtures,
     DataSourceFixtures,
     NotificationsFixture,
+    WorkflowActionFixture,
 ):
     def __init__(self, fake=None):
         self.fake = fake
