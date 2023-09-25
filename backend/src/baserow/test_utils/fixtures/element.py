@@ -1,10 +1,10 @@
 from baserow.contrib.builder.elements.models import (
+    ButtonElement,
     ColumnElement,
     HeadingElement,
     ImageElement,
     LinkElement,
     ParagraphElement,
-    ButtonElement,
 )
 
 

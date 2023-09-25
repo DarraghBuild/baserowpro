@@ -3,7 +3,6 @@ from baserow.core.registry import (
     ModelRegistryMixin,
     Registry,
 )
-from baserow.core.workflow_actions.registries import WorkflowActionType
 
 
 class BuilderWorkflowActionTypeRegistry(

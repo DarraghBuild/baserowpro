@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import cast, Type
-
-from django.db.models import QuerySet
+from typing import Type, cast
 
 from baserow.core.utils import extract_allowed
 from baserow.core.workflow_actions.models import WorkflowAction
@@ -42,6 +40,7 @@ class WorkflowActionHandler(ABC):
         :param kwargs: Any fields that need to be set for that specific type
         :return: The created workflow action
         """
+
         allowed_values = extract_allowed(kwargs, workflow_action_type.allowed_fields)
 
         model_class = cast(WorkflowAction, workflow_action_type.model_class)

@@ -4,8 +4,8 @@ from baserow.contrib.builder.workflow_actions.handler import (
     BuilderWorkflowActionHandler,
 )
 from baserow.contrib.builder.workflow_actions.models import (
-    EventTypes,
     BuilderWorkflowAction,
+    EventTypes,
 )
 from baserow.contrib.builder.workflow_actions.workflow_action_types import (
     NotificationWorkflowActionType,

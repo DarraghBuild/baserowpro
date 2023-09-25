@@ -1,5 +1,3 @@
-from abc import ABC
-
 from django.db import models
 
 from baserow.core.mixins import (
