@@ -1,11 +1,37 @@
-from typing import cast
+from abc import ABC, abstractmethod
+from typing import cast, Type
+
+from django.db.models import QuerySet
 
 from baserow.core.utils import extract_allowed
 from baserow.core.workflow_actions.models import WorkflowAction
 from baserow.core.workflow_actions.registries import WorkflowActionType
 
 
-class WorkflowActionHandler:
+class WorkflowActionHandler(ABC):
+    """
+    This is an abstract handler, each module that wants to use workflow actions will
+    need to implement their own handler.
+    """
+
+    @property
+    @abstractmethod
+    def model(self) -> Type[WorkflowAction]:
+        pass
+
+    def get_workflow_action(self, workflow_action_id: int) -> WorkflowAction:
+        """
+        Returns a workflow action from the database.
+
+        The queryset here is not optional since every module needs to provide their
+        own model at least.
+
+        :param workflow_action_id: The ID of the workflow action.
+        :return: The workflow action instance.
+        """
+
+        return self.model.objects.get(id=workflow_action_id)
+
     def create_workflow_action(
         self, workflow_action_type: WorkflowActionType, **kwargs
     ) -> WorkflowAction:
