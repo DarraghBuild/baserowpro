@@ -74,3 +74,23 @@ def test_get_workflow_action(data_fixture):
     )
 
     assert workflow_action_fetched.id == workflow_action.id
+
+
+@pytest.mark.django_db
+def test_get_workflow_actions(data_fixture):
+    element = data_fixture.create_builder_button_element()
+    event = EventTypes.CLICK
+    workflow_action_one = data_fixture.create_notification_workflow_action(
+        element=element, event=event
+    )
+    workflow_action_two = data_fixture.create_notification_workflow_action(
+        element=element, event=event
+    )
+
+    [
+        workflow_action_one_fetched,
+        workflow_action_two_fetched,
+    ] = BuilderWorkflowActionHandler().get_workflow_actions(element)
+
+    assert workflow_action_one_fetched.id == workflow_action_one.id
+    assert workflow_action_two_fetched.id == workflow_action_two.id
