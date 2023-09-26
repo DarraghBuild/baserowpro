@@ -317,7 +317,7 @@ opentelemetry-util-http==0.38b0
     #   opentelemetry-instrumentation-django
     #   opentelemetry-instrumentation-requests
     #   opentelemetry-instrumentation-wsgi
-pillow==9.4.0
+pillow==10.0.1
     # via -r base.in
 posthog==3.0.1
     # via -r base.in
