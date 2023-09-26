@@ -238,6 +238,10 @@ export const registerRealtimeEvents = (realtime) => {
     }
   })
 
+  realtime.registerEvent('row_history_updated', (context, data) => {
+    // TODO:
+  })
+
   realtime.registerEvent('view_created', ({ store }, data) => {
     if (store.getters['table/getSelectedId'] === data.view.table_id) {
       store.dispatch('view/forceCreate', { data: data.view })

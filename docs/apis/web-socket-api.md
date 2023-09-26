@@ -154,6 +154,7 @@ are subscribed to the page.
 * `rows_deleted`
 * `before_rows_update`
 * `before_rows_delete`
+* `row_history_updated`
 * `view_created`
 * `view_updated`
 * `view_deleted`

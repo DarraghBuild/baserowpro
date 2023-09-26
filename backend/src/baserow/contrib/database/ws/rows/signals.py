@@ -167,3 +167,12 @@ class RealtimeRowMessages:
             "type": "row_orders_recalculated",
             "table_id": table_id,
         }
+
+
+@receiver(row_signals.row_history_updated)
+def row_history_updated(
+    sender,
+    **kwargs,
+):
+    # TODO:
+    ...

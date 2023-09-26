@@ -11,8 +11,9 @@ from baserow.contrib.database.fields.registries import field_type_registry
 from baserow.core.action.signals import ActionCommandType, action_done
 from baserow.core.telemetry.utils import baserow_trace
 
-from .actions import UpdateRowsActionType
-from .models import RowHistory
+from baserow.contrib.database.rows.actions import UpdateRowsActionType
+from baserow.contrib.database.rows.models import RowHistory
+from baserow.contrib.database.rows.signals import row_history_updated
 
 tracer = trace.get_tracer(__name__)
 
@@ -156,6 +157,8 @@ class RowHistoryHandler:
 
         if row_history_entries:
             RowHistory.objects.bulk_create(row_history_entries)
+            # TODO: row_history_updated.send(sender, ...)
+            # on_commit ?
 
     @classmethod
     @baserow_trace(tracer)
