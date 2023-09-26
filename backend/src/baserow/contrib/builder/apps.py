@@ -30,12 +30,16 @@ class BuilderConfig(AppConfig):
         from baserow.contrib.builder.pages.object_scopes import (
             BuilderPageObjectScopeType,
         )
+        from baserow.contrib.builder.workflow_actions.object_scopes import (
+            BuilderWorkflowActionScopeType,
+        )
 
         object_scope_type_registry.register(BuilderObjectScopeType())
         object_scope_type_registry.register(BuilderPageObjectScopeType())
         object_scope_type_registry.register(BuilderElementObjectScopeType())
         object_scope_type_registry.register(BuilderDomainObjectScopeType())
         object_scope_type_registry.register(BuilderDataSourceObjectScopeType())
+        object_scope_type_registry.register(BuilderWorkflowActionScopeType())
 
         from baserow.contrib.builder.operations import (
             ListDomainsBuilderOperationType,
@@ -127,6 +131,22 @@ class BuilderConfig(AppConfig):
         operation_type_registry.register(ReadElementOperationType())
         operation_type_registry.register(UpdateElementOperationType())
         operation_type_registry.register(DeleteElementOperationType())
+
+        from baserow.contrib.builder.workflow_actions.operations import (
+            ListBuilderWorkflowActionsElementOperationType,
+            CreateBuilderWorkflowActionOperationType,
+            DeleteBuilderWorkflowActionOperationType,
+            UpdateBuilderWorkflowActionOperationType,
+            ReadBuilderWorkflowActionOperationType,
+        )
+
+        operation_type_registry.register(
+            ListBuilderWorkflowActionsElementOperationType()
+        )
+        operation_type_registry.register(CreateBuilderWorkflowActionOperationType())
+        operation_type_registry.register(DeleteBuilderWorkflowActionOperationType())
+        operation_type_registry.register(UpdateBuilderWorkflowActionOperationType())
+        operation_type_registry.register(ReadBuilderWorkflowActionOperationType())
 
         from baserow.core.registries import permission_manager_type_registry
 

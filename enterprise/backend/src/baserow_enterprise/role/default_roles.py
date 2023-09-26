@@ -1,6 +1,13 @@
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
+from baserow.contrib.builder.workflow_actions.operations import (
+    ListBuilderWorkflowActionsElementOperationType,
+    ReadBuilderWorkflowActionOperationType,
+    UpdateBuilderWorkflowActionOperationType,
+    DeleteBuilderWorkflowActionOperationType,
+    CreateBuilderWorkflowActionOperationType,
+)
 from baserow_premium.row_comments.operations import (
     CreateRowCommentsOperationType,
     DeleteRowCommentsOperationType,
@@ -274,6 +281,8 @@ default_roles[VIEWER_ROLE_UID].extend(
         ReadViewSortOperationType,
         ListViewGroupByOperationType,
         ReadViewGroupByOperationType,
+        ListBuilderWorkflowActionsElementOperationType,
+        ReadBuilderWorkflowActionOperationType,
     ]
 )
 default_roles[COMMENTER_ROLE_UID].extend(
@@ -300,6 +309,7 @@ default_roles[EDITOR_ROLE_UID].extend(
         RestoreDatabaseRowOperationType,
         ListTeamSubjectsOperationType,
         ReadTeamSubjectOperationType,
+        UpdateBuilderWorkflowActionOperationType,
     ]
 )
 default_roles[BUILDER_ROLE_UID].extend(
@@ -389,6 +399,8 @@ default_roles[BUILDER_ROLE_UID].extend(
         ReadDataSourceOperationType,
         UpdateDataSourceOperationType,
         DispatchDataSourceOperationType,
+        DeleteBuilderWorkflowActionOperationType,
+        CreateBuilderWorkflowActionOperationType,
     ]
 )
 default_roles[ADMIN_ROLE_UID].extend(
