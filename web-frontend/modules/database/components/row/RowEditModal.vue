@@ -250,6 +250,7 @@ export default {
           row,
         })
       }
+      // TODO: resubscribe?
     },
   },
   methods: {
@@ -263,10 +264,18 @@ export default {
         exists: !!row,
       })
       this.getRootModal().show(...args)
+      this.$realtime.subscribe('row', {
+        table_id: this.table.id,
+        row_id: this.rowId,
+      })
     },
     hide(...args) {
       this.$store.dispatch('rowModal/clear', { componentId: this._uid })
       this.getRootModal().hide(...args)
+      this.$realtime.unsubscribe('row', {
+        table_id: this.table.id,
+        row_id: this.rowId,
+      })
     },
     /**
      * Because the modal can't update values by himself, an event will be called to

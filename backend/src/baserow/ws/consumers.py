@@ -1,7 +1,69 @@
+from typing import Optional
+from operator import attrgetter
+from dataclasses import dataclass
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from django.contrib.auth.models import AbstractUser
+from baserow.ws.registries import page_registry, PageType
 
-from baserow.ws.registries import page_registry
+
+@dataclass
+class PageContext:
+    """
+    The context about a page and a user when the user
+    intends to be subscribed or unsubscribed from
+    getting changes relevant to the page.
+    """
+    
+    web_socket_id: str
+    user: Optional[AbstractUser]
+    page_type: PageType
+    parameters: dict[str, any]
+
+
+@dataclass
+class PageScope:
+    """
+    Represents one page that a user can be subscribed to.
+    Different page parameters can be used to represent
+    subscriptions to the same page types with different 
+    values (e.g. being subscribed to a table page with 
+    table_id=1 or table_id=2)
+    """
+    
+    page_type: str
+    page_parameters: dict[str, any]
+
+
+class SubscribedPages:
+    """
+    Holds information about all pages a user is subscribed to.
+    """
+
+    def __init__(self):
+        self.pages: list[PageScope] = []
+
+    def add(self, page_scope: PageScope):
+        if page_scope not in self.pages:
+            print()
+            print("adding")
+            print(page_scope)
+            print()
+            self.pages.append(page_scope)
+
+    def remove(self, page_scope: PageScope):
+        if page_scope in self.pages:
+            print()
+            print("removing")
+            print(page_scope)
+            print()
+            self.pages.remove(page_scope)
+
+    def __len__(self):
+        return len(self.pages)
+    
+    def __iter__(self):
+        return iter(self.pages)
 
 
 class CoreConsumer(AsyncJsonWebsocketConsumer):
@@ -23,13 +85,39 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
             await self.close()
             return
 
+        self.scope["pages"] = SubscribedPages()
         await self.channel_layer.group_add("users", self.channel_name)
 
     async def receive_json(self, content, **parameters):
         if "page" in content:
-            await self.add_to_page(content)
+            await self.add_page_scope(content)
+        if "remove_page" in content:
+            await self.remove_page_scope(content)
 
-    async def add_to_page(self, content):
+    async def get_page_context(self, content, page_name_attr: str) -> PageContext:
+        user = self.scope["user"]
+        web_socket_id = self.scope["web_socket_id"]
+
+        if not user:
+            return
+
+        try:
+            page_type = page_registry.get(content[page_name_attr])
+        except page_registry.does_not_exist_exception_class:
+            return
+
+        parameters = {
+            parameter: content.get(parameter) for parameter in page_type.parameters
+        }
+
+        return PageContext(
+            page_type=page_type,
+            parameters=parameters,
+            user=user,
+            web_socket_id=web_socket_id,
+        )
+
+    async def add_page_scope(self, content):
         """
         Subscribes the connection to a page abstraction. Based on the provided the page
         type we can figure out to which page the connection wants to subscribe to. This
@@ -41,24 +129,13 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         :type content: dict
         """
 
-        user = self.scope["user"]
-        web_socket_id = self.scope["web_socket_id"]
+        context = await self.get_page_context(content, "page")
+        user, web_socket_id, page_type, parameters = attrgetter(
+            "user", "web_socket_id", "page_type", "parameters"
+        )(context)
 
         if not user:
             return
-
-        # If the user has already joined another page we need to discard that
-        # page first before we can join a new one.
-        await self.discard_current_page()
-
-        try:
-            page_type = page_registry.get(content["page"])
-        except page_registry.does_not_exist_exception_class:
-            return
-
-        parameters = {
-            parameter: content.get(parameter) for parameter in page_type.parameters
-        }
 
         can_add = await database_sync_to_async(page_type.can_add)(
             user, web_socket_id, **parameters
@@ -69,37 +146,35 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
 
         group_name = page_type.get_group_name(**parameters)
         await self.channel_layer.group_add(group_name, self.channel_name)
-        self.scope["page"] = page_type
-        self.scope["page_parameters"] = parameters
+
+        page_scope = PageScope(page_type=page_type, page_parameters=parameters)
+        self.scope["pages"].add(page_scope)
 
         await self.send_json(
             {"type": "page_add", "page": page_type.type, "parameters": parameters}
         )
 
-    async def discard_current_page(self, send_confirmation=True):
-        """
-        If the user has subscribed to another page then they will be unsubscribed from
-        the last page.
-        """
+    async def remove_page_scope(self, content, send_confirmation=True):
+        context = await self.get_page_context(content, "remove_page")
+        user, page_type, parameters = attrgetter(
+            "user", "page_type", "parameters"
+        )(context)
 
-        page = self.scope.get("page")
-        if not page:
+        if not user:
             return
 
-        page_type = page.type
-        page_parameters = self.scope["page_parameters"]
-
-        group_name = page.get_group_name(**self.scope["page_parameters"])
+        group_name = page_type.get_group_name(**parameters)
         await self.channel_layer.group_discard(group_name, self.channel_name)
-        del self.scope["page"]
-        del self.scope["page_parameters"]
+
+        page_scope = PageScope(page_type=page_type, page_parameters=parameters)
+        self.scope["pages"].remove(page_scope)
 
         if send_confirmation:
             await self.send_json(
                 {
                     "type": "page_discard",
                     "page": page_type,
-                    "parameters": page_parameters,
+                    "parameters": parameters,
                 }
             )
 
@@ -170,13 +245,28 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         user_ids_to_remove = event["user_ids_to_remove"]
         user_id = self.scope["user"].id
 
-        page = self.scope.get("page")
-        if not page:
+        if len(self.scope["pages"]) == 0:
             return
 
         if user_id in user_ids_to_remove:
-            return await self.discard_current_page(True)
+            for page_scope in self.scope["pages"]:
+                content = {
+                    "user": self.scope["user"],
+                    "web_socket_id": self.scope["web_socket_id"],
+                    "remove_page": page_scope.page,
+                    "parameters": page_scope.page_parameters,
+                }
+                await self.remove_page_scope(content, send_confirmation=True)
 
     async def disconnect(self, message):
-        await self.discard_current_page(send_confirmation=False)
+        #await self.discard_current_page(send_confirmation=False)
+        for page_scope in self.scope["pages"]:
+                content = {
+                    "user": self.scope["user"],
+                    "web_socket_id": self.scope["web_socket_id"],
+                    "remove_page": page_scope.page,
+                    "parameters": page_scope.page_parameters,
+                }
+                await self.remove_page_scope(content, send_confirmation=True)
+
         await self.channel_layer.group_discard("users", self.channel_name)

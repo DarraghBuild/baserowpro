@@ -11,4 +11,4 @@ rows_deleted = Signal()
 
 row_orders_recalculated = Signal()
 
-row_history_updated = Signal()
+rows_history_updated = Signal()

@@ -83,7 +83,4 @@ class PageRegistry(Registry):
     name = "ws_page"
 
 
-
-
-
 page_registry = PageRegistry()

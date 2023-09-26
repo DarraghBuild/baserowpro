@@ -13,7 +13,7 @@ from baserow.core.telemetry.utils import baserow_trace
 
 from baserow.contrib.database.rows.actions import UpdateRowsActionType
 from baserow.contrib.database.rows.models import RowHistory
-from baserow.contrib.database.rows.signals import row_history_updated
+from baserow.contrib.database.rows.signals import rows_history_updated
 
 tracer = trace.get_tracer(__name__)
 
@@ -126,6 +126,7 @@ class RowHistoryHandler:
             before_values, after_values = after_values, before_values
 
         row_history_entries = []
+        row_history_entries_realtime = {}
         for i, after in enumerate(after_values):
             before = before_values[i]
             fields_metadata = params.updated_fields_metadata_by_row_id[after["id"]]
@@ -154,11 +155,17 @@ class RowHistoryHandler:
                 diff,
             )
             row_history_entries.append(entry)
+            row_history_entries_realtime[row_id] = {
+                    'fields_metadata': changed_fields_metadata,
+                    "before_values": diff.before_values,
+                    "after_values": diff.after_values,
+            }
 
         if row_history_entries:
             RowHistory.objects.bulk_create(row_history_entries)
-            # TODO: row_history_updated.send(sender, ...)
-            # on_commit ?
+            rows_history_updated.send(
+                RowHistoryHandler, table_id=params.table_id, row_history_entries=row_history_entries_realtime
+            )
 
     @classmethod
     @baserow_trace(tracer)

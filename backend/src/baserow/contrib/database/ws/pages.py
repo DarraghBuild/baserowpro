@@ -14,7 +14,7 @@ from baserow.contrib.database.views.registries import view_type_registry
 from baserow.core.exceptions import PermissionDenied, UserNotInWorkspace
 from baserow.core.handler import CoreHandler
 from baserow.ws.registries import PageType
-
+from baserow.ws.tasks import broadcast_to_channel_group
 
 class TablePageType(PageType):
     type = "table"
@@ -85,3 +85,53 @@ class PublicViewPageType(PageType):
     def broadcast_to_views(self, payload, view_slugs):
         for view_slug in view_slugs:
             self.broadcast(payload, ignore_web_socket_id=None, slug=view_slug)
+
+
+class RowPageType(PageType):
+    type = "row"
+    parameters = ["table_id", "row_id"]
+
+    def can_add(self, user, web_socket_id, table_id, **kwargs):
+        """
+        The user should only have access to this page if the table exists and if they
+        have access to the table.
+        """
+
+        if not table_id:
+            return False
+
+        try:
+            handler = TableHandler()
+            table = handler.get_table(table_id)
+            CoreHandler().check_permissions(
+                user,
+                ListenToAllDatabaseTableEventsOperationType.type,
+                workspace=table.database.workspace,
+                context=table,
+            )
+        except (UserNotInWorkspace, TableDoesNotExist, PermissionDenied):
+            return False
+
+        return True
+
+    def get_group_name(self, table_id, row_id, **kwargs):
+        return f"table-{table_id}-row-{row_id}"
+    
+    # TODO: filter out just the necessary row_ids per group?
+    def broadcast(self, payload, ignore_web_socket_id=None, **kwargs):
+        """
+        Broadcasts a payload to everyone within the group.
+
+        :param payload: A payload that must be broad casted to all the users in the
+            group.
+        :type payload:  dict
+        :param ignore_web_socket_id: If provided then the payload will not be broad
+            casted to that web socket id. This is often the sender.
+        :type ignore_web_socket_id: Optional[str]
+        :param kwargs: The additional parameters including their provided values.
+        :type kwargs: dict
+        """
+
+        broadcast_to_channel_group.delay(
+            self.get_group_name(**kwargs), payload, ignore_web_socket_id
+        )

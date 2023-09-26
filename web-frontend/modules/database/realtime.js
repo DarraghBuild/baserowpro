@@ -239,6 +239,8 @@ export const registerRealtimeEvents = (realtime) => {
   })
 
   realtime.registerEvent('row_history_updated', (context, data) => {
+    console.log('row history real time updated')
+    console.log(data)
     // TODO:
   })
 

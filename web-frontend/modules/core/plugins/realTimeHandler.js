@@ -1,5 +1,7 @@
 import { isSecureURL } from '@baserow/modules/core/utils/string'
 
+// TODO: check docstrings
+
 export class RealTimeHandler {
   constructor(context) {
     this.context = context
@@ -10,9 +12,8 @@ export class RealTimeHandler {
     this.reconnectTimeout = null
     this.attempts = 0
     this.events = {}
-    this.page = null
-    this.pageParameters = {}
-    this.subscribedToPage = true
+    this.pages = []
+    this.subscribedToPages = true
     this.lastToken = null
     this.authenticationSuccess = true
     this.registerCoreEvents()
@@ -64,8 +65,8 @@ export class RealTimeHandler {
 
       // If the client needs to be subscribed to a page we can do that directly
       // after connecting.
-      if (!this.subscribedToPage) {
-        this.subscribeToPage()
+      if (!this.subscribedToPages) {
+        this.subscribeToPages()
       }
     }
 
@@ -99,7 +100,7 @@ export class RealTimeHandler {
       this.connected = false
       // By default the user not subscribed to a page a.k.a `null`, so if the current
       // page is already null we can mark it as subscribed.
-      this.subscribedToPage = this.page === null
+      this.subscribedToPages = this.pages.length === 0
       this.delayedReconnect()
     }
   }
@@ -131,28 +132,54 @@ export class RealTimeHandler {
    * opens a table page.
    */
   subscribe(page, parameters) {
-    this.page = page
-    this.pageParameters = parameters
-    this.subscribedToPage = false
+    const pageScope = {
+      page,
+      parameters
+    }
+
+    this.pages.push(pageScope)
+
+    this.subscribedToPages = false
 
     // If the client is already connected we can directly subscribe to the page.
     if (this.connected) {
-      this.subscribeToPage()
+      this.subscribeToPages()
     }
+  }
+
+  /**
+   * Unsubscribes the client from a given page. The client will
+   * stop receiving updates related to that page.
+   */
+  unsubscribe(page, parameters) {
+    this.pages = this.pages.filter((item) => item != { page, parameters })
+    this.socket.send(
+      JSON.stringify({
+        remove_page: page,
+        ...parameters,
+      })
+    )   
   }
 
   /**
    * Sends a request to the real time server that updates for a certain page +
    * parameters must be received.
    */
-  subscribeToPage() {
-    this.socket.send(
-      JSON.stringify({
-        page: this.page === null ? '' : this.page,
-        ...this.pageParameters,
-      })
-    )
-    this.subscribedToPage = true
+  subscribeToPages() {
+    if (this.subscribedToPages) {
+      return
+    }
+
+    for (const { page, parameters } of this.pages) {
+      this.socket.send(
+        JSON.stringify({
+          page: page === null ? '' : page,
+          ...parameters,
+        })
+      )
+    }
+
+    this.subscribedToPages = true
   }
 
   /**
