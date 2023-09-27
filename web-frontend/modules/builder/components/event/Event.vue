@@ -19,10 +19,11 @@
         @delete="deleteWorkflowAction(workflowAction)"
       />
       <div class="margin-top-2">
-        <a class="anchor" @click="addWorkflowAction">
+        <a v-if="!addingElement" class="anchor" @click="addWorkflowAction">
           <i class="fas fa-plus margin-right-1"></i>
           {{ $t('event.addAction') }}
         </a>
+        <div v-else class="loading"></div>
       </div>
     </template>
   </Expandable>
@@ -60,6 +61,11 @@ export default {
       required: true,
     },
   },
+  data() {
+    return {
+      addingElement: false,
+    }
+  },
   methods: {
     ...mapActions({
       actionCreateWorkflowAction: 'workflowAction/create',
@@ -68,9 +74,10 @@ export default {
     getIcon(expanded) {
       return expanded ? 'fa-chevron-down' : 'fa-chevron-right'
     },
-    addWorkflowAction() {
+    async addWorkflowAction() {
+      this.addingElement = true
       try {
-        this.actionCreateWorkflowAction({
+        await this.actionCreateWorkflowAction({
           page: this.page,
           workflowActionType: DEFAULT_WORKFLOW_ACTION_TYPE,
           eventType: this.event.getType(),
@@ -81,6 +88,7 @@ export default {
       } catch (error) {
         notifyIf(error)
       }
+      this.addingElement = false
     },
     deleteWorkflowAction(workflowAction) {
       try {
