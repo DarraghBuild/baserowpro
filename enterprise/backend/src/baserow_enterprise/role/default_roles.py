@@ -1,13 +1,6 @@
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-from baserow.contrib.builder.workflow_actions.operations import (
-    ListBuilderWorkflowActionsPageOperationType,
-    ReadBuilderWorkflowActionOperationType,
-    UpdateBuilderWorkflowActionOperationType,
-    DeleteBuilderWorkflowActionOperationType,
-    CreateBuilderWorkflowActionOperationType,
-)
 from baserow_premium.row_comments.operations import (
     CreateRowCommentsOperationType,
     DeleteRowCommentsOperationType,
@@ -55,6 +48,13 @@ from baserow.contrib.builder.pages.operations import (
     UpdatePageOperationType,
 )
 from baserow.contrib.builder.theme.operations import UpdateThemeOperationType
+from baserow.contrib.builder.workflow_actions.operations import (
+    CreateBuilderWorkflowActionOperationType,
+    DeleteBuilderWorkflowActionOperationType,
+    ListBuilderWorkflowActionsPageOperationType,
+    ReadBuilderWorkflowActionOperationType,
+    UpdateBuilderWorkflowActionOperationType,
+)
 from baserow.contrib.database.airtable.operations import (
     RunAirtableImportJobOperationType,
 )

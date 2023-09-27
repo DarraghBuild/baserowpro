@@ -7,8 +7,8 @@ from baserow.contrib.builder.workflow_actions.handler import (
     BuilderWorkflowActionHandler,
 )
 from baserow.contrib.builder.workflow_actions.models import (
-    WorkflowAction,
     BuilderWorkflowAction,
+    WorkflowAction,
 )
 from baserow.contrib.builder.workflow_actions.operations import (
     CreateBuilderWorkflowActionOperationType,
@@ -36,7 +36,8 @@ class BuilderWorkflowActionService:
         self, user: AbstractUser, workflow_action_id: int
     ) -> WorkflowAction:
         """
-        Returns an workflow_action instance from the database. Also checks the user permissions.
+        Returns an workflow_action instance from the database. Also checks the user
+        permissions.
 
         :param user: The user trying to get the workflow_action
         :param workflow_action_id: The ID of the workflow_action
@@ -126,8 +127,8 @@ class BuilderWorkflowActionService:
         self, user: AbstractUser, workflow_action: WorkflowAction, **kwargs
     ) -> WorkflowAction:
         """
-        Updates and workflow_action with values. Will also check if the values are allowed
-        to be set on the workflow_action first.
+        Updates and workflow_action with values. Will also check if the values are
+        allowed to be set on the workflow_action first.
 
         :param user: The user trying to update the workflow_action.
         :param workflow_action: The workflow_action that should be updated.

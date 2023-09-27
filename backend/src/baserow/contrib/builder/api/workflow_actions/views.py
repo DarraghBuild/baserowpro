@@ -1,6 +1,7 @@
 from typing import Dict
 
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from baserow.api.decorators import validate_body_custom_fields
@@ -20,7 +21,6 @@ from baserow.contrib.builder.workflow_actions.registries import (
 from baserow.contrib.builder.workflow_actions.service import (
     BuilderWorkflowActionService,
 )
-from rest_framework.response import Response
 
 
 class BuilderWorkflowActionsView(APIView):

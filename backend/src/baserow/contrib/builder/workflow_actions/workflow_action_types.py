@@ -1,6 +1,4 @@
-from baserow.contrib.builder.workflow_actions.models import (
-    NotificationWorkflowAction,
-)
+from baserow.contrib.builder.workflow_actions.models import NotificationWorkflowAction
 from baserow.core.formula.serializers import FormulaSerializerField
 from baserow.core.workflow_actions.registries import WorkflowActionType
 

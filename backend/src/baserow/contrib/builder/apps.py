@@ -133,11 +133,11 @@ class BuilderConfig(AppConfig):
         operation_type_registry.register(DeleteElementOperationType())
 
         from baserow.contrib.builder.workflow_actions.operations import (
-            ListBuilderWorkflowActionsPageOperationType,
             CreateBuilderWorkflowActionOperationType,
             DeleteBuilderWorkflowActionOperationType,
-            UpdateBuilderWorkflowActionOperationType,
+            ListBuilderWorkflowActionsPageOperationType,
             ReadBuilderWorkflowActionOperationType,
+            UpdateBuilderWorkflowActionOperationType,
         )
 
         operation_type_registry.register(ListBuilderWorkflowActionsPageOperationType())

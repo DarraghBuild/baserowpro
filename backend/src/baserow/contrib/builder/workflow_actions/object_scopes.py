@@ -7,8 +7,8 @@ from baserow.contrib.builder.object_scopes import BuilderObjectScopeType
 from baserow.contrib.builder.pages.object_scopes import BuilderPageObjectScopeType
 from baserow.contrib.builder.workflow_actions.models import BuilderWorkflowAction
 from baserow.core.object_scopes import (
-    WorkspaceObjectScopeType,
     ApplicationObjectScopeType,
+    WorkspaceObjectScopeType,
 )
 from baserow.core.registries import ObjectScopeType, object_scope_type_registry
 
