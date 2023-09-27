@@ -1,24 +1,21 @@
 <template>
   <div>
-    <Dropdown
-      :value="workflowActionType"
-      :show-search="false"
+    <WorkflowActionSelector
+      :available-workflow-action-types="availableWorkflowActionTypes"
+      :workflow-action="workflowAction"
       @change="$emit('type-changed', $event)"
-    >
-      <DropdownItem
-        v-for="availableWorkflowActionType in availableWorkflowActionTypes"
-        :key="availableWorkflowActionType.getType()"
-        :name="availableWorkflowActionType.label"
-        :value="availableWorkflowActionType"
-      ></DropdownItem>
-    </Dropdown>
+      @delete="$emit('delete')"
+    />
     <component :is="workflowActionType.form" class="margin-top-2"></component>
   </div>
 </template>
 
 <script>
+import WorkflowActionSelector from '@baserow/modules/core/components/workflowActions/WorkflowActionSelector.vue'
+
 export default {
   name: 'WorkflowAction',
+  components: { WorkflowActionSelector },
   props: {
     availableWorkflowActionTypes: {
       type: Array,
