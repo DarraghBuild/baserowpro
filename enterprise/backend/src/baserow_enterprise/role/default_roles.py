@@ -2,7 +2,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
 from baserow.contrib.builder.workflow_actions.operations import (
-    ListBuilderWorkflowActionsElementOperationType,
+    ListBuilderWorkflowActionsPageOperationType,
     ReadBuilderWorkflowActionOperationType,
     UpdateBuilderWorkflowActionOperationType,
     DeleteBuilderWorkflowActionOperationType,
@@ -281,7 +281,7 @@ default_roles[VIEWER_ROLE_UID].extend(
         ReadViewSortOperationType,
         ListViewGroupByOperationType,
         ReadViewGroupByOperationType,
-        ListBuilderWorkflowActionsElementOperationType,
+        ListBuilderWorkflowActionsPageOperationType,
         ReadBuilderWorkflowActionOperationType,
     ]
 )

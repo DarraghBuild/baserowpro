@@ -1,16 +1,16 @@
 from abc import ABC
 
-from baserow.contrib.builder.elements.operations import BuilderElementOperationType
+from baserow.contrib.builder.pages.operations import BuilderPageOperationType
 from baserow.core.registries import OperationType
 
 
-class ListBuilderWorkflowActionsElementOperationType(BuilderElementOperationType):
-    type = "builder.element.list_workflow_actions"
+class ListBuilderWorkflowActionsPageOperationType(BuilderPageOperationType):
+    type = "builder.page.list_workflow_actions"
     object_scope_name = "builder_workflow_action"
 
 
-class CreateBuilderWorkflowActionOperationType(BuilderElementOperationType):
-    type = "builder.element.create_workflow_action"
+class CreateBuilderWorkflowActionOperationType(BuilderPageOperationType):
+    type = "builder.page.create_workflow_action"
 
 
 class BuilderWorkflowActionOperationType(OperationType, ABC):
@@ -18,12 +18,12 @@ class BuilderWorkflowActionOperationType(OperationType, ABC):
 
 
 class DeleteBuilderWorkflowActionOperationType(BuilderWorkflowActionOperationType):
-    type = "builder.element.workflow_action.delete"
+    type = "builder.page.workflow_action.delete"
 
 
 class UpdateBuilderWorkflowActionOperationType(BuilderWorkflowActionOperationType):
-    type = "builder.element.workflow_action.update"
+    type = "builder.page.workflow_action.update"
 
 
 class ReadBuilderWorkflowActionOperationType(BuilderWorkflowActionOperationType):
-    type = "builder.element.workflow_action.read"
+    type = "builder.page.workflow_action.read"

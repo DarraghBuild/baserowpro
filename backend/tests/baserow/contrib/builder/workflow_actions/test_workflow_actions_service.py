@@ -16,13 +16,14 @@ from baserow.core.exceptions import UserNotInWorkspace
 @pytest.mark.django_db
 def test_create_workflow_action(data_fixture):
     user = data_fixture.create_user()
-    element = data_fixture.create_builder_button_element(user=user)
+    page = data_fixture.create_builder_page(user=user)
+    element = data_fixture.create_builder_button_element(page=page)
     event = EventTypes.CLICK
     workflow_action_type = NotificationWorkflowActionType()
     workflow_action = (
         BuilderWorkflowActionService()
         .create_workflow_action(
-            user, workflow_action_type, element=element, event=event
+            user, workflow_action_type, page=page, element=element, event=event
         )
         .specific
     )
@@ -35,23 +36,25 @@ def test_create_workflow_action(data_fixture):
 @pytest.mark.django_db
 def test_create_workflow_action_no_permissions(data_fixture):
     user = data_fixture.create_user()
-    element = data_fixture.create_builder_button_element()
+    page = data_fixture.create_builder_page()
+    element = data_fixture.create_builder_button_element(page=page)
     event = EventTypes.CLICK
     workflow_action_type = NotificationWorkflowActionType()
 
     with pytest.raises(UserNotInWorkspace):
         BuilderWorkflowActionService().create_workflow_action(
-            user, workflow_action_type, element=element, event=event
+            user, workflow_action_type, page=page, element=element, event=event
         )
 
 
 @pytest.mark.django_db
 def test_delete_workflow_action(data_fixture):
     user = data_fixture.create_user()
-    element = data_fixture.create_builder_button_element(user=user)
+    page = data_fixture.create_builder_page(user=user)
+    element = data_fixture.create_builder_button_element(page=page)
     event = EventTypes.CLICK
     workflow_action = data_fixture.create_notification_workflow_action(
-        element=element, event=event
+        page=page, element=element, event=event
     )
 
     assert BuilderWorkflowAction.objects.count() == 1
@@ -64,10 +67,11 @@ def test_delete_workflow_action(data_fixture):
 @pytest.mark.django_db
 def test_delete_workflow_action_no_permissions(data_fixture):
     user = data_fixture.create_user()
-    element = data_fixture.create_builder_button_element()
+    page = data_fixture.create_builder_page()
+    element = data_fixture.create_builder_button_element(page=page)
     event = EventTypes.CLICK
     workflow_action = data_fixture.create_notification_workflow_action(
-        element=element, event=event
+        page=page, element=element, event=event
     )
 
     with pytest.raises(UserNotInWorkspace):
@@ -77,10 +81,11 @@ def test_delete_workflow_action_no_permissions(data_fixture):
 @pytest.mark.django_db
 def test_update_workflow_action(data_fixture):
     user = data_fixture.create_user()
-    element = data_fixture.create_builder_button_element(user=user)
+    page = data_fixture.create_builder_page(user=user)
+    element = data_fixture.create_builder_button_element(page=page)
     event = EventTypes.CLICK
     workflow_action = data_fixture.create_notification_workflow_action(
-        element=element, event=event
+        page=page, element=element, event=event
     )
 
     element_changed = data_fixture.create_builder_button_element()
@@ -96,10 +101,11 @@ def test_update_workflow_action(data_fixture):
 @pytest.mark.django_db
 def test_update_workflow_action_no_permissions(data_fixture):
     user = data_fixture.create_user()
-    element = data_fixture.create_builder_button_element()
+    page = data_fixture.create_builder_page()
+    element = data_fixture.create_builder_button_element(page=page)
     event = EventTypes.CLICK
     workflow_action = data_fixture.create_notification_workflow_action(
-        element=element, event=event
+        page=page, element=element, event=event
     )
 
     element_changed = data_fixture.create_builder_button_element()
@@ -113,10 +119,11 @@ def test_update_workflow_action_no_permissions(data_fixture):
 @pytest.mark.django_db
 def test_get_workflow_action(data_fixture):
     user = data_fixture.create_user()
-    element = data_fixture.create_builder_button_element(user=user)
+    page = data_fixture.create_builder_page(user=user)
+    element = data_fixture.create_builder_button_element(page=page)
     event = EventTypes.CLICK
     workflow_action = data_fixture.create_notification_workflow_action(
-        element=element, event=event
+        page=page, element=element, event=event
     )
 
     workflow_action_fetched = BuilderWorkflowActionService().get_workflow_action(
@@ -129,10 +136,11 @@ def test_get_workflow_action(data_fixture):
 @pytest.mark.django_db
 def test_get_workflow_action_no_permissions(data_fixture):
     user = data_fixture.create_user()
-    element = data_fixture.create_builder_button_element()
+    page = data_fixture.create_builder_page()
+    element = data_fixture.create_builder_button_element(page=page)
     event = EventTypes.CLICK
     workflow_action = data_fixture.create_notification_workflow_action(
-        element=element, event=event
+        page=page, element=element, event=event
     )
 
     with pytest.raises(UserNotInWorkspace):
@@ -142,19 +150,20 @@ def test_get_workflow_action_no_permissions(data_fixture):
 @pytest.mark.django_db
 def test_get_workflow_actions(data_fixture):
     user = data_fixture.create_user()
-    element = data_fixture.create_builder_button_element(user=user)
+    page = data_fixture.create_builder_page(user=user)
+    element = data_fixture.create_builder_button_element(page=page)
     event = EventTypes.CLICK
     workflow_action_one = data_fixture.create_notification_workflow_action(
-        element=element, event=event
+        page=page, element=element, event=event
     )
     workflow_action_two = data_fixture.create_notification_workflow_action(
-        element=element, event=event
+        page=page, element=element, event=event
     )
 
     [
         workflow_action_one_fetched,
         workflow_action_two_fetched,
-    ] = BuilderWorkflowActionService().get_workflow_actions(user, element)
+    ] = BuilderWorkflowActionService().get_workflow_actions(user, page)
 
     assert workflow_action_one_fetched.id == workflow_action_one.id
     assert workflow_action_two_fetched.id == workflow_action_two.id
@@ -163,14 +172,15 @@ def test_get_workflow_actions(data_fixture):
 @pytest.mark.django_db
 def test_get_workflow_actions_no_permissions(data_fixture):
     user = data_fixture.create_user()
-    element = data_fixture.create_builder_button_element()
+    page = data_fixture.create_builder_page()
+    element = data_fixture.create_builder_button_element(page=page)
     event = EventTypes.CLICK
     workflow_action_one = data_fixture.create_notification_workflow_action(
-        element=element, event=event
+        page=page, element=element, event=event
     )
     workflow_action_two = data_fixture.create_notification_workflow_action(
-        element=element, event=event
+        page=page, element=element, event=event
     )
 
     with pytest.raises(UserNotInWorkspace):
-        BuilderWorkflowActionService().get_workflow_actions(user, element)
+        BuilderWorkflowActionService().get_workflow_actions(user, page)

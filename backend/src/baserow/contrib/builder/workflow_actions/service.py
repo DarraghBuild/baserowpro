@@ -2,7 +2,7 @@ from typing import List
 
 from django.contrib.auth.models import AbstractUser
 
-from baserow.contrib.builder.elements.models import Element
+from baserow.contrib.builder.pages.models import Page
 from baserow.contrib.builder.workflow_actions.handler import (
     BuilderWorkflowActionHandler,
 )
@@ -13,7 +13,7 @@ from baserow.contrib.builder.workflow_actions.models import (
 from baserow.contrib.builder.workflow_actions.operations import (
     CreateBuilderWorkflowActionOperationType,
     DeleteBuilderWorkflowActionOperationType,
-    ListBuilderWorkflowActionsElementOperationType,
+    ListBuilderWorkflowActionsPageOperationType,
     ReadBuilderWorkflowActionOperationType,
     UpdateBuilderWorkflowActionOperationType,
 )
@@ -48,7 +48,7 @@ class BuilderWorkflowActionService:
         CoreHandler().check_permissions(
             user,
             ReadBuilderWorkflowActionOperationType.type,
-            workspace=workflow_action.element.page.builder.workspace,
+            workspace=workflow_action.page.builder.workspace,
             context=workflow_action,
         )
 
@@ -57,40 +57,40 @@ class BuilderWorkflowActionService:
     def get_workflow_actions(
         self,
         user: AbstractUser,
-        element: Element,
+        page: Page,
     ) -> List[WorkflowAction]:
         """
         Gets all the workflow_actions of a given page visible to the given user.
 
         :param user: The user trying to get the workflow_actions.
-        :param element: The element that holds the workflow_actions.
+        :param page: The page that holds the workflow_actions.
         :return: The workflow_actions of that page.
         """
 
         CoreHandler().check_permissions(
             user,
-            ListBuilderWorkflowActionsElementOperationType.type,
-            workspace=element.page.builder.workspace,
-            context=element,
+            ListBuilderWorkflowActionsPageOperationType.type,
+            workspace=page.builder.workspace,
+            context=page,
         )
 
         user_workflow_actions = CoreHandler().filter_queryset(
             user,
-            ListBuilderWorkflowActionsElementOperationType.type,
+            ListBuilderWorkflowActionsPageOperationType.type,
             BuilderWorkflowAction.objects.all(),
-            workspace=element.page.builder.workspace,
-            context=element,
+            workspace=page.builder.workspace,
+            context=page,
         )
 
         return self.handler.get_workflow_actions(
-            element, base_queryset=user_workflow_actions
+            page, base_queryset=user_workflow_actions
         )
 
     def create_workflow_action(
         self,
         user: AbstractUser,
         workflow_action_type: BuilderWorkflowActionType,
-        element: Element,
+        page: Page,
         **kwargs,
     ) -> WorkflowAction:
         """
@@ -98,7 +98,7 @@ class BuilderWorkflowActionService:
 
         :param user: The user trying to create the workflow_action.
         :param workflow_action_type: The type of the workflow_action.
-        :param element: The element the workflow_action is associated with.
+        :param page: The page the workflow_action is associated with.
         :param kwargs: Additional attributes of the workflow_action.
         :return: The created workflow_action.
         """
@@ -106,12 +106,12 @@ class BuilderWorkflowActionService:
         CoreHandler().check_permissions(
             user,
             CreateBuilderWorkflowActionOperationType.type,
-            workspace=element.page.builder.workspace,
-            context=element,
+            workspace=page.builder.workspace,
+            context=page,
         )
 
         new_workflow_action = self.handler.create_workflow_action(
-            workflow_action_type, element=element, **kwargs
+            workflow_action_type, page=page, **kwargs
         )
 
         workflow_action_created.send(
@@ -138,7 +138,7 @@ class BuilderWorkflowActionService:
         CoreHandler().check_permissions(
             user,
             UpdateBuilderWorkflowActionOperationType.type,
-            workspace=workflow_action.element.page.builder.workspace,
+            workspace=workflow_action.page.builder.workspace,
             context=workflow_action,
         )
 
@@ -158,17 +158,17 @@ class BuilderWorkflowActionService:
         :param workflow_action: The to-be-deleted workflow_action.
         """
 
-        element = workflow_action.element
+        page = workflow_action.page
 
         CoreHandler().check_permissions(
             user,
             DeleteBuilderWorkflowActionOperationType.type,
-            workspace=element.page.builder.workspace,
+            workspace=page.builder.workspace,
             context=workflow_action,
         )
 
         self.handler.delete_workflow_action(workflow_action)
 
         workflow_action_deleted.send(
-            self, workflow_action_id=workflow_action.id, element=element, user=user
+            self, workflow_action_id=workflow_action.id, page=page, user=user
         )

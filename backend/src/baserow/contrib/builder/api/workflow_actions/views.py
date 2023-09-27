@@ -8,7 +8,7 @@ from baserow.contrib.builder.api.workflow_actions.serializers import (
     BuilderWorkflowActionSerializer,
     CreateBuilderWorkflowActionSerializer,
 )
-from baserow.contrib.builder.elements.handler import ElementHandler
+from baserow.contrib.builder.pages.handler import PageHandler
 from baserow.contrib.builder.workflow_actions.registries import (
     builder_workflow_action_type_registry,
 )
@@ -25,13 +25,13 @@ class BuilderWorkflowActionsView(APIView):
         builder_workflow_action_type_registry,
         base_serializer_class=CreateBuilderWorkflowActionSerializer,
     )
-    def post(self, request, data: Dict, element_id: int):
+    def post(self, request, data: Dict, page_id: int):
         type_name = data.pop("type")
         workflow_action_type = builder_workflow_action_type_registry.get(type_name)
-        element = ElementHandler().get_element(element_id)
+        page = PageHandler().get_page(page_id)
 
         workflow_action = BuilderWorkflowActionService().create_workflow_action(
-            request.user, workflow_action_type, element, **data
+            request.user, workflow_action_type, page, **data
         )
 
         serializer = builder_workflow_action_type_registry.get_serializer(

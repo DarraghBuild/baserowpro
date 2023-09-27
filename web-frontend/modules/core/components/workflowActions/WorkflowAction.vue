@@ -1,18 +1,18 @@
 <template>
   <div>
-    <Dropdown v-model="workflowActionSelected" :show-search="false">
+    <Dropdown
+      :value="workflowActionType"
+      :show-search="false"
+      @change="$emit('type-changed', $event)"
+    >
       <DropdownItem
-        v-for="workflowAction in availableWorkflowActions"
-        :key="workflowAction.type"
-        :name="workflowAction.label"
-        :value="workflowAction"
+        v-for="availableWorkflowActionType in availableWorkflowActionTypes"
+        :key="availableWorkflowActionType.getType()"
+        :name="availableWorkflowActionType.label"
+        :value="availableWorkflowActionType"
       ></DropdownItem>
     </Dropdown>
-    <component
-      :is="workflowActionSelected.form"
-      v-if="workflowActionSelected"
-      class="margin-top-2"
-    ></component>
+    <component :is="workflowActionType.form" class="margin-top-2"></component>
   </div>
 </template>
 
@@ -20,15 +20,23 @@
 export default {
   name: 'WorkflowAction',
   props: {
-    availableWorkflowActions: {
+    availableWorkflowActionTypes: {
       type: Array,
       required: true,
     },
+    workflowAction: {
+      type: Object,
+      required: false,
+      default: null,
+    },
   },
-  data() {
-    return {
-      workflowActionSelected: null,
-    }
+  computed: {
+    workflowActionType() {
+      return this.availableWorkflowActionTypes.find(
+        (workflowActionType) =>
+          workflowActionType.getType() === this.workflowAction.type
+      )
+    },
   },
 }
 </script>

@@ -2,6 +2,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 from baserow.contrib.builder.elements.models import Element
+from baserow.contrib.builder.pages.models import Page
 from baserow.contrib.builder.workflow_actions.registries import (
     builder_workflow_action_type_registry,
 )
@@ -26,7 +27,10 @@ class BuilderWorkflowAction(WorkflowAction):
         choices=EventTypes.choices,
         help_text="The event that triggers the execution",
     )
-    element = models.ForeignKey(Element, on_delete=models.CASCADE)
+    page = models.ForeignKey(Page, on_delete=models.CASCADE)
+    element = models.ForeignKey(
+        Element, on_delete=models.CASCADE, null=True, default=None
+    )
 
     @staticmethod
     def get_type_registry() -> ModelRegistryMixin:

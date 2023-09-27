@@ -14,12 +14,15 @@ from baserow.contrib.builder.workflow_actions.workflow_action_types import (
 
 @pytest.mark.django_db
 def test_create_workflow_action(data_fixture):
-    element = data_fixture.create_builder_button_element()
+    page = data_fixture.create_builder_page()
+    element = data_fixture.create_builder_button_element(page=page)
     event = EventTypes.CLICK
     workflow_action_type = NotificationWorkflowActionType()
     workflow_action = (
         BuilderWorkflowActionHandler()
-        .create_workflow_action(workflow_action_type, element=element, event=event)
+        .create_workflow_action(
+            workflow_action_type, page=page, element=element, event=event
+        )
         .specific
     )
 
@@ -30,10 +33,11 @@ def test_create_workflow_action(data_fixture):
 
 @pytest.mark.django_db
 def test_delete_workflow_action(data_fixture):
-    element = data_fixture.create_builder_button_element()
+    page = data_fixture.create_builder_page()
+    element = data_fixture.create_builder_button_element(page=page)
     event = EventTypes.CLICK
     workflow_action = data_fixture.create_notification_workflow_action(
-        element=element, event=event
+        page=page, element=element, event=event
     )
 
     assert BuilderWorkflowAction.objects.count() == 1
@@ -45,10 +49,11 @@ def test_delete_workflow_action(data_fixture):
 
 @pytest.mark.django_db
 def test_update_workflow_action(data_fixture):
-    element = data_fixture.create_builder_button_element()
+    page = data_fixture.create_builder_page()
+    element = data_fixture.create_builder_button_element(page=page)
     event = EventTypes.CLICK
     workflow_action = data_fixture.create_notification_workflow_action(
-        element=element, event=event
+        page=page, element=element, event=event
     )
 
     element_changed = data_fixture.create_builder_button_element()
@@ -63,10 +68,11 @@ def test_update_workflow_action(data_fixture):
 
 @pytest.mark.django_db
 def test_get_workflow_action(data_fixture):
-    element = data_fixture.create_builder_button_element()
+    page = data_fixture.create_builder_page()
+    element = data_fixture.create_builder_button_element(page=page)
     event = EventTypes.CLICK
     workflow_action = data_fixture.create_notification_workflow_action(
-        element=element, event=event
+        page=page, element=element, event=event
     )
 
     workflow_action_fetched = BuilderWorkflowActionHandler().get_workflow_action(
@@ -78,19 +84,20 @@ def test_get_workflow_action(data_fixture):
 
 @pytest.mark.django_db
 def test_get_workflow_actions(data_fixture):
-    element = data_fixture.create_builder_button_element()
+    page = data_fixture.create_builder_page()
+    element = data_fixture.create_builder_button_element(page=page)
     event = EventTypes.CLICK
     workflow_action_one = data_fixture.create_notification_workflow_action(
-        element=element, event=event
+        page=page, element=element, event=event
     )
     workflow_action_two = data_fixture.create_notification_workflow_action(
-        element=element, event=event
+        page=page, element=element, event=event
     )
 
     [
         workflow_action_one_fetched,
         workflow_action_two_fetched,
-    ] = BuilderWorkflowActionHandler().get_workflow_actions(element)
+    ] = BuilderWorkflowActionHandler().get_workflow_actions(page)
 
     assert workflow_action_one_fetched.id == workflow_action_one.id
     assert workflow_action_two_fetched.id == workflow_action_two.id

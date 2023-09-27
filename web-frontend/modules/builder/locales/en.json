@@ -300,5 +300,8 @@
         "titlePlaceholder": "Enter text...",
         "descriptionLabel": "Description",
         "descriptionPlaceholder": "Enter text..."
+    },
+    "event": {
+        "addAction": "Add action"
     }
 }
