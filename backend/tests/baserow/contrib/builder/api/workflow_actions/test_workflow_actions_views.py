@@ -64,3 +64,25 @@ def test_delete_workflow_actions(api_client, data_fixture):
     )
 
     assert response.status_code == HTTP_204_NO_CONTENT
+
+
+@pytest.mark.django_db
+def test_patch_workflow_actions(api_client, data_fixture):
+    user, token = data_fixture.create_user_and_token()
+    page = data_fixture.create_builder_page(user=user)
+    workflow_action = data_fixture.create_notification_workflow_action(page=page)
+
+    url = reverse(
+        "api:builder:workflow_action:item",
+        kwargs={"workflow_action_id": workflow_action.id},
+    )
+    response = api_client.patch(
+        url,
+        {"description": "'hello'"},
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+
+    response_json = response.json()
+    assert response.status_code == HTTP_200_OK
+    assert response_json["description"] == "'hello'"

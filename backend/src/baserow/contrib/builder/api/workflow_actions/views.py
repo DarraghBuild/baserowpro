@@ -4,9 +4,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from baserow.api.decorators import validate_body_custom_fields
+from baserow.api.utils import type_from_data_or_registry, validate_data_custom_fields
 from baserow.contrib.builder.api.workflow_actions.serializers import (
     BuilderWorkflowActionSerializer,
     CreateBuilderWorkflowActionSerializer,
+    UpdateBuilderWorkflowActionsSerializer,
 )
 from baserow.contrib.builder.pages.handler import PageHandler
 from baserow.contrib.builder.workflow_actions.handler import (
@@ -73,3 +75,27 @@ class BuilderWorkflowActionView(APIView):
         )
 
         return Response(status=204)
+
+    def patch(self, request, workflow_action_id: int):
+        workflow_action = BuilderWorkflowActionHandler().get_workflow_action(
+            workflow_action_id
+        )
+        workflow_action_type = type_from_data_or_registry(
+            request.data, builder_workflow_action_type_registry, workflow_action
+        )
+        data = validate_data_custom_fields(
+            workflow_action_type.type,
+            builder_workflow_action_type_registry,
+            request.data,
+            base_serializer_class=UpdateBuilderWorkflowActionsSerializer,
+            partial=True,
+        )
+
+        workflow_action_updated = BuilderWorkflowActionService().update_workflow_action(
+            request.user, workflow_action, **data
+        )
+
+        serializer = builder_workflow_action_type_registry.get_serializer(
+            workflow_action_updated, BuilderWorkflowActionSerializer
+        )
+        return Response(serializer.data)

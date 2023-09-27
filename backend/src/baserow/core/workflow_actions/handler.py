@@ -28,7 +28,7 @@ class WorkflowActionHandler(ABC):
         :return: The workflow action instance.
         """
 
-        return self.model.objects.get(id=workflow_action_id)
+        return self.model.objects.get(id=workflow_action_id).specific
 
     def create_workflow_action(
         self, workflow_action_type: WorkflowActionType, **kwargs

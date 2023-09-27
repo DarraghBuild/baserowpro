@@ -26,7 +26,7 @@ class BuilderWorkflowActionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BuilderWorkflowAction
-        fields = ("id", "element_id", "type")
+        fields = ("id", "element_id", "type", "event")
 
         extra_kwargs = {
             "id": {"read_only": True},
@@ -44,4 +44,16 @@ class CreateBuilderWorkflowActionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BuilderWorkflowAction
-        fields = ("id", "element_id", "type")
+        fields = ("id", "element_id", "type", "event")
+
+
+class UpdateBuilderWorkflowActionsSerializer(serializers.ModelSerializer):
+    type = serializers.ChoiceField(
+        choices=lazy(builder_workflow_action_type_registry.get_types, list)(),
+        required=False,
+        help_text="The type of the workflow action",
+    )
+
+    class Meta:
+        model = BuilderWorkflowAction
+        fields = ("type",)
