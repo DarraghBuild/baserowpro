@@ -98,9 +98,6 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         user = self.scope["user"]
         web_socket_id = self.scope["web_socket_id"]
 
-        if not user:
-            return
-
         try:
             page_type = page_registry.get(content[page_name_attr])
         except page_registry.does_not_exist_exception_class:
@@ -248,23 +245,23 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         if len(self.scope["pages"]) == 0:
             return
 
+        # TODO: extract method
         if user_id in user_ids_to_remove:
             for page_scope in self.scope["pages"]:
                 content = {
                     "user": self.scope["user"],
                     "web_socket_id": self.scope["web_socket_id"],
-                    "remove_page": page_scope.page,
+                    "remove_page": page_scope.page_type,
                     "parameters": page_scope.page_parameters,
                 }
                 await self.remove_page_scope(content, send_confirmation=True)
 
     async def disconnect(self, message):
-        #await self.discard_current_page(send_confirmation=False)
         for page_scope in self.scope["pages"]:
                 content = {
                     "user": self.scope["user"],
                     "web_socket_id": self.scope["web_socket_id"],
-                    "remove_page": page_scope.page,
+                    "remove_page": page_scope.page_type,
                     "parameters": page_scope.page_parameters,
                 }
                 await self.remove_page_scope(content, send_confirmation=True)

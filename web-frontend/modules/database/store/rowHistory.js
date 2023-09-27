@@ -1,3 +1,7 @@
+import _ from 'lodash'
+
+import moment from '@baserow/modules/core/moment'
+
 import RowHistoryService from '@baserow/modules/database/services/rowHistory'
 
 export const state = () => ({
@@ -74,11 +78,22 @@ export const actions = {
       commit('SET_LOADING', false)
     }
   },
+  async forceCreate({ commit, state }, { rowHistoryEntry, rowId, tableId }) {
+    console.log(state.loadedRowId)
+    console.log({ rowId, tableId })
+    if (
+      state.loadedTableId === tableId &&
+      state.loadedRowId === rowId
+    ) {
+      commit('ADD_ENTRIES', { entries: [rowHistoryEntry] })
+      commit('SET_TOTAL_COUNT', state.totalCount + 1)
+    }
+  }
 }
 
 export const getters = {
   getSortedEntries(state) {
-    return state.entries
+    return _.sortBy(state.entries, (e) => -moment.utc(e.timestamp))
   },
   getCurrentCount(state) {
     return state.entries.length

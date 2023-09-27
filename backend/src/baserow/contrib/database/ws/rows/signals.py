@@ -11,7 +11,7 @@ from baserow.contrib.database.rows import signals as row_signals
 from baserow.contrib.database.rows.registries import row_metadata_registry
 from baserow.contrib.database.table.models import GeneratedTableModel
 from baserow.ws.registries import page_registry
-
+from baserow.contrib.database.api.rows.serializers import RowHistorySerializer
 
 @receiver(row_signals.rows_created)
 def rows_created(
@@ -121,12 +121,17 @@ def rows_history_updated(
     row_page_type = page_registry.get("row")
 
     def send_by_row():
-        for row_id, row_history in row_history_entries.items():
-            row_page_type.broadcast(
-            RealtimeRowMessages.row_history_updated(row_history),
-            table_id=table_id,
-            row_id=row_id,
-        )
+        for row_history_entry in row_history_entries:
+            serialized_entry = RowHistorySerializer(row_history_entry).data
+            row_page_type.broadcast({
+                    "type": "row_history_updated",
+                    "row_history_entry": serialized_entry,
+                    "table_id": table_id,
+                    "row_id": row_history_entry.row_id,
+                },
+                table_id=table_id,
+                row_id=row_history_entry.row_id,
+            )
 
     transaction.on_commit(send_by_row)
 
@@ -185,11 +190,4 @@ class RealtimeRowMessages:
         return {
             "type": "row_orders_recalculated",
             "table_id": table_id,
-        }
-
-    @staticmethod
-    def row_history_updated(row_history_entries):
-        return {
-            "type": "row_history_updated",
-            "row_history": row_history_entries
         }

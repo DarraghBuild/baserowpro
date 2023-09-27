@@ -117,7 +117,6 @@ class RowPageType(PageType):
     def get_group_name(self, table_id, row_id, **kwargs):
         return f"table-{table_id}-row-{row_id}"
     
-    # TODO: filter out just the necessary row_ids per group?
     def broadcast(self, payload, ignore_web_socket_id=None, **kwargs):
         """
         Broadcasts a payload to everyone within the group.
