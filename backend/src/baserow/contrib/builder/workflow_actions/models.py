@@ -36,6 +36,9 @@ class BuilderWorkflowAction(WorkflowAction):
     def get_type_registry() -> ModelRegistryMixin:
         return builder_workflow_action_type_registry
 
+    def get_parent(self):
+        return self.page
+
 
 class NotificationWorkflowAction(BuilderWorkflowAction):
     title = FormulaField(default="")

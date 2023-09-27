@@ -12,5 +12,8 @@ export default (client) => {
     fetchAll(pageId) {
       return client.get(`builder/page/${pageId}/workflow_actions/`)
     },
+    delete(workflowActionId) {
+      return client.delete(`builder/workflow_action/${workflowActionId}/`)
+    },
   }
 }

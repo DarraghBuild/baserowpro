@@ -16,6 +16,7 @@
         :available-workflow-action-types="availableWorkflowActionTypes"
         :workflow-action="workflowAction"
         @type-changed="workflowActionTypeChanged(workflowAction, $event)"
+        @delete="deleteWorkflowAction(workflowAction)"
       />
       <div class="margin-top-2">
         <a class="anchor" @click="addWorkflowAction">
@@ -60,7 +61,10 @@ export default {
     },
   },
   methods: {
-    ...mapActions({ actionCreateWorkflowAction: 'workflowAction/create' }),
+    ...mapActions({
+      actionCreateWorkflowAction: 'workflowAction/create',
+      actionDeleteWorkflowAction: 'workflowAction/delete',
+    }),
     getIcon(expanded) {
       return expanded ? 'fa-chevron-down' : 'fa-chevron-right'
     },
@@ -74,6 +78,13 @@ export default {
             element_id: this.element.id,
           },
         })
+      } catch (error) {
+        notifyIf(error)
+      }
+    },
+    deleteWorkflowAction(workflowAction) {
+      try {
+        this.actionDeleteWorkflowAction({ page: this.page, workflowAction })
       } catch (error) {
         notifyIf(error)
       }

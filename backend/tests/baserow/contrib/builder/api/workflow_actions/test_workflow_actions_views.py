@@ -1,6 +1,6 @@
 import pytest
 from django.urls import reverse
-from rest_framework.status import HTTP_200_OK
+from rest_framework.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 
 from baserow.contrib.builder.workflow_actions.workflow_action_types import (
     NotificationWorkflowActionType,
@@ -45,3 +45,22 @@ def test_get_workflow_actions(api_client, data_fixture):
     assert len(response_json) == 2
     assert response_json[0]["id"] == workflow_action_one.id
     assert response_json[1]["id"] == workflow_action_two.id
+
+
+@pytest.mark.django_db
+def test_delete_workflow_actions(api_client, data_fixture):
+    user, token = data_fixture.create_user_and_token()
+    page = data_fixture.create_builder_page(user=user)
+    workflow_action = data_fixture.create_notification_workflow_action(page=page)
+
+    url = reverse(
+        "api:builder:workflow_action:item",
+        kwargs={"workflow_action_id": workflow_action.id},
+    )
+    response = api_client.delete(
+        url,
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+
+    assert response.status_code == HTTP_204_NO_CONTENT

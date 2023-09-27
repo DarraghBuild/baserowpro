@@ -9,6 +9,9 @@ from baserow.contrib.builder.api.workflow_actions.serializers import (
     CreateBuilderWorkflowActionSerializer,
 )
 from baserow.contrib.builder.pages.handler import PageHandler
+from baserow.contrib.builder.workflow_actions.handler import (
+    BuilderWorkflowActionHandler,
+)
 from baserow.contrib.builder.workflow_actions.registries import (
     builder_workflow_action_type_registry,
 )
@@ -55,3 +58,18 @@ class BuilderWorkflowActionsView(APIView):
         ]
 
         return Response(data)
+
+
+class BuilderWorkflowActionView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def delete(self, request, workflow_action_id: int):
+        workflow_action = BuilderWorkflowActionHandler().get_workflow_action(
+            workflow_action_id
+        )
+
+        BuilderWorkflowActionService().delete_workflow_action(
+            request.user, workflow_action
+        )
+
+        return Response(status=204)
