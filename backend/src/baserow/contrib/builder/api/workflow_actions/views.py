@@ -39,3 +39,19 @@ class BuilderWorkflowActionsView(APIView):
         )
 
         return Response(serializer.data)
+
+    def get(self, request, page_id: int):
+        page = PageHandler().get_page(page_id)
+
+        workflow_actions = BuilderWorkflowActionService().get_workflow_actions(
+            request.user, page
+        )
+
+        data = [
+            builder_workflow_action_type_registry.get_serializer(
+                workflow_action, BuilderWorkflowActionSerializer
+            ).data
+            for workflow_action in workflow_actions
+        ]
+
+        return Response(data)

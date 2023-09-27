@@ -9,5 +9,8 @@ export default (client) => {
 
       return client.post(`builder/page/${pageId}/workflow_actions/`, payload)
     },
+    fetchAll(pageId) {
+      return client.get(`builder/page/${pageId}/workflow_actions/`)
+    },
   }
 }

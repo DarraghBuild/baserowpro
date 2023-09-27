@@ -6,6 +6,9 @@ const mutations = {
   ADD_ITEM(state, { page, workflowAction }) {
     page.workflowActions.push(workflowAction)
   },
+  SET_ITEMS(state, { page, workflowActions }) {
+    page.workflowActions = workflowActions
+  },
 }
 
 const actions = {
@@ -23,6 +26,13 @@ const actions = {
     await dispatch('forceCreate', { page, workflowAction })
 
     return workflowAction
+  },
+  async fetch({ commit }, { page }) {
+    const { data: workflowActions } = await WorkflowActionService(
+      this.$client
+    ).fetchAll(page.id)
+
+    commit('SET_ITEMS', { page, workflowActions })
   },
 }
 
