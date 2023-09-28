@@ -3,6 +3,7 @@ from typing import Type, cast
 
 from baserow.core.registry import Registry
 from baserow.core.utils import extract_allowed
+from baserow.core.workflow_actions.exceptions import WorkflowActionDoesNotExist
 from baserow.core.workflow_actions.models import WorkflowAction
 from baserow.core.workflow_actions.registries import WorkflowActionType
 
@@ -34,7 +35,10 @@ class WorkflowActionHandler(ABC):
         :return: The workflow action instance.
         """
 
-        return self.model.objects.get(id=workflow_action_id).specific
+        try:
+            return self.model.objects.get(id=workflow_action_id).specific
+        except self.model.DoesNotExist:
+            raise WorkflowActionDoesNotExist()
 
     def create_workflow_action(
         self, workflow_action_type: WorkflowActionType, **kwargs
