@@ -12,12 +12,13 @@ from baserow.contrib.builder.workflow_actions.workflow_action_types import (
 def test_create_workflow_action(api_client, data_fixture):
     user, token = data_fixture.create_user_and_token()
     page = data_fixture.create_builder_page(user=user)
+    element = data_fixture.create_builder_button_element(page=page)
     workflow_action_type = NotificationWorkflowActionType.type
 
     url = reverse("api:builder:workflow_action:list", kwargs={"page_id": page.id})
     response = api_client.post(
         url,
-        {"type": workflow_action_type, "event": "click"},
+        {"type": workflow_action_type, "event": "click", "element_id": element.id},
         format="json",
         HTTP_AUTHORIZATION=f"JWT {token}",
     )
@@ -25,6 +26,7 @@ def test_create_workflow_action(api_client, data_fixture):
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
     assert response_json["type"] == workflow_action_type
+    assert response_json["element_id"] == element.id
 
 
 @pytest.mark.django_db

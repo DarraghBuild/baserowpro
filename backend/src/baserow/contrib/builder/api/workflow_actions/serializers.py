@@ -42,6 +42,11 @@ class CreateBuilderWorkflowActionSerializer(serializers.ModelSerializer):
         required=True,
         help_text="The type of the workflow action",
     )
+    element_id = serializers.IntegerField(
+        allow_null=True,
+        required=False,
+        help_text="The id of the element the workflow action is associated with",
+    )
 
     class Meta:
         model = BuilderWorkflowAction
