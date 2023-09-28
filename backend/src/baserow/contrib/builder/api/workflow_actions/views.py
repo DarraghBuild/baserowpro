@@ -16,6 +16,7 @@ from baserow.api.utils import (
     map_exceptions,
     CustomFieldRegistryMappingSerializer,
 )
+from baserow.contrib.builder.api.elements.errors import ERROR_ELEMENT_DOES_NOT_EXIST
 from baserow.contrib.builder.api.pages.errors import ERROR_PAGE_DOES_NOT_EXIST
 from baserow.contrib.builder.api.workflow_actions.errors import (
     ERROR_WORKFLOW_ACTION_DOES_NOT_EXIST,
@@ -25,6 +26,7 @@ from baserow.contrib.builder.api.workflow_actions.serializers import (
     CreateBuilderWorkflowActionSerializer,
     UpdateBuilderWorkflowActionsSerializer,
 )
+from baserow.contrib.builder.elements.exceptions import ElementDoesNotExist
 from baserow.contrib.builder.pages.exceptions import PageDoesNotExist
 from baserow.contrib.builder.pages.handler import PageHandler
 from baserow.contrib.builder.workflow_actions.handler import (
@@ -77,6 +79,7 @@ class BuilderWorkflowActionsView(APIView):
     @map_exceptions(
         {
             PageDoesNotExist: ERROR_PAGE_DOES_NOT_EXIST,
+            ElementDoesNotExist: ERROR_ELEMENT_DOES_NOT_EXIST,
         }
     )
     @validate_body_custom_fields(
@@ -228,6 +231,7 @@ class BuilderWorkflowActionView(APIView):
     @map_exceptions(
         {
             WorkflowActionDoesNotExist: ERROR_WORKFLOW_ACTION_DOES_NOT_EXIST,
+            ElementDoesNotExist: ERROR_ELEMENT_DOES_NOT_EXIST,
         }
     )
     def patch(self, request, workflow_action_id: int):

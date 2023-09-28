@@ -1,10 +1,24 @@
-from baserow.contrib.builder.workflow_actions.models import NotificationWorkflowAction
+from typing import Dict
+
+from baserow.contrib.builder.elements.handler import ElementHandler
+from baserow.contrib.builder.workflow_actions.models import (
+    NotificationWorkflowAction,
+    BuilderWorkflowAction,
+)
 from baserow.core.formula.serializers import FormulaSerializerField
 from baserow.core.workflow_actions.registries import WorkflowActionType
 
 
 class BuilderWorkflowActionType(WorkflowActionType):
     allowed_fields = ["page", "element", "element_id", "event"]
+
+    def prepare_value_for_db(
+        self, values: Dict, instance: BuilderWorkflowAction = None
+    ):
+        if "element_id" in values:
+            values["element"] = ElementHandler().get_element(values["element_id"])
+
+        return super().prepare_value_for_db(values, instance=instance)
 
 
 class NotificationWorkflowActionType(BuilderWorkflowActionType):

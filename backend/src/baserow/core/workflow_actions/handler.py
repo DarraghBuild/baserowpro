@@ -53,6 +53,8 @@ class WorkflowActionHandler(ABC):
 
         allowed_values = extract_allowed(kwargs, workflow_action_type.allowed_fields)
 
+        allowed_values = workflow_action_type.prepare_value_for_db(allowed_values)
+
         model_class = cast(WorkflowAction, workflow_action_type.model_class)
 
         workflow_action = model_class(**allowed_values)
@@ -82,6 +84,10 @@ class WorkflowActionHandler(ABC):
 
         allowed_updates = extract_allowed(
             kwargs, workflow_action.get_type().allowed_fields
+        )
+
+        allowed_updates = workflow_action.get_type().prepare_value_for_db(
+            allowed_updates, instance=workflow_action
         )
 
         if "type" in allowed_updates:
