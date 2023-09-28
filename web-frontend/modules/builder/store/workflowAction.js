@@ -1,4 +1,5 @@
 import WorkflowActionService from '@baserow/modules/builder/services/workflowAction'
+import ElementService from '@baserow/modules/builder/services/element'
 
 const state = {}
 
@@ -33,6 +34,9 @@ const actions = {
   forceDelete({ commit }, { page, workflowActionId }) {
     commit('DELETE_ITEM', { page, workflowActionId })
   },
+  forceUpdate({ commit }, { page, workflowAction, values }) {
+    commit('UPDATE_ITEM', { page, workflowAction, values })
+  },
   async create(
     { dispatch },
     { page, workflowActionType, eventType, configuration = null }
@@ -59,6 +63,28 @@ const actions = {
       await WorkflowActionService(this.$client).delete(workflowAction.id)
     } catch (error) {
       await dispatch('forceCreate', { page, workflowAction })
+      throw error
+    }
+  },
+  async update({ dispatch }, { page, workflowAction, values }) {
+    const oldValues = {}
+    const newValues = {}
+    Object.keys(values).forEach((name) => {
+      if (Object.prototype.hasOwnProperty.call(workflowAction, name)) {
+        oldValues[name] = workflowAction[name]
+        newValues[name] = values[name]
+      }
+    })
+
+    await dispatch('forceUpdate', { page, workflowAction, values: newValues })
+
+    try {
+      await WorkflowActionService(this.$client).update(
+        workflowAction.id,
+        values
+      )
+    } catch (error) {
+      await dispatch('forceUpdate', { page, workflowAction, values: oldValues })
       throw error
     }
   },

@@ -3,10 +3,15 @@
     <WorkflowActionSelector
       :available-workflow-action-types="availableWorkflowActionTypes"
       :workflow-action="workflowAction"
-      @change="$emit('type-changed', $event)"
+      @change="$emit('update', $event)"
       @delete="$emit('delete')"
     />
-    <component :is="workflowActionType.form" class="margin-top-2"></component>
+    <component
+      :is="workflowActionType.form"
+      :default-values="workflowAction"
+      class="margin-top-2"
+      @values-changed="$emit('update', $event)"
+    ></component>
   </div>
 </template>
 

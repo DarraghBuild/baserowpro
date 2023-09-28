@@ -17,6 +17,7 @@
         :workflow-action="workflowAction"
         @type-changed="workflowActionTypeChanged(workflowAction, $event)"
         @delete="deleteWorkflowAction(workflowAction)"
+        @update="updateWorkflowAction(workflowAction, $event)"
       />
       <div class="margin-top-2">
         <a v-if="!addingElement" class="anchor" @click="addWorkflowAction">
@@ -70,6 +71,7 @@ export default {
     ...mapActions({
       actionCreateWorkflowAction: 'workflowAction/create',
       actionDeleteWorkflowAction: 'workflowAction/delete',
+      actionUpdateWorkflowAction: 'workflowAction/update',
     }),
     getIcon(expanded) {
       return expanded ? 'fa-chevron-down' : 'fa-chevron-right'
@@ -97,8 +99,16 @@ export default {
         notifyIf(error)
       }
     },
-    workflowActionTypeChanged(workflowAction, newType) {
-      console.log(workflowAction, newType)
+    updateWorkflowAction(workflowAction, values) {
+      try {
+        this.actionUpdateWorkflowAction({
+          page: this.page,
+          workflowAction,
+          values,
+        })
+      } catch (error) {
+        notifyIf(error)
+      }
     },
   },
 }
