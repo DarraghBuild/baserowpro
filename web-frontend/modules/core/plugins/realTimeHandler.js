@@ -1,7 +1,5 @@
 import { isSecureURL } from '@baserow/modules/core/utils/string'
 
-// TODO: check docstrings
-
 export class RealTimeHandler {
   constructor(context) {
     this.context = context
@@ -134,14 +132,21 @@ export class RealTimeHandler {
   subscribe(page, parameters) {
     const pageScope = {
       page,
-      parameters
+      parameters,
     }
 
-    this.pages.push(pageScope)
+    if (
+      !this.pages.some(
+        (elem) => JSON.stringify(elem) == JSON.stringify(pageScope)
+      )
+    ) {
+      this.pages.push(pageScope)
+    }
 
     this.subscribedToPages = false
 
-    // If the client is already connected we can directly subscribe to the page.
+    // If the client is already connected we can
+    // subscribe to updates for all pages.
     if (this.connected) {
       this.subscribeToPages()
     }
@@ -152,18 +157,20 @@ export class RealTimeHandler {
    * stop receiving updates related to that page.
    */
   unsubscribe(page, parameters) {
-    this.pages = this.pages.filter((item) => item != { page, parameters })
+    this.pages = this.pages.filter(
+      (item) => JSON.stringify(item) != JSON.stringify({ page, parameters })
+    )
     this.socket.send(
       JSON.stringify({
         remove_page: page,
         ...parameters,
       })
-    )   
+    )
   }
 
   /**
-   * Sends a request to the real time server that updates for a certain page +
-   * parameters must be received.
+   * Requests real time updates for the list of pages that
+   * have been collected by the subscribe() call.
    */
   subscribeToPages() {
     if (this.subscribedToPages) {

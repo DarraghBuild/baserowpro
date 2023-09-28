@@ -79,16 +79,11 @@ export const actions = {
     }
   },
   async forceCreate({ commit, state }, { rowHistoryEntry, rowId, tableId }) {
-    console.log(state.loadedRowId)
-    console.log({ rowId, tableId })
-    if (
-      state.loadedTableId === tableId &&
-      state.loadedRowId === rowId
-    ) {
+    if (state.loadedTableId === tableId && state.loadedRowId === rowId) {
       commit('ADD_ENTRIES', { entries: [rowHistoryEntry] })
       commit('SET_TOTAL_COUNT', state.totalCount + 1)
     }
-  }
+  },
 }
 
 export const getters = {

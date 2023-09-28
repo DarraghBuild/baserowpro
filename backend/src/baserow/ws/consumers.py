@@ -44,6 +44,7 @@ class SubscribedPages:
         self.pages: list[PageScope] = []
 
     def add(self, page_scope: PageScope):
+        # TODO: remove prints()
         if page_scope not in self.pages:
             print()
             print("adding")
@@ -94,9 +95,13 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         if "remove_page" in content:
             await self.remove_page_scope(content)
 
-    async def get_page_context(self, content, page_name_attr: str) -> PageContext:
+    async def get_page_context(self, content, page_name_attr: str) -> Optional[PageContext]:
+        # TODO: docs
         user = self.scope["user"]
         web_socket_id = self.scope["web_socket_id"]
+
+        if not user:
+            return None
 
         try:
             page_type = page_registry.get(content[page_name_attr])
@@ -127,12 +132,13 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         """
 
         context = await self.get_page_context(content, "page")
+        
+        if not context:
+            return
+        
         user, web_socket_id, page_type, parameters = attrgetter(
             "user", "web_socket_id", "page_type", "parameters"
         )(context)
-
-        if not user:
-            return
 
         can_add = await database_sync_to_async(page_type.can_add)(
             user, web_socket_id, **parameters
@@ -152,13 +158,15 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         )
 
     async def remove_page_scope(self, content, send_confirmation=True):
+        # TODO: docs
         context = await self.get_page_context(content, "remove_page")
+        
+        if not context:
+            return
+        
         user, page_type, parameters = attrgetter(
             "user", "page_type", "parameters"
         )(context)
-
-        if not user:
-            return
 
         group_name = page_type.get_group_name(**parameters)
         await self.channel_layer.group_discard(group_name, self.channel_name)
@@ -170,10 +178,25 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
             await self.send_json(
                 {
                     "type": "page_discard",
-                    "page": page_type,
+                    "page": page_type.type,
                     "parameters": parameters,
                 }
             )
+
+    async def remove_all_page_scopes(self):
+        """
+        Unsubscribes the connection from all pages.
+        """
+        
+        if self.scope.get("pages"):
+            for page_scope in self.scope["pages"]:
+                    content = {
+                        "user": self.scope["user"],
+                        "web_socket_id": self.scope["web_socket_id"],
+                        "remove_page": page_scope.page_type,
+                        "parameters": page_scope.page_parameters,
+                    }
+                    await self.remove_page_scope(content, send_confirmation=True)
 
     async def broadcast_to_users(self, event):
         """
@@ -242,28 +265,9 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         user_ids_to_remove = event["user_ids_to_remove"]
         user_id = self.scope["user"].id
 
-        if len(self.scope["pages"]) == 0:
-            return
-
-        # TODO: extract method
         if user_id in user_ids_to_remove:
-            for page_scope in self.scope["pages"]:
-                content = {
-                    "user": self.scope["user"],
-                    "web_socket_id": self.scope["web_socket_id"],
-                    "remove_page": page_scope.page_type,
-                    "parameters": page_scope.page_parameters,
-                }
-                await self.remove_page_scope(content, send_confirmation=True)
+            await self.remove_all_page_scopes()
 
     async def disconnect(self, message):
-        for page_scope in self.scope["pages"]:
-                content = {
-                    "user": self.scope["user"],
-                    "web_socket_id": self.scope["web_socket_id"],
-                    "remove_page": page_scope.page_type,
-                    "parameters": page_scope.page_parameters,
-                }
-                await self.remove_page_scope(content, send_confirmation=True)
-
+        await self.remove_all_page_scopes()
         await self.channel_layer.group_discard("users", self.channel_name)

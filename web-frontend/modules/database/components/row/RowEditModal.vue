@@ -6,7 +6,7 @@
     :content-scrollable="hasRightSidebar"
     :right-sidebar-scrollable="false"
     :collapsible-right-sidebar="true"
-    @hidden="$emit('hidden', { row })"
+    @hidden="hidden"
   >
     <template #content>
       <div v-if="enableNavigation" class="row-edit-modal__navigation">
@@ -250,7 +250,21 @@ export default {
           row,
         })
       }
-      // TODO: resubscribe?
+    },
+    rowId(newValue, oldValue) {
+      if (oldValue > 0) {
+        this.$realtime.unsubscribe('row', {
+          table_id: this.table.id,
+          row_id: oldValue,
+        })
+      }
+
+      if (newValue > 0) {
+        this.$realtime.subscribe('row', {
+          table_id: this.table.id,
+          row_id: newValue,
+        })
+      }
     },
   },
   methods: {
@@ -263,19 +277,19 @@ export default {
         row: row || rowFallback,
         exists: !!row,
       })
-      this.getRootModal().show(...args)
       this.$realtime.subscribe('row', {
         table_id: this.table.id,
-        row_id: this.rowId,
+        row_id: rowId,
       })
+      this.getRootModal().show(...args)
     },
-    hide(...args) {
-      this.$store.dispatch('rowModal/clear', { componentId: this._uid })
-      this.getRootModal().hide(...args)
+    hidden(...args) {
       this.$realtime.unsubscribe('row', {
         table_id: this.table.id,
         row_id: this.rowId,
       })
+      this.$store.dispatch('rowModal/clear', { componentId: this._uid })
+      this.$emit('hidden', { row: this.row })
     },
     /**
      * Because the modal can't update values by himself, an event will be called to
