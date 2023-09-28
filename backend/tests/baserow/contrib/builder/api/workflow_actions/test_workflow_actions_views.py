@@ -1,7 +1,12 @@
 from django.urls import reverse
 
 import pytest
-from rest_framework.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from rest_framework.status import (
+    HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
+    HTTP_404_NOT_FOUND,
+    HTTP_400_BAD_REQUEST,
+)
 
 from baserow.contrib.builder.workflow_actions.workflow_action_types import (
     NotificationWorkflowActionType,
@@ -60,6 +65,23 @@ def test_create_workflow_action_element_does_not_exist(api_client, data_fixture)
     )
 
     assert response.status_code == HTTP_404_NOT_FOUND
+
+
+@pytest.mark.django_db(transaction=True)
+def test_create_workflow_action_event_does_not_exist(api_client, data_fixture):
+    user, token = data_fixture.create_user_and_token()
+    page = data_fixture.create_builder_page(user=user)
+    workflow_action_type = NotificationWorkflowActionType.type
+
+    url = reverse("api:builder:workflow_action:list", kwargs={"page_id": page.id})
+    response = api_client.post(
+        url,
+        {"type": workflow_action_type, "event": "invalid"},
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+
+    assert response.status_code == HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.django_db
