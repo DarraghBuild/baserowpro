@@ -17,6 +17,13 @@ const mutations = {
       page.workflowActions.splice(index, 1)
     }
   },
+  UPDATE_ITEM(state, { page, workflowAction: workflowActionToUpdate, values }) {
+    page.workflowActions.forEach((workflowAction) => {
+      if (workflowAction.id === workflowActionToUpdate.id) {
+        Object.assign(workflowAction, values)
+      }
+    })
+  },
 }
 
 const actions = {

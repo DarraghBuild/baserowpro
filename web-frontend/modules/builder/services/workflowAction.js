@@ -15,5 +15,11 @@ export default (client) => {
     delete(workflowActionId) {
       return client.delete(`builder/workflow_action/${workflowActionId}/`)
     },
+    update(workflowActionId, values) {
+      return client.patch(
+        `builder/workflow_action/${workflowActionId}/`,
+        values
+      )
+    },
   }
 }
