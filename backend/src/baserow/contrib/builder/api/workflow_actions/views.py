@@ -231,7 +231,6 @@ class BuilderWorkflowActionView(APIView):
     @map_exceptions(
         {
             WorkflowActionDoesNotExist: ERROR_WORKFLOW_ACTION_DOES_NOT_EXIST,
-            ElementDoesNotExist: ERROR_ELEMENT_DOES_NOT_EXIST,
         }
     )
     def patch(self, request, workflow_action_id: int):
