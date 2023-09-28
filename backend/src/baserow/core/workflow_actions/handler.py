@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Type, cast
 
+from baserow.core.registry import Registry
 from baserow.core.utils import extract_allowed
 from baserow.core.workflow_actions.models import WorkflowAction
 from baserow.core.workflow_actions.registries import WorkflowActionType
@@ -15,6 +16,11 @@ class WorkflowActionHandler(ABC):
     @property
     @abstractmethod
     def model(self) -> Type[WorkflowAction]:
+        pass
+
+    @property
+    @abstractmethod
+    def registry(self) -> Registry:
         pass
 
     def get_workflow_action(self, workflow_action_id: int) -> WorkflowAction:
@@ -74,9 +80,16 @@ class WorkflowActionHandler(ABC):
             kwargs, workflow_action.get_type().allowed_fields
         )
 
-        for key, value in allowed_updates.items():
-            setattr(workflow_action, key, value)
+        if "type" in allowed_updates:
+            workflow_action_type = self.registry.get_by_type(allowed_updates["type"])
+            self.delete_workflow_action(workflow_action)
+            workflow_action = self.create_workflow_action(
+                workflow_action_type, **allowed_updates
+            )
+        else:
+            for key, value in allowed_updates.items():
+                setattr(workflow_action, key, value)
 
-        workflow_action.save()
+            workflow_action.save()
 
         return workflow_action

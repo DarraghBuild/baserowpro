@@ -4,12 +4,16 @@ from django.db.models import QuerySet
 
 from baserow.contrib.builder.pages.models import Page
 from baserow.contrib.builder.workflow_actions.models import BuilderWorkflowAction
+from baserow.contrib.builder.workflow_actions.registries import (
+    builder_workflow_action_type_registry,
+)
 from baserow.core.workflow_actions.handler import WorkflowActionHandler
 from baserow.core.workflow_actions.models import WorkflowAction
 
 
 class BuilderWorkflowActionHandler(WorkflowActionHandler):
     model = BuilderWorkflowAction
+    registry = builder_workflow_action_type_registry
 
     def get_workflow_actions(
         self, page: Page, base_queryset: Optional[QuerySet] = None
