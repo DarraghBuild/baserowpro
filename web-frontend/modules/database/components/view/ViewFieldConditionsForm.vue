@@ -6,89 +6,97 @@
     <div
       v-for="(filter, index) in filtersTree.filters"
       :key="index"
-      class="filters__item"
-      :class="{
-        'filters__item--loading': filter._ && filter._.loading,
-      }"
+      class="filters__item-wrapper"
     >
-      <ViewFilterFormOperator
-        :index="index"
-        :filter-type="filterType"
-        :disable-filter="disableFilter"
-        @select-boolean-operator="$emit('selectOperator', $event)"
-      />
-      <div class="filters__field">
-        <Dropdown
-          :value="filter.field"
-          :disabled="disableFilter"
-          :fixed-items="true"
-          class="dropdown--tiny"
-          @input="updateFilter(filter, { field: $event })"
-        >
-          <DropdownItem
-            v-for="field in fields"
-            :key="'field-' + field.id"
-            :name="field.name"
-            :value="field.id"
-            :disabled="!hasCompatibleFilterTypes(field, filterTypes)"
-          ></DropdownItem>
-        </Dropdown>
-      </div>
-      <div class="filters__type">
-        <Dropdown
-          :disabled="disableFilter"
-          :value="filter.type"
-          :fixed-items="true"
-          class="dropdown--tiny"
-          @input="updateFilter(filter, { type: $event })"
-        >
-          <DropdownItem
-            v-for="fType in allowedFilters(filterTypes, fields, filter.field)"
-            :key="fType.type"
-            :name="fType.getName()"
-            :value="fType.type"
-          ></DropdownItem>
-        </Dropdown>
-      </div>
-      <div class="filters__value">
-        <component
-          :is="getInputComponent(filter.type, filter.field)"
-          v-if="
-            fieldIdExists(fields, filter.field) &&
-            fieldIsCompatible(filter.type, filter.field)
-          "
-          :ref="`filter-value-${index}`"
-          :filter="filter"
-          :view="view"
-          :fields="fields"
-          :disabled="disableFilter"
-          :read-only="readOnly"
-          @input="updateFilter(filter, { value: $event })"
-        />
-        <i
-          v-else-if="!fieldIdExists(fields, filter.field)"
-          v-tooltip="$t('viewFilterContext.relatedFieldNotFound')"
-          class="iconoir-warning-triangle color-error"
-        ></i>
-        <i
-          v-else-if="!fieldIsCompatible(filter.type, filter.field)"
-          v-tooltip="$t('viewFilterContext.filterTypeNotFound')"
-          class="iconoir-warning-triangle color-error"
-        ></i>
-      </div>
-      <a
-        v-if="!disableFilter"
-        class="filters__remove"
-        @click="deleteFilter($event, filter)"
+      <div
+        class="filters__item"
+        :class="{
+          'filters__item--loading': filter._ && filter._.loading,
+        }"
       >
-        <i class="fas fa-trash"></i>
-      </a>
-      <span v-else class="filters__remove"></span>
+        <ViewFilterFormOperator
+          :index="index"
+          :filter-type="filterType"
+          :disable-filter="disableFilter"
+          @select-boolean-operator="$emit('selectOperator', $event)"
+        />
+        <div class="filters__field">
+          <Dropdown
+            :value="filter.field"
+            :disabled="disableFilter"
+            :fixed-items="true"
+            class="dropdown--tiny"
+            @input="updateFilter(filter, { field: $event })"
+          >
+            <DropdownItem
+              v-for="field in fields"
+              :key="'field-' + field.id"
+              :name="field.name"
+              :value="field.id"
+              :disabled="!hasCompatibleFilterTypes(field, filterTypes)"
+            ></DropdownItem>
+          </Dropdown>
+        </div>
+        <div class="filters__type">
+          <Dropdown
+            :disabled="disableFilter"
+            :value="filter.type"
+            :fixed-items="true"
+            class="dropdown--tiny"
+            @input="updateFilter(filter, { type: $event })"
+          >
+            <DropdownItem
+              v-for="fType in allowedFilters(filterTypes, fields, filter.field)"
+              :key="fType.type"
+              :name="fType.getName()"
+              :value="fType.type"
+            ></DropdownItem>
+          </Dropdown>
+        </div>
+        <div class="filters__value">
+          <component
+            :is="getInputComponent(filter.type, filter.field)"
+            v-if="
+              fieldIdExists(fields, filter.field) &&
+              fieldIsCompatible(filter.type, filter.field)
+            "
+            :ref="`filter-value-${index}`"
+            :filter="filter"
+            :view="view"
+            :fields="fields"
+            :disabled="disableFilter"
+            :read-only="readOnly"
+            @input="updateFilter(filter, { value: $event })"
+          />
+          <i
+            v-else-if="!fieldIdExists(fields, filter.field)"
+            v-tooltip="$t('viewFilterContext.relatedFieldNotFound')"
+            class="fas fa-exclamation-triangle color-error"
+          ></i>
+          <i
+            v-else-if="!fieldIsCompatible(filter.type, filter.field)"
+            v-tooltip="$t('viewFilterContext.filterTypeNotFound')"
+            class="fas fa-exclamation-triangle color-error"
+          ></i>
+        </div>
+        <a
+          v-if="!disableFilter"
+          class="filters__remove"
+          @click="deleteFilter($event, filter)"
+        >
+          <i class="iconoir-delete-circle"></i>
+        </a>
+        <span v-else class="filters__remove"></span>
+      </div>
+      <div
+        v-if="filtersTree.groups.length > 0"
+        class="filters__item-spacer"
+      ></div>
     </div>
     <div
       v-for="(groupNode, groupIndex) in filtersTree.groups"
       :key="filtersTree.filters.length + groupIndex"
-      class="filters__group-item"
+      class="filters__group-item-wrapper"
       :class="{
         'filters__item--loading': groupNode._ && groupNode._.loading,
       }"
@@ -99,105 +107,111 @@
         :disable-filter="disableFilter"
         @select-boolean-operator="$emit('selectOperator', $event)"
       />
-      <div class="filters__group-filters">
-        <div
-          v-for="(filter, index) in groupNode.filters"
-          :key="`${groupIndex}-${index}`"
-          class="filters__item"
-          :class="{
-            'filters__item--loading': filter._ && filter._.loading,
-          }"
-        >
-          <ViewFilterFormOperator
-            :index="index"
-            :filter-type="groupNode.group.filter_type"
-            :disable-filter="disableFilter"
-            @select-boolean-operator="
-              $emit('selectFilterGroupOperator', {
-                value: $event,
-                filterGroup: groupNode.group,
-              })
-            "
-          />
-          <div class="filters__field">
-            <Dropdown
-              :value="filter.field"
-              :disabled="disableFilter"
-              :fixed-items="true"
-              class="dropdown--tiny"
-              @input="updateFilter(filter, { field: $event })"
-            >
-              <DropdownItem
-                v-for="field in fields"
-                :key="'field-' + field.id"
-                :name="field.name"
-                :value="field.id"
-                :disabled="!hasCompatibleFilterTypes(field, filterTypes)"
-              ></DropdownItem>
-            </Dropdown>
-          </div>
-          <div class="filters__type">
-            <Dropdown
-              :disabled="disableFilter"
-              :value="filter.type"
-              :fixed-items="true"
-              class="dropdown--tiny"
-              @input="updateFilter(filter, { type: $event })"
-            >
-              <DropdownItem
-                v-for="fType in allowedFilters(
-                  filterTypes,
-                  fields,
-                  filter.field
-                )"
-                :key="fType.type"
-                :name="fType.getName()"
-                :value="fType.type"
-              ></DropdownItem>
-            </Dropdown>
-          </div>
-          <div class="filters__value">
-            <component
-              :is="getInputComponent(filter.type, filter.field)"
-              v-if="
-                fieldIdExists(fields, filter.field) &&
-                fieldIsCompatible(filter.type, filter.field)
-              "
-              :ref="`filter-value-${index}`"
-              :filter="filter"
-              :view="view"
-              :fields="fields"
-              :disabled="disableFilter"
-              :read-only="readOnly"
-              @input="updateFilter(filter, { value: $event })"
-            />
-            <i
-              v-else-if="!fieldIdExists(fields, filter.field)"
-              v-tooltip="$t('viewFilterContext.relatedFieldNotFound')"
-              class="fas fa-exclamation-triangle color-error"
-            ></i>
-            <i
-              v-else-if="!fieldIsCompatible(filter.type, filter.field)"
-              v-tooltip="$t('viewFilterContext.filterTypeNotFound')"
-              class="fas fa-exclamation-triangle color-error"
-            ></i>
-          </div>
-          <a
-            v-if="!disableFilter"
-            class="filters__remove"
-            @click="deleteFilter($event, filter)"
+      <div class="filters__group-item">
+        <div class="filters__group-item-filters">
+          <div
+            v-for="(filter, index) in groupNode.filters"
+            :key="`${groupIndex}-${index}`"
+            class="filters__item-wrapper"
           >
-            <i class="fas fa-trash"></i>
-          </a>
-          <span v-else class="filters__remove"></span>
+            <div
+              class="filters__item"
+              :class="{
+                'filters__item--loading': filter._ && filter._.loading,
+              }"
+            >
+              <ViewFilterFormOperator
+                :index="index"
+                :filter-type="groupNode.group.filter_type"
+                :disable-filter="disableFilter"
+                @select-boolean-operator="
+                  $emit('selectFilterGroupOperator', {
+                    value: $event,
+                    filterGroup: groupNode.group,
+                  })
+                "
+              />
+              <div class="filters__field">
+                <Dropdown
+                  :value="filter.field"
+                  :disabled="disableFilter"
+                  :fixed-items="true"
+                  class="dropdown--tiny"
+                  @input="updateFilter(filter, { field: $event })"
+                >
+                  <DropdownItem
+                    v-for="field in fields"
+                    :key="'field-' + field.id"
+                    :name="field.name"
+                    :value="field.id"
+                    :disabled="!hasCompatibleFilterTypes(field, filterTypes)"
+                  ></DropdownItem>
+                </Dropdown>
+              </div>
+              <div class="filters__type">
+                <Dropdown
+                  :disabled="disableFilter"
+                  :value="filter.type"
+                  :fixed-items="true"
+                  class="dropdown--tiny"
+                  @input="updateFilter(filter, { type: $event })"
+                >
+                  <DropdownItem
+                    v-for="fType in allowedFilters(
+                      filterTypes,
+                      fields,
+                      filter.field
+                    )"
+                    :key="fType.type"
+                    :name="fType.getName()"
+                    :value="fType.type"
+                  ></DropdownItem>
+                </Dropdown>
+              </div>
+              <div class="filters__value">
+                <component
+                  :is="getInputComponent(filter.type, filter.field)"
+                  v-if="
+                    fieldIdExists(fields, filter.field) &&
+                    fieldIsCompatible(filter.type, filter.field)
+                  "
+                  :ref="`filter-value-${index}`"
+                  :filter="filter"
+                  :view="view"
+                  :fields="fields"
+                  :disabled="disableFilter"
+                  :read-only="readOnly"
+                  @input="updateFilter(filter, { value: $event })"
+                />
+                <i
+                  v-else-if="!fieldIdExists(fields, filter.field)"
+                  v-tooltip="$t('viewFilterContext.relatedFieldNotFound')"
+                  class="fas fa-exclamation-triangle color-error"
+                ></i>
+                <i
+                  v-else-if="!fieldIsCompatible(filter.type, filter.field)"
+                  v-tooltip="$t('viewFilterContext.filterTypeNotFound')"
+                  class="fas fa-exclamation-triangle color-error"
+                ></i>
+              </div>
+              <a
+                v-if="!disableFilter"
+                class="filters__remove"
+                @click="deleteFilter($event, filter)"
+              >
+                <i class="iconoir-delete-circle"></i>
+              </a>
+              <span v-else class="filters__remove"></span>
+            </div>
+          </div>
         </div>
-        <div>
+        <div class="filters__group-item-actions">
           <a
             class="filters__add"
             @click.prevent="$emit('addFilter', groupNode.group.id)"
           >
-            <i class="fas fa-plus"></i>
-            {{ $t('viewFilterContext.addFilter') }}</a
+            <i class="filters__add-icon iconoir-plus"></i>
+            {{ $t(addConditionStringKey) }}</a
           >
         </div>
       </div>
@@ -278,6 +292,11 @@ export default {
     readOnly: {
       type: Boolean,
       required: true,
+    },
+    addConditionStringKey: {
+      type: String,
+      required: false,
+      default: 'viewFieldConditionsForm.addCondition',
     },
   },
   data() {

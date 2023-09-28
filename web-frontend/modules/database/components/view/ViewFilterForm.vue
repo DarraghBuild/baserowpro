@@ -18,6 +18,7 @@
       :fields="fields"
       :view="view"
       :read-only="readOnly"
+      :add-condition-string-key="'viewFilterContext.addFilter'"
       class="filters__items"
       @addFilter="addFilter($event)"
       @deleteFilter="deleteFilter($event)"
@@ -27,7 +28,7 @@
       @selectFilterGroupOperator="updateFilterGroupOperator($event)"
     />
     <div v-if="!disableFilter" class="filters__footer">
-      <div>
+      <div class="filters__actions">
         <a class="filters__add" @click.prevent="addFilter()">
           <i class="filters__add-icon iconoir-plus"></i>
           {{ $t('viewFilterContext.addFilter') }}</a

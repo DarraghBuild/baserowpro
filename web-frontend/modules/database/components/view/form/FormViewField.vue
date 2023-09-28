@@ -118,20 +118,22 @@
                 updateConditionGroupOperator(fieldOptions, $event)
               "
             />
-            <a
-              class="form-view__add-condition"
-              @click="addCondition(fieldOptions)"
-            >
-              <i class="iconoir-plus"></i>
-              {{ $t('formViewField.addCondition') }}
-            </a>
-            <a
-              class="form-view__add-condition"
-              @click="addConditionGroup(fieldOptions)"
-            >
-              <i class="fas fa-plus"></i>
-              {{ $t('formViewField.addConditionGroup') }}
-            </a>
+            <div class="form-view__condition-actions">
+              <a
+                class="form-view__add-condition"
+                @click="addCondition(fieldOptions)"
+              >
+                <i class="iconoir-plus"></i>
+                {{ $t('formViewField.addCondition') }}
+              </a>
+              <a
+                class="form-view__add-condition"
+                @click="addConditionGroup(fieldOptions)"
+              >
+                <i class="iconoir-plus"></i>
+                {{ $t('formViewField.addConditionGroup') }}
+              </a>
+            </div>
           </div>
         </div>
       </div>

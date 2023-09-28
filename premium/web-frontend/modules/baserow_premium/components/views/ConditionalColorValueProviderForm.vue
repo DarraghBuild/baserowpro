@@ -57,20 +57,22 @@
           @deleteFilterGroup="deleteFilterGroup(color, $event)"
           @selectFilterGroupOperator="updateFilterGroupOperator(color, $event)"
         />
-        <a
-          class="conditional-color-value-provider-form__color-filter-add"
-          @click.prevent="addFilter(color)"
-        >
-          <i class="iconoir-plus"></i>
-          {{ $t('conditionalColorValueProviderForm.addCondition') }}
-        </a>
-        <a
-          class="conditional-color-value-provider-form__color-filter-add"
-          @click.prevent="addFilterGroup(color)"
-        >
-          <i class="iconoir-plus"></i>
-          {{ $t('conditionalColorValueProviderForm.addConditionGroup') }}
-        </a>
+        <div>
+          <a
+            class="conditional-color-value-provider-form__color-filter-add"
+            @click.prevent="addFilter(color)"
+          >
+            <i class="iconoir-plus"></i>
+            {{ $t('conditionalColorValueProviderForm.addCondition') }}
+          </a>
+          <a
+            class="conditional-color-value-provider-form__color-filter-add"
+            @click.prevent="addFilterGroup(color)"
+          >
+            <i class="iconoir-plus"></i>
+            {{ $t('conditionalColorValueProviderForm.addConditionGroup') }}
+          </a>
+        </div>
         <ColorSelectContext
           :ref="`colorContext-${color.id}`"
           @selected="updateColor(color, { color: $event })"

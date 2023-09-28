@@ -62,8 +62,22 @@
 
 .conditional-color-value-provider-form__color-filters {
   margin-bottom: 12px;
+
+  .filters__add {
+    color: #062E47;
+
+    i { 
+      color: $color-neutral-400
+    }
+  }
 }
 
 .conditional-color-value-provider-form__color-filter-add {
-  color: $color-primary-900;
+  display: inline-block;
+  color: #062E47;
+  margin: 12px 8px 2px 8px;
+
+  i {
+    color: $color-neutral-400
+  }
 }
