@@ -9,6 +9,8 @@ import ImageElementForm from '@baserow/modules/builder/components/elements/compo
 import ImageElement from '@baserow/modules/builder/components/elements/components/ImageElement'
 import InputTextElement from '@baserow/modules/builder/components/elements/components/InputTextElement.vue'
 import InputTextElementForm from '@baserow/modules/builder/components/elements/components/forms/general/InputTextElementForm.vue'
+import TableElement from '@baserow/modules/builder/components/elements/components/TableElement.vue'
+import TableElementForm from '@baserow/modules/builder/components/elements/components/forms/general/TableElementForm.vue'
 
 import { PAGE_PARAM_TYPE_VALIDATION_FUNCTIONS } from '@baserow/modules/builder/enums'
 import ColumnElement from '@baserow/modules/builder/components/elements/components/ColumnElement'
@@ -131,7 +133,7 @@ export class ColumnElementType extends ContainerElementType {
   }
 
   get iconClass() {
-    return 'columns'
+    return 'iconoir-view-columns-3'
   }
 
   get component() {
@@ -167,7 +169,7 @@ export class HeadingElementType extends ElementType {
   }
 
   get iconClass() {
-    return 'heading'
+    return 'iconoir-text'
   }
 
   get component() {
@@ -193,7 +195,7 @@ export class ParagraphElementType extends ElementType {
   }
 
   get iconClass() {
-    return 'paragraph'
+    return 'iconoir-text-box'
   }
 
   get component() {
@@ -219,7 +221,7 @@ export class LinkElementType extends ElementType {
   }
 
   get iconClass() {
-    return 'link'
+    return 'iconoir-link'
   }
 
   get component() {
@@ -309,7 +311,7 @@ export class ImageElementType extends ElementType {
   }
 
   get iconClass() {
-    return 'image'
+    return 'iconoir-media-image'
   }
 
   get component() {
@@ -335,7 +337,7 @@ export class InputTextElementType extends ElementType {
   }
 
   get iconClass() {
-    return 'keyboard'
+    return 'iconoir-input-field'
   }
 
   get component() {
@@ -361,7 +363,7 @@ export class ButtonElementType extends ElementType {
   }
 
   get iconClass() {
-    return 'square'
+    return 'iconoir-square-cursor'
   }
 
   get component() {
@@ -374,5 +376,31 @@ export class ButtonElementType extends ElementType {
 
   get events() {
     return [ClickEvent]
+  }
+}
+
+export class TableElementType extends ElementType {
+  getType() {
+    return 'table'
+  }
+
+  get name() {
+    return this.app.i18n.t('elementType.table')
+  }
+
+  get description() {
+    return this.app.i18n.t('elementType.tableDescription')
+  }
+
+  get iconClass() {
+    return 'iconoir-table'
+  }
+
+  get component() {
+    return TableElement
+  }
+
+  get generalFormComponent() {
+    return TableElementForm
   }
 }

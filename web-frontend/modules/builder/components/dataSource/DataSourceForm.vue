@@ -9,6 +9,7 @@
         />
         <Dropdown
           v-model="values.type"
+          fixed-items
           class="data-source-form__type-dropdown"
           :placeholder="$t('dataSourceForm.servicePlaceholder')"
         >
@@ -50,7 +51,7 @@
               class="select__footer-button"
               @click="$refs.IntegrationCreateEditModal.show()"
             >
-              <i class="fas fa-plus"></i>
+              <i class="iconoir-plus"></i>
               {{ $t('dataSourceForm.addIntegration') }}
             </a>
             <IntegrationCreateEditModal
@@ -63,7 +64,7 @@
             />
           </template>
         </Dropdown>
-        <Button icon="trash" type="light" @click="$emit('delete')" />
+        <Button icon="iconoir-bin" type="light" @click="$emit('delete')" />
       </div>
       <div v-if="headerError" class="error">
         {{ headerError }}
