@@ -20,8 +20,12 @@
         @update="updateWorkflowAction(workflowAction, $event)"
       />
       <div class="margin-top-2">
-        <a v-if="!addingElement" class="anchor" @click="addWorkflowAction">
-          <i class="fas fa-plus margin-right-1"></i>
+        <a
+          v-if="!addingElement"
+          class="anchor event__add-element"
+          @click="addWorkflowAction"
+        >
+          <i class="iconoir-plus margin-right-1"></i>
           {{ $t('event.addAction') }}
         </a>
         <div v-else class="loading"></div>

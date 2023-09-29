@@ -15,7 +15,7 @@
     </Dropdown>
     <div class="margin-left-2">
       <a class="anchor" @click="$emit('delete')">
-        <i class="fas fa-trash"></i>
+        <i class="iconoir-trash"></i>
       </a>
     </div>
   </div>
