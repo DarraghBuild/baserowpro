@@ -1,5 +1,5 @@
-from abc import ABC
-from typing import Any, Dict
+from abc import ABC, abstractmethod
+from typing import Any, Dict, Type
 
 from baserow.core.registry import (
     CustomFieldsInstanceMixin,
@@ -9,13 +9,38 @@ from baserow.core.registry import (
     T,
 )
 from baserow.core.workflow_actions.models import WorkflowAction
+from baserow.core.workflow_actions.types import WorkflowActionDictSubClass
 
 
 class WorkflowActionType(
     Instance, ModelInstanceMixin, ImportExportMixin, CustomFieldsInstanceMixin, ABC
 ):
-    def export_serialized(self, instance: T) -> Dict[str, Any]:
-        return instance  # TODO
+    SerializedDict: Type[WorkflowActionDictSubClass]
+
+    def export_serialized(self, instance: WorkflowAction) -> Dict[str, Any]:
+        property_names = self.SerializedDict.__annotations__.keys()
+
+        serialized = self.SerializedDict(
+            **{
+                key: self.get_property_for_serialization(instance, key)
+                for key in property_names
+            }
+        )
+
+        return serialized
+
+    def get_property_for_serialization(
+        self, workflow_action: WorkflowAction, prop_name: str
+    ):
+        """
+        You can customize the behavior of the serialization of a property with this
+        hook.
+        """
+
+        if prop_name == "type":
+            return self.type
+
+        return getattr(workflow_action, prop_name)
 
     def import_serialized(
         self, parent: Any, serialized_values: Dict[str, Any], id_mapping: Dict
@@ -32,3 +57,10 @@ class WorkflowActionType(
         """
 
         return values
+
+    @abstractmethod
+    def get_sample_params(self) -> Dict[str, Any]:
+        """
+        Returns a sample of params for this type. This can be used to tests the element
+        for instance.
+        """
