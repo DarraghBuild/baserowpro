@@ -32,3 +32,23 @@ def test_export_workflow_action(data_fixture, workflow_action_type: WorkflowActi
 
     for key, value in sample_params.items():
         assert exported[key] == value
+
+
+@pytest.mark.django_db
+def test_import_workflow_action(data_fixture, workflow_action_type: WorkflowActionType):
+    page = data_fixture.create_builder_page()
+    sample_params = workflow_action_type.get_sample_params()
+
+    serialized = {"id": 9999, "type": workflow_action_type.type}
+    serialized.update(workflow_action_type.get_sample_params())
+
+    id_mapping = {}
+    workflow_action = workflow_action_type.import_serialized(
+        page, serialized, id_mapping
+    )
+
+    assert workflow_action.id != 9999
+    assert isinstance(workflow_action, workflow_action_type.model_class)
+
+    for key, value in sample_params.items():
+        assert getattr(workflow_action, key) == value

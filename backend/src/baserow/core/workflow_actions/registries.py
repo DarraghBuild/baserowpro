@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Type
+from typing import Any, Dict, Type, TYPE_CHECKING
 
 from baserow.core.registry import (
     CustomFieldsInstanceMixin,
@@ -10,6 +10,10 @@ from baserow.core.registry import (
 )
 from baserow.core.workflow_actions.models import WorkflowAction
 from baserow.core.workflow_actions.types import WorkflowActionDictSubClass
+
+
+if TYPE_CHECKING:
+    from baserow.contrib.builder.pages.models import Page
 
 
 class WorkflowActionType(
@@ -43,9 +47,23 @@ class WorkflowActionType(
         return getattr(workflow_action, prop_name)
 
     def import_serialized(
-        self, parent: Any, serialized_values: Dict[str, Any], id_mapping: Dict
+        self, page: "Page", serialized_values: Dict[str, Any], id_mapping: Dict
     ) -> T:
-        return serialized_values  # TODO
+        if "builder_workflow_actions" not in id_mapping:
+            id_mapping["builder_workflow_actions"] = {}
+
+        serialized_copy = serialized_values.copy()
+
+        # Remove extra keys
+        workflow_action_id = serialized_copy.pop("id")
+        serialized_copy.pop("type")
+
+        workflow_action = self.model_class(page=page, **serialized_copy)
+        workflow_action.save()
+
+        id_mapping["builder_workflow_actions"][workflow_action_id] = workflow_action.id
+
+        return workflow_action
 
     def prepare_value_for_db(self, values: Dict, instance: WorkflowAction = None):
         """
