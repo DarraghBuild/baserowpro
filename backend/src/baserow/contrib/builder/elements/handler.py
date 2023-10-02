@@ -17,6 +17,7 @@ from baserow.core.exceptions import IdDoesNotExist
 from baserow.core.utils import extract_allowed
 
 from .types import ElementForUpdate
+from ..workflow_actions.registries import builder_workflow_action_type_registry
 
 
 class ElementHandler:
@@ -367,6 +368,8 @@ class ElementHandler:
             element_type, element.page, before=element, **other_properties
         )
 
+        self._duplicate_workflow_actions_of_element(element, element_duplicated)
+
         elements_duplicated.append(element_duplicated)
 
         for child in element.children.all():
@@ -377,3 +380,36 @@ class ElementHandler:
             )
 
         return elements_duplicated
+
+    def _duplicate_workflow_actions_of_element(
+        self, element: Element, element_duplicated: Element
+    ):
+        """
+        This helper function duplicates all the workflow actions associated with the
+        element.
+
+        TODO: we need to send a realtime event here or attach the created workflow
+            actions in the API response, otherwise the user won't see the action
+            on the duplicated element immediately
+
+        :param element: The original element
+        :param element_duplicated: The duplicated reference of the original element
+        """
+
+        workflow_actions = element.builderworkflowaction_set.all()
+
+        id_mapping = {
+            "builder_pages": {element.page.id: element.page.id},
+            "builder_page_elements": {element.id: element_duplicated.id},
+        }
+
+        for workflow_action in specific_iterator(workflow_actions):
+            workflow_action_type = builder_workflow_action_type_registry.get_by_model(
+                workflow_action
+            )
+            workflow_action_serialized = workflow_action_type.export_serialized(
+                workflow_action
+            )
+            workflow_action_type.import_serialized(
+                element.page, workflow_action_serialized, id_mapping
+            )

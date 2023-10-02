@@ -17,6 +17,9 @@ from baserow.contrib.builder.elements.models import (
     ParagraphElement,
 )
 from baserow.contrib.builder.elements.registries import element_type_registry
+from baserow.contrib.builder.workflow_actions.handler import (
+    BuilderWorkflowActionHandler,
+)
 from baserow.core.exceptions import CannotCalculateIntermediateOrder
 
 
@@ -441,3 +444,24 @@ def test_duplicate_element_deeply_nested(data_fixture):
         child_second_level_duplicated.parent_element_id
         == child_first_level_duplicated.id
     )
+
+
+@pytest.mark.django_db
+def test_duplicate_element_with_workflow_action(data_fixture):
+    page = data_fixture.create_builder_page()
+    element = data_fixture.create_builder_button_element(page=page)
+    workflow_action = data_fixture.create_notification_workflow_action(
+        page=page, element=element
+    )
+
+    [element_duplicated] = ElementHandler().duplicate_element(element)
+
+    [
+        initial_workflow_action,
+        duplicated_workflow_action,
+    ] = BuilderWorkflowActionHandler().get_workflow_actions(page=page)
+
+    assert initial_workflow_action.id == workflow_action.id
+    assert initial_workflow_action.element_id == element.id
+
+    assert duplicated_workflow_action.element_id == element_duplicated.id
