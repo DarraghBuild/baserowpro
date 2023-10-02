@@ -19,6 +19,7 @@ from django.db.models.functions import Cast
 
 from baserow.contrib.database.fields.constants import UPSERT_OPTION_DICT_KEY
 from baserow.contrib.database.fields.field_sortings import OptionallyAnnotatedOrderBy
+from baserow.contrib.database.types import SerializedRowHistoryFieldMetadata
 from baserow.core.registries import ImportExportConfig
 from baserow.core.registry import (
     APIUrlsInstanceMixin,
@@ -105,6 +106,9 @@ class FieldType(
     Indicates whether this field can generate a list of unique values using the
     `FieldHandler::get_unique_row_values` method.
     """
+
+    _can_group_by = False
+    """Indicates whether it is possible to group by by this field type."""
 
     read_only = False
     """Indicates whether the field allows inserting/updating row values or if it is
@@ -234,6 +238,29 @@ class FieldType(
         :rtype: QuerySet
         """
 
+        return queryset
+
+    def enhance_queryset_in_bulk(
+        self, queryset: QuerySet, field_objects: List[dict]
+    ) -> QuerySet:
+        """
+        This hook is similar to the `enhance_queryset` method, but combined for all
+        the fields of the same type. This can for example be used to efficiently
+        fetch all select options of N number of single select fields.
+
+        :param queryset: The queryset that can be enhanced.
+        :param field_objects: All field objects of the same type in the table that
+            must be enhanced.
+        :return: The enhanced queryset.
+        """
+
+        # By default, the `enhance_queryset` of the field type is called for all the
+        # fields. Typically, this will be overridden if the queryset is enhanced in
+        # bulk.
+        for field_object in field_objects:
+            queryset = self.enhance_queryset(
+                queryset, field_object["field"], field_object["name"]
+            )
         return queryset
 
     def empty_query(
@@ -752,6 +779,19 @@ class FieldType(
         """
 
         return False
+
+    def serialize_to_input_value(self, field: Field, value: any) -> any:
+        """
+        Converts the field's value to input value. For example, we can use this method
+        to convert the result of random_value() to provide values to row actions
+        such as UpdateRowsActionType.
+
+        :param field: The field instance for which the provided value is intended.
+        :param value: The field's value that we want to represent as input value.
+        :return: Value represented as input value.
+        """
+
+        return value
 
     def export_serialized(
         self, field: Field, include_allowed_fields: bool = True
@@ -1437,6 +1477,20 @@ class FieldType(
 
         return self._can_order_by
 
+    def check_can_group_by(self, field: Field) -> bool:
+        """
+        Override this method if this field type can sometimes be grouped or sometimes
+        cannot be grouped depending on the individual field state. By default will just
+        return the bool property _can_group_by so if your field type doesn't depend
+        on the field state and is always just True or False just set _can_group_by
+        to the desired value.
+
+        :param field: The field to check to see if it can be grouped by or not.
+        :return: True if a view can be grouped by this field, False otherwise.
+        """
+
+        return self._can_group_by
+
     def before_field_options_update(
         self,
         field: Field,
@@ -1534,8 +1588,11 @@ class FieldType(
         return PermissionError(user)
 
     def serialize_metadata_for_row_history(
-        self, field: Field, new_value: Any, old_value: Any
-    ) -> Dict[str, Any]:
+        self,
+        field: Field,
+        row: "GeneratedTableModel",
+        metadata: Optional[SerializedRowHistoryFieldMetadata] = None,
+    ) -> SerializedRowHistoryFieldMetadata:
         """
         Returns a dictionary of metadata that should be stored in the row history
         table for this field type. This is necessary for fields that have a
@@ -1543,8 +1600,11 @@ class FieldType(
         the history table.
 
         :param field: The field instance that the value belongs to.
-        :param new_value: The new value of the field.
-        :param old_value: The old value of the field.
+        :param row: The row which the metadata are for.
+        :param metadata: When provided, the new metadata will be merged with
+            the provided ones. That way this method can be called twice for old
+            and new values of the row while keeping single metadata representing
+            both.
         :return: A dictionary of metadata that should be stored in the row history
             table for this field type.
         """
@@ -1553,6 +1613,18 @@ class FieldType(
             "id": field.id,
             "type": self.type,
         }
+
+    def are_row_values_equal(self, value1: any, value2: any) -> bool:
+        """
+        Determines if two field values are the same.
+
+        :param value1: The first field value to compare.
+        :param value2: The second field value to compare.
+        :return: Boolean indicating whether value1 and value2 are in
+            fact the same.
+        """
+
+        return value1 == value2
 
 
 class ReadOnlyFieldHasNoInternalDbValueError(Exception):

@@ -18,6 +18,7 @@ import publicBuilderStore from '@baserow/modules/builder/store/publicBuilder'
 import dataSourceStore from '@baserow/modules/builder/store/dataSource'
 import pageParameterStore from '@baserow/modules/builder/store/pageParameter'
 import dataSourceContentStore from '@baserow/modules/builder/store/dataSourceContent'
+import themeStore from '@baserow/modules/builder/store/theme'
 
 import { registerRealtimeEvents } from '@baserow/modules/builder/realtime'
 import {
@@ -27,6 +28,8 @@ import {
   LinkElementType,
   InputTextElementType,
   ColumnElementType,
+  ButtonElementType,
+  TableElementType,
 } from '@baserow/modules/builder/elementTypes'
 import {
   DesktopDeviceType,
@@ -48,7 +51,10 @@ import {
   VisibilityPageSidePanelType,
   StylePageSidePanelType,
 } from '@baserow/modules/builder/pageSidePanelTypes'
-import { CustomDomainType } from '@baserow/modules/builder/domainTypes'
+import {
+  CustomDomainType,
+  SubDomainType,
+} from '@baserow/modules/builder/domainTypes'
 import { PagePageSettingsType } from '@baserow/modules/builder/pageSettingsTypes'
 import {
   TextPathParamType,
@@ -64,6 +70,8 @@ import {
   PageParameterDataProviderType,
   DataSourceDataProviderType,
 } from '@baserow/modules/builder/dataProviderTypes'
+
+import { MainThemeConfigBlock } from '@baserow/modules/builder/themeConfigBlockTypes'
 
 export default (context) => {
   const { store, app, isDev } = context
@@ -89,6 +97,7 @@ export default (context) => {
   store.registerModule('dataSource', dataSourceStore)
   store.registerModule('pageParameter', pageParameterStore)
   store.registerModule('dataSourceContent', dataSourceContentStore)
+  store.registerModule('theme', themeStore)
 
   app.$registry.registerNamespace('builderSettings')
   app.$registry.registerNamespace('element')
@@ -98,6 +107,7 @@ export default (context) => {
   app.$registry.registerNamespace('pageSettings')
   app.$registry.registerNamespace('pathParamType')
   app.$registry.registerNamespace('builderDataProvider')
+  app.$registry.registerNamespace('themeConfigBlock')
 
   app.$registry.register('application', new BuilderApplicationType(context))
   app.$registry.register('job', new DuplicatePageJobType(context))
@@ -123,6 +133,8 @@ export default (context) => {
   app.$registry.register('element', new ImageElementType(context))
   app.$registry.register('element', new InputTextElementType(context))
   app.$registry.register('element', new ColumnElementType(context))
+  app.$registry.register('element', new ButtonElementType(context))
+  app.$registry.register('element', new TableElementType(context))
 
   app.$registry.register('device', new DesktopDeviceType(context))
   app.$registry.register('device', new TabletDeviceType(context))
@@ -153,6 +165,7 @@ export default (context) => {
   app.$registry.register('pageSidePanel', new EventsPageSidePanelType(context))
 
   app.$registry.register('domain', new CustomDomainType(context))
+  app.$registry.register('domain', new SubDomainType(context))
 
   app.$registry.register('pageSettings', new PagePageSettingsType(context))
 
@@ -170,4 +183,6 @@ export default (context) => {
     'builderDataProvider',
     new PageParameterDataProviderType(context)
   )
+
+  app.$registry.register('themeConfigBlock', new MainThemeConfigBlock(context))
 }

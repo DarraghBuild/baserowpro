@@ -34,6 +34,7 @@ import {
   DateNotEqualViewFilterType,
   ContainsViewFilterType,
   FilenameContainsViewFilterType,
+  FilesLowerThanViewFilterType,
   HasFileTypeViewFilterType,
   ContainsNotViewFilterType,
   LengthIsLowerThanViewFilterType,
@@ -130,6 +131,7 @@ import {
   BaserowLessThan,
   BaserowLessThanOrEqual,
   BaserowLower,
+  BaserowSplitPart,
   BaserowMinus,
   BaserowMultiply,
   BaserowNot,
@@ -362,6 +364,10 @@ export default (context) => {
   app.$registry.register('viewFilter', new HasFileTypeViewFilterType(context))
   app.$registry.register(
     'viewFilter',
+    new FilesLowerThanViewFilterType(context)
+  )
+  app.$registry.register(
+    'viewFilter',
     new LengthIsLowerThanViewFilterType(context)
   )
   app.$registry.register('viewFilter', new HigherThanViewFilterType(context))
@@ -462,6 +468,7 @@ export default (context) => {
     'formula_function',
     new BaserowEncodeUriComponent(context)
   )
+  app.$registry.register('formula_function', new BaserowSplitPart(context))
   // Number functions
   app.$registry.register('formula_function', new BaserowMultiply(context))
   app.$registry.register('formula_function', new BaserowDivide(context))

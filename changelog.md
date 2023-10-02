@@ -1,5 +1,25 @@
 # Changelog
 
+## Released 1.20.2
+
+### Bug fixes
+* Fixed that the dropdowns in the filters context are being cut off [#1965](https://gitlab.com/baserow/baserow/-/issues/1965)
+* Fix row ID being truncated in the grid view with 4 digit numbers in some browsers
+* Respect the canKeyDown method when starting the multiple selection via keyboard shortcut
+
+
+## Released 1.20.1
+
+### New features
+* Remember the last used view, per table, per user [#1273](https://gitlab.com/baserow/baserow/-/issues/1273)
+* add split_part formula function [#1940](https://gitlab.com/baserow/baserow/-/issues/1940)
+* introduce DATABASE_OPTIONS json string env var for setting additional database_options. [#1949](https://gitlab.com/baserow/baserow/-/issues/1949)
+
+### Bug fixes
+* fix pasting clearing multiple cells not showing results on a grid view with a hidden filtered [#1948](https://gitlab.com/baserow/baserow/-/issues/1948)
+* Fixed performance problem with sorts because of an accidental query evaluation
+
+
 ## Released 1.20.0
 
 ### New features

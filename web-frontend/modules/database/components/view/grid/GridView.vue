@@ -139,7 +139,7 @@
       <ul v-show="isMultiSelectActive" class="context__menu">
         <li>
           <a @click=";[copySelection(), $refs.rowContext.hide()]">
-            <i class="context__menu-icon fas fa-fw fa-copy"></i>
+            <i class="context__menu-icon iconoir-copy"></i>
             {{ $t('gridView.copyCells') }}
           </a>
         </li>
@@ -157,7 +157,7 @@
             :class="{ 'context__menu-item--loading': deletingRow }"
             @click.stop="deleteRowsFromMultipleCellSelection()"
           >
-            <i class="context__menu-icon fas fa-fw fa-trash"></i>
+            <i class="context__menu-icon iconoir-bin"></i>
             {{ $t('gridView.deleteRows') }}
           </a>
         </li>
@@ -167,7 +167,7 @@
           <a
             @click=";[selectRow($event, selectedRow), $refs.rowContext.hide()]"
           >
-            <i class="context__menu-icon fas fa-fw fa-check-square"></i>
+            <i class="context__menu-icon iconoir-check-circle"></i>
             {{ $t('gridView.selectRow') }}
           </a>
         </li>
@@ -182,7 +182,7 @@
           "
         >
           <a @click="addRowAboveSelectedRow($event, selectedRow)">
-            <i class="context__menu-icon fas fa-fw fa-arrow-up"></i>
+            <i class="context__menu-icon iconoir-arrow-up"></i>
             {{ $t('gridView.insertRowAbove') }}
           </a>
         </li>
@@ -197,7 +197,7 @@
           "
         >
           <a @click="addRowBelowSelectedRow($event, selectedRow)">
-            <i class="context__menu-icon fas fa-fw fa-arrow-down"></i>
+            <i class="context__menu-icon iconoir-arrow-down"></i>
             {{ $t('gridView.insertRowBelow') }}
           </a>
         </li>
@@ -212,13 +212,13 @@
           "
         >
           <a @click="duplicateSelectedRow($event, selectedRow)">
-            <i class="context__menu-icon fas fa-fw fa-clone"></i>
+            <i class="context__menu-icon iconoir-copy"></i>
             {{ $t('gridView.duplicateRow') }}
           </a>
         </li>
         <li v-if="!readOnly">
           <a @click="copyLinkToSelectedRow($event, selectedRow)">
-            <i class="context__menu-icon fas fa-fw fa-link"></i>
+            <i class="context__menu-icon iconoir-link"></i>
             {{ $t('gridView.copyRowURL') }}
           </a>
         </li>
@@ -228,7 +228,7 @@
               ;[openRowEditModal(selectedRow.id), $refs.rowContext.hide()]
             "
           >
-            <i class="context__menu-icon fas fa-fw fa-expand"></i>
+            <i class="context__menu-icon iconoir-expand"></i>
             {{ $t('gridView.enlargeRow') }}
           </a>
         </li>
@@ -243,7 +243,7 @@
           "
         >
           <a @click="deleteRow(selectedRow)">
-            <i class="context__menu-icon fas fa-fw fa-trash"></i>
+            <i class="context__menu-icon iconoir-bin"></i>
             {{ $t('gridView.deleteRow') }}
           </a>
         </li>
@@ -356,6 +356,11 @@ export default {
       // not, the primary field is not sticky, so it's easier to view all data on for
       // example a smartphone.
       canFitInTwoColumns: true,
+      // When a cell is selected, the component will be propagated and stored into this
+      // array until it's unselected. Having these components here can be useful if a
+      // global keyboard shortcut must be blocked if a single line text field cell is
+      // in an editing state for example.
+      selectedCellComponents: [],
     }
   },
   computed: {
@@ -895,6 +900,13 @@ export default {
      * we might need to scroll a little bit.
      */
     selectedCell({ component, row, field }) {
+      // Put the selected cell component in an array, so that we can check whether it's
+      // allowed to hit keyboard shortcuts, click outside, etc when a global keyboard
+      // short is called.
+      if (!this.selectedCellComponents.includes(component)) {
+        this.selectedCellComponents.push(component)
+      }
+
       const element = component.$el
       this.scrollToCellElement(element, 'both', field)
 
@@ -906,7 +918,14 @@ export default {
     /**
      * When a cell is unselected need to change the selected state of the row.
      */
-    unselectedCell({ row, field }) {
+    unselectedCell({ component, row, field }) {
+      // Remove the selected cell component in an array because we don't have to check
+      // if keyboard shortcuts are allowed, click outside, etc is allowed anymore.
+      if (this.selectedCellComponents.includes(component)) {
+        const index = this.selectedCellComponents.indexOf(component)
+        this.selectedCellComponents.splice(index, 1)
+      }
+
       // We want to change selected state of the row on the next tick because if another
       // cell within a row is selected, we want to wait for that selected state tot
       // change. This will make sure that the row is stays selected.
@@ -1084,7 +1103,22 @@ export default {
         ArrowDown: 'below',
       }
       const { key, shiftKey } = event
-      if (arrowKeys.includes(key) && shiftKey) {
+      if (
+        arrowKeys.includes(key) &&
+        shiftKey &&
+        // Only allow this event if there is an active single cell selection, or
+        // multiple selection.
+        (this.$store.getters[this.storePrefix + 'view/grid/hasSelectedCell'] ||
+          this.$store.getters[
+            this.storePrefix + 'view/grid/isMultiSelectActive'
+          ]) &&
+        // And there is no selected cell component blocking the select next events. A
+        // single line text field can for example block this while it's in an editing
+        // state.
+        this.selectedCellComponents.every((component) => {
+          return component.canSelectNext(event)
+        })
+      ) {
         event.preventDefault()
 
         const { position, fieldIndex, rowIndex } = await this.$store.dispatch(
@@ -1255,7 +1289,8 @@ export default {
           {
             table: this.table,
             view: this.view,
-            fields: this.allVisibleFields,
+            allVisibleFields: this.allVisibleFields,
+            allFieldsInTable: this.fields,
             getScrollTop: () => this.$refs.left.$refs.body.scrollTop,
             textData,
             jsonData,
@@ -1307,7 +1342,8 @@ export default {
           {
             table: this.table,
             view: this.view,
-            fields: this.allVisibleFields,
+            allVisibleFields: this.allVisibleFields,
+            allFieldsInTable: this.fields,
             getScrollTop: () => this.$refs.left.$refs.body.scrollTop,
           }
         )

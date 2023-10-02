@@ -83,6 +83,14 @@ import RowCardFieldURL from '@baserow/modules/database/components/card/RowCardFi
 import RowCardFieldMultipleCollaborators from '@baserow/modules/database/components/card/RowCardFieldMultipleCollaborators'
 
 import RowHistoryFieldText from '@baserow/modules/database/components/row/RowHistoryFieldText'
+import RowHistoryFieldDate from '@baserow/modules/database/components/row/RowHistoryFieldDate'
+import RowHistoryFieldNumber from '@baserow/modules/database/components/row/RowHistoryFieldNumber'
+import RowHistoryFieldMultipleCollaborators from '@baserow/modules/database/components/row/RowHistoryFieldMultipleCollaborators'
+import RowHistoryFieldFile from '@baserow/modules/database/components/row/RowHistoryFieldFile'
+import RowHistoryFieldMultipleSelect from '@baserow/modules/database/components/row/RowHistoryFieldMultipleSelect'
+import RowHistoryFieldSingleSelect from '@baserow/modules/database/components/row/RowHistoryFieldSingleSelect'
+import RowHistoryFieldBoolean from '@baserow/modules/database/components/row/RowHistoryFieldBoolean'
+import RowHistoryFieldLinkRow from '@baserow/modules/database/components/row/RowHistoryFieldLinkRow'
 
 import FormViewFieldLinkRow from '@baserow/modules/database/components/view/form/FormViewFieldLinkRow'
 
@@ -110,10 +118,10 @@ import _ from 'lodash'
 
 export class FieldType extends Registerable {
   /**
-   * The font awesome 5 icon name that is used as convenience for the user to
+   * The icon class name that is used as convenience for the user to
    * recognize certain field types. If you for example want the database
    * icon, you must return 'database' here. This will result in the classname
-   * 'fas fa-database'.
+   * 'iconoir-database'.
    */
   getIconClass() {
     return null
@@ -255,6 +263,17 @@ export class FieldType extends Registerable {
   }
 
   /**
+   * Indicates whether or not it is possible to group by this field in a view.
+   */
+  getCanGroupByInView(field) {
+    return false
+  }
+
+  getGroupByIndicator(field, registry) {
+    return this.getSortIndicator(field, registry)
+  }
+
+  /**
    * Indicates if is possible for the field type to be the primary field.
    */
   getCanBePrimaryField() {
@@ -341,9 +360,9 @@ export class FieldType extends Registerable {
   /**
    * Should return a visualisation of how the sort function is going to work. For
    * example ['text', 'A', 'Z'] will result in 'A -> Z' as ascending and 'Z -> A'
-   * descending visualisation for the user. It is also possible to use a Font Awesome
+   * descending visualisation for the user. It is also possible to use a icon class name
    * icon here by changing the first value to 'icon'. For example
-   * ['icon', 'square', 'check-square'].
+   * ['icon', 'square', 'security-pass'].
    */
   getSortIndicator() {
     return ['text', 'A', 'Z']
@@ -642,7 +661,7 @@ export class TextFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'font'
+    return 'iconoir-text'
   }
 
   getName() {
@@ -717,6 +736,10 @@ export class TextFieldType extends FieldType {
   getCanImport() {
     return true
   }
+
+  getCanGroupByInView(field) {
+    return true
+  }
 }
 
 export class LongTextFieldType extends FieldType {
@@ -725,7 +748,7 @@ export class LongTextFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'align-left'
+    return 'iconoir-align-left'
   }
 
   getName() {
@@ -797,6 +820,10 @@ export class LongTextFieldType extends FieldType {
   getCanImport() {
     return true
   }
+
+  getCanGroupByInView(field) {
+    return true
+  }
 }
 
 export class LinkRowFieldType extends FieldType {
@@ -805,7 +832,7 @@ export class LinkRowFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'plug'
+    return 'iconoir-ev-plug'
   }
 
   getName() {
@@ -835,6 +862,10 @@ export class LinkRowFieldType extends FieldType {
 
   getCardComponent() {
     return RowCardFieldLinkRow
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldLinkRow
   }
 
   getEmptyValue(field) {
@@ -999,7 +1030,7 @@ export class NumberFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'hashtag'
+    return 'baserow-icon-hashtag'
   }
 
   getName() {
@@ -1025,6 +1056,10 @@ export class NumberFieldType extends FieldType {
 
   getCardComponent() {
     return RowCardFieldNumber
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldNumber
   }
 
   getSortIndicator() {
@@ -1180,6 +1215,10 @@ export class NumberFieldType extends FieldType {
   getCanImport() {
     return true
   }
+
+  getCanGroupByInView(field) {
+    return true
+  }
 }
 
 export class RatingFieldType extends FieldType {
@@ -1192,7 +1231,7 @@ export class RatingFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'star'
+    return 'iconoir-star'
   }
 
   getName() {
@@ -1218,6 +1257,10 @@ export class RatingFieldType extends FieldType {
 
   getCardComponent() {
     return RowCardFieldRating
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldText
   }
 
   getSortIndicator() {
@@ -1310,6 +1353,10 @@ export class RatingFieldType extends FieldType {
   getCanImport() {
     return true
   }
+
+  getCanGroupByInView(field) {
+    return true
+  }
 }
 
 export class BooleanFieldType extends FieldType {
@@ -1318,7 +1365,7 @@ export class BooleanFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'check-square'
+    return 'baserow-icon-circle-checked'
   }
 
   getName() {
@@ -1342,12 +1389,16 @@ export class BooleanFieldType extends FieldType {
     return RowCardFieldBoolean
   }
 
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldBoolean
+  }
+
   getEmptyValue(field) {
     return false
   }
 
   getSortIndicator() {
-    return ['icon', 'square', 'check-square']
+    return ['icon', 'baserow-icon-circle-empty', 'baserow-icon-circle-checked']
   }
 
   getSort(name, order) {
@@ -1401,11 +1452,15 @@ export class BooleanFieldType extends FieldType {
   toSearchableString(field, value, delimiter = ', ') {
     return value ? 'true' : 'false'
   }
+
+  getCanGroupByInView(field) {
+    return true
+  }
 }
 
 class BaseDateFieldType extends FieldType {
   getIconClass() {
-    return 'calendar-alt'
+    return 'iconoir-calendar'
   }
 
   getSortIndicator() {
@@ -1418,6 +1473,10 @@ class BaseDateFieldType extends FieldType {
 
   getCardComponent() {
     return RowCardFieldDate
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldDate
   }
 
   getSort(name, order) {
@@ -1597,6 +1656,10 @@ class BaseDateFieldType extends FieldType {
   canRepresentDate(field) {
     return true
   }
+
+  getCanGroupByInView(field) {
+    return true
+  }
 }
 
 export class DateFieldType extends BaseDateFieldType {
@@ -1697,7 +1760,7 @@ export class LastModifiedFieldType extends CreatedOnLastModifiedBaseFieldType {
   }
 
   getIconClass() {
-    return 'edit'
+    return 'iconoir-edit'
   }
 
   getName() {
@@ -1731,7 +1794,7 @@ export class CreatedOnFieldType extends CreatedOnLastModifiedBaseFieldType {
   }
 
   getIconClass() {
-    return 'plus'
+    return 'iconoir-plus'
   }
 
   getDocsDescription(field) {
@@ -1753,7 +1816,7 @@ export class URLFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'link'
+    return 'iconoir-link'
   }
 
   getName() {
@@ -1775,6 +1838,10 @@ export class URLFieldType extends FieldType {
 
   getCardComponent() {
     return RowCardFieldURL
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldText
   }
 
   prepareValueForPaste(field, clipboardData) {
@@ -1832,6 +1899,10 @@ export class URLFieldType extends FieldType {
   canBeReferencedByFormulaField() {
     return true
   }
+
+  getCanGroupByInView(field) {
+    return true
+  }
 }
 
 export class EmailFieldType extends FieldType {
@@ -1840,7 +1911,7 @@ export class EmailFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'at'
+    return 'iconoir-mail'
   }
 
   getName() {
@@ -1862,6 +1933,10 @@ export class EmailFieldType extends FieldType {
 
   getCardComponent() {
     return RowCardFieldEmail
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldText
   }
 
   prepareValueForPaste(field, clipboardData) {
@@ -1926,6 +2001,10 @@ export class EmailFieldType extends FieldType {
   getCanImport() {
     return true
   }
+
+  getCanGroupByInView(field) {
+    return true
+  }
 }
 
 export class FileFieldType extends FieldType {
@@ -1937,7 +2016,7 @@ export class FileFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'file'
+    return 'iconoir-empty-page'
   }
 
   getName() {
@@ -1955,6 +2034,10 @@ export class FileFieldType extends FieldType {
 
   getRowEditFieldComponent() {
     return RowEditFieldFile
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldFile
   }
 
   getFormViewFieldComponentProperties({ $store, $client, slug }) {
@@ -2114,7 +2197,7 @@ export class SingleSelectFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'chevron-circle-down'
+    return 'baserow-icon-single-select'
   }
 
   getName() {
@@ -2136,6 +2219,10 @@ export class SingleSelectFieldType extends FieldType {
 
   getRowEditFieldComponent() {
     return RowEditFieldSingleSelect
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldSingleSelect
   }
 
   getFormViewFieldComponentProperties() {
@@ -2292,6 +2379,10 @@ export class SingleSelectFieldType extends FieldType {
   getCanImport() {
     return true
   }
+
+  getCanGroupByInView(field) {
+    return true
+  }
 }
 
 export class MultipleSelectFieldType extends FieldType {
@@ -2300,7 +2391,7 @@ export class MultipleSelectFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'list'
+    return 'iconoir-list'
   }
 
   getName() {
@@ -2332,6 +2423,10 @@ export class MultipleSelectFieldType extends FieldType {
 
   getCardComponent() {
     return RowCardFieldMultipleSelect
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldMultipleSelect
   }
 
   getSort(name, order) {
@@ -2528,6 +2623,10 @@ export class MultipleSelectFieldType extends FieldType {
   getCanImport() {
     return true
   }
+
+  getCanGroupByInView(field) {
+    return true
+  }
 }
 
 export class PhoneNumberFieldType extends FieldType {
@@ -2536,7 +2635,7 @@ export class PhoneNumberFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'phone'
+    return 'iconoir-phone'
   }
 
   getName() {
@@ -2558,6 +2657,10 @@ export class PhoneNumberFieldType extends FieldType {
 
   getCardComponent() {
     return RowCardFieldPhoneNumber
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldText
   }
 
   prepareValueForPaste(field, clipboardData) {
@@ -2623,6 +2726,10 @@ export class PhoneNumberFieldType extends FieldType {
   getCanImport() {
     return true
   }
+
+  getCanGroupByInView(field) {
+    return true
+  }
 }
 
 export class FormulaFieldType extends FieldType {
@@ -2649,7 +2756,7 @@ export class FormulaFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'square-root-alt'
+    return 'baserow-icon-formula'
   }
 
   getName() {
@@ -2777,6 +2884,11 @@ export class FormulaFieldType extends FieldType {
     const subType = this.app.$registry.get('formula_type', field.formula_type)
     return subType.canRepresentDate(field)
   }
+
+  getCanGroupByInView(field) {
+    const subType = this.app.$registry.get('formula_type', field.formula_type)
+    return subType.canGroupByInView(field)
+  }
 }
 
 export class CountFieldType extends FormulaFieldType {
@@ -2785,7 +2897,7 @@ export class CountFieldType extends FormulaFieldType {
   }
 
   getIconClass() {
-    return 'calculator'
+    return 'iconoir-calculator'
   }
 
   getName() {
@@ -2812,7 +2924,7 @@ export class RollupFieldType extends FormulaFieldType {
   }
 
   getIconClass() {
-    return 'box-open'
+    return 'iconoir-box-iso'
   }
 
   getName() {
@@ -2839,7 +2951,7 @@ export class LookupFieldType extends FormulaFieldType {
   }
 
   getIconClass() {
-    return 'binoculars'
+    return 'iconoir-binocular'
   }
 
   getName() {
@@ -2866,7 +2978,7 @@ export class MultipleCollaboratorsFieldType extends FieldType {
   }
 
   getIconClass() {
-    return 'user-friends'
+    return 'iconoir-community'
   }
 
   getName() {
@@ -2892,6 +3004,10 @@ export class MultipleCollaboratorsFieldType extends FieldType {
 
   getCardComponent() {
     return RowCardFieldMultipleCollaborators
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldMultipleCollaborators
   }
 
   prepareValueForUpdate(field, value) {

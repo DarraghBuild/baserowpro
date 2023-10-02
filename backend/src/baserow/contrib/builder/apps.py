@@ -135,12 +135,14 @@ class BuilderConfig(AppConfig):
         permission_manager_type_registry.register(AllowPublicBuilderManagerType())
 
         from .elements.element_types import (
+            ButtonElementType,
             ColumnElementType,
             HeadingElementType,
             ImageElementType,
             InputTextElementType,
             LinkElementType,
             ParagraphElementType,
+            TableElementType,
         )
         from .elements.registries import element_type_registry
 
@@ -150,6 +152,14 @@ class BuilderConfig(AppConfig):
         element_type_registry.register(ImageElementType())
         element_type_registry.register(InputTextElementType())
         element_type_registry.register(ColumnElementType())
+        element_type_registry.register(ButtonElementType())
+        element_type_registry.register(TableElementType())
+
+        from .domains.domain_types import CustomDomainType, SubDomainType
+        from .domains.registries import domain_type_registry
+
+        domain_type_registry.register(CustomDomainType())
+        domain_type_registry.register(SubDomainType())
 
         from .domains.trash_types import DomainTrashableItemType
 

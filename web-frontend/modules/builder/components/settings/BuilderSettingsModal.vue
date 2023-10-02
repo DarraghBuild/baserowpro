@@ -1,5 +1,11 @@
 <template>
-  <Modal left-sidebar left-sidebar-scrollable>
+  <Modal
+    left-sidebar
+    left-sidebar-scrollable
+    :content-padding="
+      settingSelected == null ? true : settingSelected.componentPadding
+    "
+  >
     <template #sidebar>
       <div class="modal-sidebar__head">
         <div class="modal-sidebar__head-name">
@@ -13,10 +19,7 @@
             :class="{ active: setting === settingSelected }"
             @click="settingSelected = setting"
           >
-            <i
-              class="fas modal-sidebar__nav-icon"
-              :class="'fa-' + setting.icon"
-            ></i>
+            <i class="modal-sidebar__nav-icon" :class="setting.icon"></i>
             {{ setting.name }}
           </a>
         </li>

@@ -136,6 +136,10 @@ export class BaserowFormulaTypeDefinition extends Registerable {
   canRepresentDate() {
     return false
   }
+
+  canGroupByInView() {
+    return false
+  }
 }
 
 export class BaserowFormulaTextType extends BaserowFormulaTypeDefinition {
@@ -148,7 +152,7 @@ export class BaserowFormulaTextType extends BaserowFormulaTypeDefinition {
   }
 
   getIconClass() {
-    return 'font'
+    return 'iconoir-text'
   }
 
   getRowEditFieldComponent() {
@@ -170,6 +174,10 @@ export class BaserowFormulaTextType extends BaserowFormulaTypeDefinition {
   canBeSortedWhenInArray(field) {
     return true
   }
+
+  canGroupByInView() {
+    return true
+  }
 }
 
 export class BaserowFormulaCharType extends BaserowFormulaTypeDefinition {
@@ -182,7 +190,7 @@ export class BaserowFormulaCharType extends BaserowFormulaTypeDefinition {
   }
 
   getIconClass() {
-    return 'font'
+    return 'iconoir-text'
   }
 
   getRowEditFieldComponent() {
@@ -200,6 +208,10 @@ export class BaserowFormulaCharType extends BaserowFormulaTypeDefinition {
   canBeSortedWhenInArray(field) {
     return true
   }
+
+  canGroupByInView() {
+    return true
+  }
 }
 
 export class BaserowFormulaNumberType extends BaserowFormulaTypeDefinition {
@@ -212,7 +224,7 @@ export class BaserowFormulaNumberType extends BaserowFormulaTypeDefinition {
   }
 
   getIconClass() {
-    return 'hashtag'
+    return 'baserow-icon-hashtag'
   }
 
   getRowEditFieldComponent() {
@@ -224,6 +236,10 @@ export class BaserowFormulaNumberType extends BaserowFormulaTypeDefinition {
   }
 
   canBeSortedWhenInArray(field) {
+    return true
+  }
+
+  canGroupByInView() {
     return true
   }
 }
@@ -238,7 +254,7 @@ export class BaserowFormulaBooleanType extends BaserowFormulaTypeDefinition {
   }
 
   getIconClass() {
-    return 'check-square'
+    return 'baserow-icon-circle-checked'
   }
 
   getRowEditFieldComponent() {
@@ -256,6 +272,10 @@ export class BaserowFormulaBooleanType extends BaserowFormulaTypeDefinition {
   canBeSortedWhenInArray(field) {
     return true
   }
+
+  canGroupByInView() {
+    return true
+  }
 }
 
 export class BaserowFormulaDateType extends BaserowFormulaTypeDefinition {
@@ -268,7 +288,7 @@ export class BaserowFormulaDateType extends BaserowFormulaTypeDefinition {
   }
 
   getIconClass() {
-    return 'calendar-alt'
+    return 'iconoir-calendar'
   }
 
   getRowEditFieldComponent() {
@@ -294,6 +314,10 @@ export class BaserowFormulaDateType extends BaserowFormulaTypeDefinition {
   mapToSortableArray(element) {
     return element.value
   }
+
+  canGroupByInView() {
+    return true
+  }
 }
 
 export class BaserowFormulaDateIntervalType extends BaserowFormulaTypeDefinition {
@@ -306,7 +330,7 @@ export class BaserowFormulaDateIntervalType extends BaserowFormulaTypeDefinition
   }
 
   getIconClass() {
-    return 'history'
+    return 'baserow-icon-history'
   }
 
   getRowEditFieldComponent() {
@@ -324,6 +348,10 @@ export class BaserowFormulaDateIntervalType extends BaserowFormulaTypeDefinition
   getSortOrder() {
     return 5
   }
+
+  canGroupByInView() {
+    return true
+  }
 }
 
 // This type only exists in the frontend and only is referenced by a few weird frontend
@@ -338,7 +366,7 @@ export class BaserowFormulaSpecialType extends BaserowFormulaTypeDefinition {
   }
 
   getIconClass() {
-    return 'square-root-alt'
+    return 'baserow-icon-formula'
   }
 
   getRowEditFieldComponent() {
@@ -364,7 +392,7 @@ export class BaserowFormulaInvalidType extends BaserowFormulaTypeDefinition {
   }
 
   getIconClass() {
-    return 'fa-exclamation-triangle'
+    return 'iconoir-warning-triangle'
   }
 
   getCardComponent() {
@@ -398,7 +426,7 @@ export class BaserowFormulaArrayType extends BaserowFormulaTypeDefinition {
   }
 
   getIconClass() {
-    return 'list'
+    return 'iconoir-list'
   }
 
   getCardComponent() {
@@ -529,6 +557,10 @@ export class BaserowFormulaArrayType extends BaserowFormulaTypeDefinition {
       })
       .join(', ')
   }
+
+  canGroupByInView() {
+    return true
+  }
 }
 
 export class BaserowFormulaSingleSelectType extends BaserowFormulaTypeDefinition {
@@ -541,7 +573,7 @@ export class BaserowFormulaSingleSelectType extends BaserowFormulaTypeDefinition
   }
 
   getIconClass() {
-    return 'chevron-circle-down '
+    return 'baserow-icon-single-select'
   }
 
   getRowEditFieldComponent() {
@@ -567,6 +599,10 @@ export class BaserowFormulaSingleSelectType extends BaserowFormulaTypeDefinition
   mapToSortableArray(element) {
     return element.value
   }
+
+  canGroupByInView() {
+    return true
+  }
 }
 
 export class BaserowFormulaLinkType extends BaserowFormulaTypeDefinition {
@@ -579,7 +615,7 @@ export class BaserowFormulaLinkType extends BaserowFormulaTypeDefinition {
   }
 
   getIconClass() {
-    return 'link'
+    return 'iconoir-link'
   }
 
   getRowEditFieldComponent() {
@@ -620,5 +656,9 @@ export class BaserowFormulaLinkType extends BaserowFormulaTypeDefinition {
 
   getCanSortInView(field) {
     return false
+  }
+
+  canGroupByInView() {
+    return true
   }
 }

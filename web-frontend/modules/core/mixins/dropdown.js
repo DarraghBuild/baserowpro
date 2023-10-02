@@ -5,6 +5,7 @@ import {
 } from '@baserow/modules/core/utils/dom'
 
 import dropdownHelpers from './dropdownHelpers'
+import _ from 'lodash'
 
 export default {
   mixins: [dropdownHelpers],
@@ -49,6 +50,17 @@ export default {
       required: false,
       default: 0,
     },
+    /**
+     * If this property is true, it will position the items element fixed. This can be
+     * useful if the parent element has an `overflow: hidden|scroll`, and you still
+     * want the dropdown to break out of it. This property is immutable, so changing
+     * it afterwards has no point.
+     */
+    fixedItems: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -60,6 +72,7 @@ export default {
       hasItems: true,
       hasDropdownItem: true,
       hover: null,
+      fixedItemsImmutable: this.fixedItems,
     }
   },
   computed: {
@@ -241,6 +254,34 @@ export default {
       this.$once('hide', () => {
         document.body.removeEventListener('keydown', keydownEvent)
       })
+
+      if (this.fixedItemsImmutable) {
+        const updatePosition = () => {
+          const element = this.$refs.itemsContainer
+          const targetRect = this.$el.getBoundingClientRect()
+          element.style.top = targetRect.top + 'px'
+          element.style.left = targetRect.left + 'px'
+          element.style['min-width'] = targetRect.width + 'px'
+          element.style['max-height'] = `calc(100vh - ${targetRect.top + 20}px)`
+        }
+
+        // Delay the position update to the next tick to let the Context content
+        // be available in DOM for accurate positioning.
+        this.$nextTick(() => {
+          updatePosition()
+
+          window.addEventListener('scroll', updatePosition, true)
+          window.addEventListener('resize', updatePosition)
+          this.$once('hide', () => {
+            window.removeEventListener('scroll', updatePosition, true)
+            window.removeEventListener('resize', updatePosition)
+          })
+          this.$once('hook:beforeDestroy', () => {
+            window.removeEventListener('scroll', updatePosition, true)
+            window.removeEventListener('resize', updatePosition)
+          })
+        })
+      }
     },
     /**
      * Hides the list of choices. If something change in this method, you might need
@@ -285,7 +326,7 @@ export default {
     getSelectedProperty(value, property) {
       for (const i in this.getDropdownItemComponents()) {
         const item = this.getDropdownItemComponents()[i]
-        if (item.value === value) {
+        if (_.isEqual(item.value, value)) {
           return item[property]
         }
       }
@@ -298,7 +339,7 @@ export default {
     hasValue() {
       for (const i in this.getDropdownItemComponents()) {
         const item = this.getDropdownItemComponents()[i]
-        if (item.value === this.value) {
+        if (_.isEqual(item.value, this.value)) {
           return true
         }
       }
@@ -326,7 +367,9 @@ export default {
       )
 
       const isArrowUp = event.key === 'ArrowUp'
-      let index = children.findIndex((item) => item.value === this.hover)
+      let index = children.findIndex((item) =>
+        _.isEqual(item.value, this.hover)
+      )
       index = isArrowUp ? index - 1 : index + 1
 
       // Check if the new index is within the allowed range.

@@ -16,15 +16,16 @@
         class="filters__remove"
         @click="deleteFilter($event, filter)"
       >
-        <i class="fas fa-times"></i>
+        <i class="iconoir-cancel"></i>
       </a>
       <span v-else class="filters__remove"></span>
       <div class="filters__operator">
         <span v-if="index === 0">{{ $t('viewFilterContext.where') }}</span>
-        <FixedItemsDropdown
+        <Dropdown
           v-if="index === 1 && !disableFilter"
           :value="filterType"
           :show-search="false"
+          :fixed-items="true"
           class="dropdown--tiny"
           @input="selectBooleanOperator($event)"
         >
@@ -36,7 +37,7 @@
             :name="$t('viewFilterContext.or')"
             value="OR"
           ></DropdownItem>
-        </FixedItemsDropdown>
+        </Dropdown>
         <span v-if="index > 1 || (index > 0 && disableFilter)">
           {{
             filterType === 'AND'
@@ -46,9 +47,10 @@
         </span>
       </div>
       <div class="filters__field">
-        <FixedItemsDropdown
+        <Dropdown
           :value="filter.field"
           :disabled="disableFilter"
+          :fixed-items="true"
           class="dropdown--tiny"
           @input="updateFilter(filter, { field: $event })"
         >
@@ -59,12 +61,13 @@
             :value="field.id"
             :disabled="!hasCompatibleFilterTypes(field, filterTypes)"
           ></DropdownItem>
-        </FixedItemsDropdown>
+        </Dropdown>
       </div>
       <div class="filters__type">
-        <FixedItemsDropdown
+        <Dropdown
           :disabled="disableFilter"
           :value="filter.type"
+          :fixed-items="true"
           class="dropdown--tiny"
           @input="updateFilter(filter, { type: $event })"
         >
@@ -74,7 +77,7 @@
             :name="fType.getName()"
             :value="fType.type"
           ></DropdownItem>
-        </FixedItemsDropdown>
+        </Dropdown>
       </div>
       <div class="filters__value">
         <component
@@ -94,12 +97,12 @@
         <i
           v-else-if="!fieldIdExists(fields, filter.field)"
           v-tooltip="$t('viewFilterContext.relatedFieldNotFound')"
-          class="fas fa-exclamation-triangle color-error"
+          class="iconoir-warning-triangle color-error"
         ></i>
         <i
           v-else-if="!fieldIsCompatible(filter.type, filter.field)"
           v-tooltip="$t('viewFilterContext.filterTypeNotFound')"
-          class="fas fa-exclamation-triangle color-error"
+          class="iconoir-warning-triangle color-error"
         ></i>
       </div>
     </div>
@@ -107,12 +110,10 @@
 </template>
 
 <script>
-import FixedItemsDropdown from '@baserow/modules/core/components/FixedItemsDropdown'
 import { hasCompatibleFilterTypes } from '@baserow/modules/database/utils/field'
 
 export default {
   name: 'ViewFieldConditionsForm',
-  components: { FixedItemsDropdown },
   props: {
     filters: {
       type: Array,

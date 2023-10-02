@@ -8,7 +8,9 @@ import LinkElementForm from '@baserow/modules/builder/components/elements/compon
 import ImageElementForm from '@baserow/modules/builder/components/elements/components/forms/general/ImageElementForm'
 import ImageElement from '@baserow/modules/builder/components/elements/components/ImageElement'
 import InputTextElement from '@baserow/modules/builder/components/elements/components/InputTextElement.vue'
-import InputTextElementForm from '@baserow/modules/builder/components/elements/components/forms/InputTextElementForm.vue'
+import InputTextElementForm from '@baserow/modules/builder/components/elements/components/forms/general/InputTextElementForm.vue'
+import TableElement from '@baserow/modules/builder/components/elements/components/TableElement.vue'
+import TableElementForm from '@baserow/modules/builder/components/elements/components/forms/general/TableElementForm.vue'
 
 import { PAGE_PARAM_TYPE_VALIDATION_FUNCTIONS } from '@baserow/modules/builder/enums'
 import ColumnElement from '@baserow/modules/builder/components/elements/components/ColumnElement'
@@ -16,6 +18,9 @@ import ColumnElementForm from '@baserow/modules/builder/components/elements/comp
 import _ from 'lodash'
 import DefaultStyleForm from '@baserow/modules/builder/components/elements/components/forms/style/DefaultStyleForm'
 import { compile } from 'path-to-regexp'
+import ButtonElement from '@baserow/modules/builder/components/elements/components/ButtonElement'
+import ButtonElementForm from '@baserow/modules/builder/components/elements/components/forms/general/ButtonElementForm'
+import { ClickEvent } from '@baserow/modules/builder/eventTypes'
 
 export class ElementType extends Registerable {
   get name() {
@@ -52,6 +57,14 @@ export class ElementType extends Registerable {
 
   get styles() {
     return this.stylesAll
+  }
+
+  get events() {
+    return []
+  }
+
+  getEvents() {
+    return this.events.map((EventType) => new EventType(this.app))
   }
 
   /**
@@ -120,7 +133,7 @@ export class ColumnElementType extends ContainerElementType {
   }
 
   get iconClass() {
-    return 'columns'
+    return 'iconoir-view-columns-3'
   }
 
   get component() {
@@ -156,7 +169,7 @@ export class HeadingElementType extends ElementType {
   }
 
   get iconClass() {
-    return 'heading'
+    return 'iconoir-text'
   }
 
   get component() {
@@ -182,7 +195,7 @@ export class ParagraphElementType extends ElementType {
   }
 
   get iconClass() {
-    return 'paragraph'
+    return 'iconoir-text-box'
   }
 
   get component() {
@@ -208,7 +221,7 @@ export class LinkElementType extends ElementType {
   }
 
   get iconClass() {
-    return 'link'
+    return 'iconoir-link'
   }
 
   get component() {
@@ -298,7 +311,7 @@ export class ImageElementType extends ElementType {
   }
 
   get iconClass() {
-    return 'image'
+    return 'iconoir-media-image'
   }
 
   get component() {
@@ -324,14 +337,70 @@ export class InputTextElementType extends ElementType {
   }
 
   get iconClass() {
-    return 'keyboard'
+    return 'iconoir-input-field'
   }
 
   get component() {
     return InputTextElement
   }
 
-  get formComponent() {
+  get generalFormComponent() {
     return InputTextElementForm
+  }
+}
+
+export class ButtonElementType extends ElementType {
+  getType() {
+    return 'button'
+  }
+
+  get name() {
+    return this.app.i18n.t('elementType.button')
+  }
+
+  get description() {
+    return this.app.i18n.t('elementType.buttonDescription')
+  }
+
+  get iconClass() {
+    return 'iconoir-square-cursor'
+  }
+
+  get component() {
+    return ButtonElement
+  }
+
+  get generalFormComponent() {
+    return ButtonElementForm
+  }
+
+  get events() {
+    return [ClickEvent]
+  }
+}
+
+export class TableElementType extends ElementType {
+  getType() {
+    return 'table'
+  }
+
+  get name() {
+    return this.app.i18n.t('elementType.table')
+  }
+
+  get description() {
+    return this.app.i18n.t('elementType.tableDescription')
+  }
+
+  get iconClass() {
+    return 'iconoir-table'
+  }
+
+  get component() {
+    return TableElement
+  }
+
+  get generalFormComponent() {
+    return TableElementForm
   }
 }

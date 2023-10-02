@@ -226,6 +226,10 @@ else:
             "PORT": os.getenv("DATABASE_PORT", "5432"),
         }
     }
+    if "DATABASE_OPTIONS" in os.environ:
+        DATABASES["default"]["OPTIONS"] = json.loads(
+            os.getenv("DATABASE_OPTIONS", "{}")
+        )
 
 GENERATED_MODEL_CACHE_NAME = "generated-models"
 CACHES = {
@@ -480,7 +484,7 @@ SPECTACULAR_SETTINGS = {
         "name": "MIT",
         "url": "https://gitlab.com/baserow/baserow/-/blob/master/LICENSE",
     },
-    "VERSION": "1.20.0",
+    "VERSION": "1.20.2",
     "SERVE_INCLUDE_SCHEMA": False,
     "TAGS": [
         {"name": "Settings"},
@@ -502,6 +506,7 @@ SPECTACULAR_SETTINGS = {
         {"name": "Database table view filters"},
         {"name": "Database table view sortings"},
         {"name": "Database table view decorations"},
+        {"name": "Database table view groupings"},
         {"name": "Database table grid view"},
         {"name": "Database table gallery view"},
         {"name": "Database table form view"},
@@ -560,6 +565,7 @@ SPECTACULAR_SETTINGS = {
             "not_equal",
             "filename_contains",
             "has_file_type",
+            "files_lower_than",
             "contains",
             "contains_not",
             "length_is_lower_than",
@@ -1154,6 +1160,7 @@ LICENSE_AUTHORITY_CHECK_TIMEOUT_SECONDS = 10
 MAX_NUMBER_CALENDAR_DAYS = 45
 
 MIGRATION_LOCK_ID = os.getenv("BASEROW_MIGRATION_LOCK_ID", 123456)
+DEFAULT_SEARCH_MODE = os.getenv("BASEROW_DEFAULT_SEARCH_MODE", "compat")
 
 
 # Search specific configuration settings.
@@ -1178,6 +1185,11 @@ if POSTHOG_ENABLED:
     posthog.host = POSTHOG_HOST
 else:
     posthog.disabled = True
+
+BASEROW_BUILDER_DOMAINS = os.getenv("BASEROW_BUILDER_DOMAINS", None)
+BASEROW_BUILDER_DOMAINS = (
+    BASEROW_BUILDER_DOMAINS.split(",") if BASEROW_BUILDER_DOMAINS is not None else []
+)
 
 # Indicates whether we are running the tests or not. Set to True in the test.py settings
 # file used by pytest.ini

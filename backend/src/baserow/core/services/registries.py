@@ -1,5 +1,5 @@
-from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Type, TypeVar, Union
+from abc import ABC
+from typing import Any, Dict, Optional, Type, TypeVar
 
 from django.contrib.auth.models import AbstractUser
 
@@ -33,6 +33,17 @@ class ServiceType(
 
     SerializedDict: Type[ServiceDictSubClass]
 
+    # The maximum number of records this service is able to return.
+    # By default, the maximum is `None`, which is unlimited.
+    max_result_limit = None
+
+    # The default number of records this service will return,
+    # unless instructed otherwise by a user.
+    default_result_limit = max_result_limit
+
+    # Does this service return a list of record?
+    returns_list = False
+
     def prepare_values(
         self, values: Dict[str, Any], user: AbstractUser
     ) -> Dict[str, Any]:
@@ -59,18 +70,49 @@ class ServiceType(
 
         return values
 
-    @abstractmethod
-    def dispatch(
-        self, service: ServiceSubClass, runtime_formula_context: RuntimeFormulaContext
+    def dispatch_transform(
+        self,
+        data: Any,
     ) -> Any:
         """
-        Executes what the service is done for and returns the expected result.
+        Responsible for taking the `dispatch_data` result and transforming its value
+        for API consumer's consumption.
+
+        :param data: The `dispatch_data` result.
+        :return: The transformed `dispatch_transform` result if any.
+        """
+
+    def dispatch_data(
+        self,
+        service: ServiceSubClass,
+        runtime_formula_context: RuntimeFormulaContext,
+    ) -> Any:
+        """
+        Responsible for executing the service's principle task.
+
+        :param service: The service instance to dispatch with.
+        :param runtime_formula_context: The runtime_formula_context instance used to
+            resolve formulas (if any).
+        :return: The service `dispatch_data` result if any.
+        """
+
+    def dispatch(
+        self,
+        service: ServiceSubClass,
+        runtime_formula_context: RuntimeFormulaContext,
+    ) -> Any:
+        """
+        Responsible for calling `dispatch_data` and `dispatch_transform` to execute
+        the service's task, and generating the dispatch's response, respectively.
 
         :param service: The service instance to dispatch with.
         :param runtime_formula_context: The runtime_formula_context instance used to
             resolve formulas (if any).
         :return: The service dispatch result if any.
         """
+
+        data = self.dispatch_data(service, runtime_formula_context)
+        return self.dispatch_transform(data)
 
     def get_property_for_serialization(self, service: Service, prop_name: str):
         """
@@ -81,6 +123,28 @@ class ServiceType(
             return self.type
 
         return getattr(service, prop_name)
+
+    def get_schema_name(self, service: Service) -> str:
+        """
+        The default schema name added to the `title` in a JSON Schema object.
+
+        :param service: The service we want to generate a schema `title` with.
+        :return: A string.
+        """
+
+        return f"Service{service.id}Schema"
+
+    def generate_schema(self, service: Service) -> Optional[Dict[str, Any]]:
+        """
+        Responsible for generating the full JSON Schema response. Must be
+        overridden by child classes so that the can return their service's
+        schema.
+
+        :param service: The service we want to generate a schema for.
+        :return: None, or a dictionary representing the schema.
+        """
+
+        return None
 
     def export_serialized(
         self,
@@ -158,51 +222,7 @@ class ServiceType(
         return queryset
 
 
-class ListServiceType(ServiceType, ABC):
-    """
-    A service type for services which list results.
-    """
-
-    # The maximum number of records this service is able to return.
-    # By default, the maximum is `None`, which is unlimited.
-    max_result_limit = None
-
-    # The default number of records this service will return, unless
-    # instructed otherwise by a user.
-    default_result_limit = max_result_limit
-
-    def get_dispatch_list_filters(self, service: Service) -> List[Any]:
-        """
-        Responsible for optionally defining how services should be filtered in
-        their list collections.
-
-        Child classes must call this method in their `dispatch` method if the
-        service has a filterable list collection.
-
-        :param service: The service which may need filtering.
-        :return: An iterable set of filters applicable to this service.
-        """
-
-        return []
-
-    def get_dispatch_list_sorts(self, service: Service) -> List[Any]:
-        """
-        Responsible for optionally defining how services should be sorted in
-        their list collections.
-
-        Child classes must call this method in their `dispatch` method if the
-        service has a sortable list collection.
-
-        :param service: The service in this integration which may need sorting.
-        :return: An iterable set of sorts applicable to this service.
-        """
-
-        return []
-
-
-ServiceTypeSubClass = TypeVar(
-    "ServiceTypeSubClass", bound=Union[ServiceType, ListServiceType]
-)
+ServiceTypeSubClass = TypeVar("ServiceTypeSubClass", bound=ServiceType)
 
 
 class ServiceTypeRegistry(

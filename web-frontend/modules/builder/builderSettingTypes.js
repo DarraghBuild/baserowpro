@@ -19,6 +19,10 @@ class BuilderSettingType extends Registerable {
   get component() {
     return null
   }
+
+  get componentPadding() {
+    return true
+  }
 }
 
 export class IntegrationsBuilderSettingsType extends BuilderSettingType {
@@ -31,7 +35,7 @@ export class IntegrationsBuilderSettingsType extends BuilderSettingType {
   }
 
   get icon() {
-    return 'plug'
+    return 'iconoir-ev-plug'
   }
 
   getOrder() {
@@ -53,7 +57,7 @@ export class ThemeBuilderSettingsType extends BuilderSettingType {
   }
 
   get icon() {
-    return 'tint'
+    return 'iconoir-fill-color'
   }
 
   getOrder() {
@@ -62,6 +66,10 @@ export class ThemeBuilderSettingsType extends BuilderSettingType {
 
   get component() {
     return ThemeSettings
+  }
+
+  get componentPadding() {
+    return false
   }
 }
 
@@ -75,7 +83,7 @@ export class DomainsBuilderSettingsType extends BuilderSettingType {
   }
 
   get icon() {
-    return 'globe'
+    return 'iconoir-globe'
   }
 
   getOrder() {

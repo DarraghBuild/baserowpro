@@ -28,8 +28,9 @@
           class="sortings__remove"
           @click.stop="deleteSort(sort)"
         >
-          <i class="fas fa-times"></i>
+          <i class="iconoir-cancel"></i>
         </a>
+
         <div class="sortings__description">
           <template v-if="index === 0">{{
             $t('viewSortContext.sortBy')
@@ -39,9 +40,10 @@
           }}</template>
         </div>
         <div class="sortings__field">
-          <FixedItemsDropdown
+          <Dropdown
             :value="sort.field"
             :disabled="disableSort"
+            :fixed-items="true"
             class="dropdown--floating dropdown--tiny"
             @input="updateSort(sort, { field: $event })"
           >
@@ -52,7 +54,7 @@
               :value="field.id"
               :disabled="sort.field !== field.id && !isFieldAvailable(field)"
             ></DropdownItem>
-          </FixedItemsDropdown>
+          </Dropdown>
         </div>
         <div
           class="sortings__order"
@@ -63,58 +65,46 @@
             :class="{ active: sort.order === 'ASC' }"
             @click="updateSort(sort, { order: 'ASC' })"
           >
-            <div>
-              <template v-if="getSortIndicator(field, 0) === 'text'">{{
-                getSortIndicator(field, 1)
-              }}</template>
-              <i
-                v-if="getSortIndicator(field, 0) === 'icon'"
-                class="fa"
-                :class="'fa-' + getSortIndicator(field, 1)"
-              ></i>
-            </div>
-            <div>
-              <i class="fas fa-long-arrow-alt-right"></i>
-            </div>
-            <div>
-              <template v-if="getSortIndicator(field, 0) === 'text'">{{
-                getSortIndicator(field, 2)
-              }}</template>
-              <i
-                v-if="getSortIndicator(field, 0) === 'icon'"
-                class="fa"
-                :class="'fa-' + getSortIndicator(field, 2)"
-              ></i>
-            </div>
+            <template v-if="getSortIndicator(field, 0) === 'text'">{{
+              getSortIndicator(field, 1)
+            }}</template>
+            <i
+              v-if="getSortIndicator(field, 0) === 'icon'"
+              :class="getSortIndicator(field, 1)"
+            ></i>
+
+            <i class="iconoir-arrow-right"></i>
+
+            <template v-if="getSortIndicator(field, 0) === 'text'">{{
+              getSortIndicator(field, 2)
+            }}</template>
+            <i
+              v-if="getSortIndicator(field, 0) === 'icon'"
+              :class="getSortIndicator(field, 2)"
+            ></i>
           </a>
           <a
             class="sortings__order-item"
             :class="{ active: sort.order === 'DESC' }"
             @click="updateSort(sort, { order: 'DESC' })"
           >
-            <div>
-              <template v-if="getSortIndicator(field, 0) === 'text'">{{
-                getSortIndicator(field, 2)
-              }}</template>
-              <i
-                v-if="getSortIndicator(field, 0) === 'icon'"
-                class="fa"
-                :class="'fa-' + getSortIndicator(field, 2)"
-              ></i>
-            </div>
-            <div>
-              <i class="fas fa-long-arrow-alt-right"></i>
-            </div>
-            <div>
-              <template v-if="getSortIndicator(field, 0) === 'text'">{{
-                getSortIndicator(field, 1)
-              }}</template>
-              <i
-                v-if="getSortIndicator(field, 0) === 'icon'"
-                class="fa"
-                :class="'fa-' + getSortIndicator(field, 1)"
-              ></i>
-            </div>
+            <template v-if="getSortIndicator(field, 0) === 'text'">{{
+              getSortIndicator(field, 2)
+            }}</template>
+            <i
+              v-if="getSortIndicator(field, 0) === 'icon'"
+              :class="getSortIndicator(field, 2)"
+            ></i>
+
+            <i class="iconoir-arrow-right"></i>
+
+            <template v-if="getSortIndicator(field, 0) === 'text'">{{
+              getSortIndicator(field, 1)
+            }}</template>
+            <i
+              v-if="getSortIndicator(field, 0) === 'icon'"
+              :class="getSortIndicator(field, 1)"
+            ></i>
           </a>
         </div>
       </div>
@@ -128,7 +118,7 @@
             $refs.addContext.toggle($refs.addContextToggle, 'bottom', 'left', 4)
           "
         >
-          <i class="fas fa-plus"></i>
+          <i class="sortings__add-icon iconoir-plus"></i>
           {{ $t('viewSortContext.addSort') }}
         </a>
         <Context
@@ -145,8 +135,8 @@
             >
               <a @click="addSort(field)">
                 <i
-                  class="context__menu-icon fas fa-fw"
-                  :class="'fa-' + field._.type.iconClass"
+                  class="context__menu-icon"
+                  :class="field._.type.iconClass"
                 ></i>
                 {{ field.name }}
               </a>
@@ -161,11 +151,9 @@
 <script>
 import { notifyIf } from '@baserow/modules/core/utils/error'
 import context from '@baserow/modules/core/mixins/context'
-import FixedItemsDropdown from '@baserow/modules/core/components/FixedItemsDropdown'
 
 export default {
   name: 'ViewSortContext',
-  components: { FixedItemsDropdown },
   mixins: [context],
   props: {
     fields: {
@@ -184,11 +172,6 @@ export default {
       type: Boolean,
       required: true,
     },
-  },
-  data() {
-    return {
-      addOpen: false,
-    }
   },
   computed: {
     /**

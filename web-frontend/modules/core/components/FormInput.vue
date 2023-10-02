@@ -38,11 +38,12 @@
           @input="$emit('input', toValue($event.target.value))"
         />
 
-        <i
-          v-if="hasIcon"
-          class="form-input__icon fas"
-          :class="[`fa-${icon}`]"
-        />
+        <i v-if="hasIcon" class="form-input__icon" :class="icon" />
+        <div v-if="$slots.suffix" class="form-input__suffix disabled">
+          <div>
+            <slot name="suffix"></slot>
+          </div>
+        </div>
       </div>
       <div v-if="hasError" class="error">
         {{ error }}

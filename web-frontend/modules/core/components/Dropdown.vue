@@ -14,8 +14,8 @@
         <slot name="value">
           <i
             v-if="selectedIcon"
-            class="dropdown__selected-icon fas"
-            :class="'fa-' + selectedIcon"
+            class="dropdown__selected-icon"
+            :class="selectedIcon"
           />
           <img
             v-if="selectedImage"
@@ -30,15 +30,18 @@
           {{ placeholder ? placeholder : $t('action.makeChoice') }}
         </slot>
       </template>
-      <i class="dropdown__toggle-icon fas fa-caret-down"></i>
+      <i class="dropdown__toggle-icon iconoir-nav-arrow-down"></i>
     </a>
     <div
       ref="itemsContainer"
       class="dropdown__items"
-      :class="[{ hidden: !open }, itemsContainerAdditionalClass]"
+      :class="{
+        hidden: !open,
+        'dropdown__items--fixed': fixedItemsImmutable,
+      }"
     >
       <div v-if="showSearch" class="select__search">
-        <i class="select__search-icon fas fa-search"></i>
+        <i class="select__search-icon iconoir-search"></i>
         <input
           ref="search"
           v-model="query"
@@ -53,7 +56,8 @@
         v-show="hasDropdownItem"
         ref="items"
         v-auto-overflow-scroll
-        :class="['select__items', selectItemsAdditionalClass]"
+        class="select__items"
+        :class="{ 'select__items--no-max-height': fixedItemsImmutable }"
         tabindex=""
       >
         <slot></slot>
@@ -76,11 +80,5 @@ import dropdown from '@baserow/modules/core/mixins/dropdown'
 export default {
   name: 'Dropdown',
   mixins: [dropdown],
-  data() {
-    return {
-      itemsContainerAdditionalClass: '',
-      selectItemsAdditionalClass: '',
-    }
-  },
 }
 </script>

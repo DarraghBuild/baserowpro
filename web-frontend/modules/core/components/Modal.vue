@@ -26,7 +26,10 @@
         </div>
         <div
           class="modal__box-content"
-          :class="{ 'modal__box-content--scrollable': contentScrollable }"
+          :class="{
+            'modal__box-content--scrollable': contentScrollable,
+            'modal__box-content-no-padding': !contentPadding,
+          }"
         >
           <slot name="content"></slot>
           <a
@@ -34,7 +37,7 @@
             class="modal__close"
             @click="hide()"
           >
-            <i class="fas fa-times"></i>
+            <i class="iconoir-cancel"></i>
           </a>
 
           <a
@@ -43,10 +46,9 @@
             @click="collapseSidebar"
           >
             <i
-              class="fas"
               :class="{
-                'fa-angle-double-right': !sidebarCollapsed,
-                'fa-angle-double-left': sidebarCollapsed,
+                'iconoir-fast-arrow-right': !sidebarCollapsed,
+                'iconoir-fast-arrow-left': sidebarCollapsed,
               }"
             ></i>
           </a>
@@ -67,7 +69,7 @@
         <slot></slot>
         <slot name="content"></slot>
         <a v-if="closeButton && canClose" class="modal__close" @click="hide()">
-          <i class="fas fa-times"></i>
+          <i class="iconoir-cancel"></i>
         </a>
       </template>
     </div>
@@ -129,6 +131,11 @@ export default {
     contentScrollable: {
       type: Boolean,
       default: false,
+      required: false,
+    },
+    contentPadding: {
+      type: Boolean,
+      default: true,
       required: false,
     },
     rightSidebarScrollable: {

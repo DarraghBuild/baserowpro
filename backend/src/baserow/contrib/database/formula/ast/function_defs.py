@@ -7,6 +7,7 @@ from django.db.models import (
     Avg,
     Case,
     Count,
+    DecimalField,
     Expression,
     ExpressionWrapper,
     F,
@@ -126,6 +127,7 @@ def register_formula_functions(registry):
     registry.register(BaserowLower())
     registry.register(BaserowConcat())
     registry.register(BaserowToText())
+    registry.register(BaserowToVarchar())
     registry.register(BaserowT())
     registry.register(BaserowReplace())
     registry.register(BaserowSearch())
@@ -151,6 +153,7 @@ def register_formula_functions(registry):
     registry.register(BaserowEven())
     registry.register(BaserowOdd())
     registry.register(BaserowTrunc())
+    registry.register(BaserowSplitPart())
     registry.register(BaserowLn())
     registry.register(BaserowExp())
     registry.register(BaserowLog())
@@ -376,6 +379,30 @@ class BaserowToText(OneArgumentBaserowFunction):
         )
 
 
+class BaserowToVarchar(OneArgumentBaserowFunction):
+    """
+    Internal function not registered in the frontend intentionally as we don't want
+    users making char types. Used purely for working with our BaserowFormulaCharType
+    on internal operations.
+    """
+
+    type = "tovarchar"
+    arg_type = [BaserowFormulaTextType]
+    try_coerce_nullable_args_to_not_null = False
+
+    def type_function(
+        self,
+        func_call: BaserowFunctionCall[UnTyped],
+        arg: BaserowExpression[BaserowFormulaValidType],
+    ) -> BaserowExpression[BaserowFormulaType]:
+        return arg.with_valid_type(
+            BaserowFormulaCharType(nullable=arg.expression_type.nullable)
+        )
+
+    def to_django_expression(self, arg: Expression) -> Expression:
+        return Cast(arg, output_field=fields.CharField())
+
+
 class BaserowT(OneArgumentBaserowFunction):
     type = "t"
     arg_type = [BaserowFormulaValidType]
@@ -451,11 +478,23 @@ class BaserowAdd(TwoArgumentBaserowFunction):
     def to_django_expression(self, arg1: Expression, arg2: Expression) -> Expression:
         # date + interval = date
         # non date/interval types + non date/interval types = first arg type always
-        output_field = arg1.output_field
-        if isinstance(arg1.output_field, fields.DurationField):
+
+        first_arg_is_duration = isinstance(arg1.output_field, fields.DurationField)
+        second_arg_is_duration = isinstance(arg2.output_field, fields.DurationField)
+        first_arg_is_date = isinstance(arg1.output_field, fields.DateField)
+        second_arg_is_date = isinstance(arg2.output_field, fields.DateField)
+        if (first_arg_is_duration or second_arg_is_duration) and (
+            first_arg_is_date or second_arg_is_date
+        ):
+            # interval + date = datetime
+            # date + interval = datetime
+            output_field = fields.DateTimeField()
+        elif first_arg_is_duration:
             # interval + interval = interval
-            # interval + date = date
+            # interval + datetime = datetime
             output_field = arg2.output_field
+        else:
+            output_field = arg1.output_field
         return ExpressionWrapper(arg1 + arg2, output_field=output_field)
 
 
@@ -506,11 +545,22 @@ class BaserowMinus(TwoArgumentBaserowFunction):
         return arg1.expression_type.minus(func_call, arg1, arg2)
 
     def to_django_expression(self, arg1: Expression, arg2: Expression) -> Expression:
-        output_field = arg1.output_field
-        if isinstance(arg1.output_field, fields.DateField) and isinstance(
-            arg2.output_field, fields.DateField
-        ):
+        first_arg_is_duration = isinstance(arg1.output_field, fields.DurationField)
+        second_arg_is_duration = isinstance(arg2.output_field, fields.DurationField)
+        first_arg_is_date = isinstance(arg1.output_field, fields.DateField)
+        second_arg_is_date = isinstance(arg2.output_field, fields.DateField)
+        if first_arg_is_duration and second_arg_is_duration:
+            # interval - interval = interval
             output_field = fields.DurationField()
+        elif first_arg_is_date and second_arg_is_duration:
+            # date/datetime - interval = datetime
+            output_field = fields.DateTimeField()
+        elif first_arg_is_date and second_arg_is_date:
+            # date - date = interval (django does this magic)
+            output_field = fields.DurationField()
+        else:
+            output_field = arg1.output_field
+
         return ExpressionWrapper(arg1 - arg2, output_field=output_field)
 
 
@@ -588,7 +638,13 @@ class BaserowRound(TwoArgumentBaserowFunction):
             when_nan=Value(Decimal("NaN")),
             when_not_nan=(
                 Func(
-                    arg1,
+                    Cast(
+                        arg1,
+                        output_field=DecimalField(
+                            max_digits=BaserowFormulaNumberType.MAX_DIGITS,
+                            decimal_places=NUMBER_MAX_DECIMAL_PLACES,
+                        ),
+                    ),
                     # The round function requires an integer input.
                     trunc_numeric_to_int(arg2),
                     function="round",
@@ -852,6 +908,50 @@ class BaserowFloor(OneArgumentBaserowFunction):
 
     def to_django_expression(self, arg: Expression) -> Expression:
         return Floor(arg, output_field=int_like_numeric_output_field())
+
+
+class BaserowSplitPart(ThreeArgumentBaserowFunction):
+    type = "split_part"
+    arg1_type = [BaserowFormulaTextType]
+    arg2_type = [BaserowFormulaTextType]
+    arg3_type = [BaserowFormulaNumberType]
+
+    def type_function(
+        self,
+        func_call: BaserowFunctionCall[UnTyped],
+        arg1: BaserowExpression[BaserowFormulaTextType],
+        arg2: BaserowExpression[BaserowFormulaTextType],
+        arg3: BaserowExpression[BaserowFormulaNumberType],
+    ) -> BaserowExpression[BaserowFormulaType]:
+        return func_call.with_valid_type(
+            BaserowFormulaTextType(
+                nullable=arg1.expression_type.nullable
+                or arg2.expression_type.nullable
+                or arg3.expression_type.nullable
+            )
+        )
+
+    def to_django_expression(
+        self, arg1: Expression, arg2: Expression, arg3: Expression
+    ) -> Expression:
+        return Case(
+            When(
+                condition=(
+                    LessThanEqualOrExpr(
+                        arg3, Value(0), output_field=fields.BooleanField()
+                    )
+                ),
+                then=Value(""),
+            ),
+            default=Func(
+                arg1,
+                arg2,
+                trunc_numeric_to_int(arg3),
+                function="SPLIT_PART",
+                output_field=fields.CharField(),
+            ),
+            output_field=fields.CharField(),
+        )
 
 
 class BaserowTrunc(OneArgumentBaserowFunction):
@@ -2287,13 +2387,18 @@ class BaserowSecond(OneArgumentBaserowFunction):
     def type_function(
         self,
         func_call: BaserowFunctionCall[UnTyped],
-        arg: BaserowExpression[BaserowFormulaValidType],
+        arg: BaserowExpression[BaserowFormulaDateType],
     ) -> BaserowExpression[BaserowFormulaType]:
-        return func_call.with_valid_type(
-            BaserowFormulaNumberType(
-                number_decimal_places=0, nullable=arg.expression_type.nullable
+        if not arg.expression_type.date_include_time:
+            return func_call.with_invalid_type(
+                "cannot extract seconds from a date without time"
             )
-        )
+        else:
+            return func_call.with_valid_type(
+                BaserowFormulaNumberType(
+                    number_decimal_places=0, nullable=arg.expression_type.nullable
+                )
+            )
 
     def to_django_expression(self, arg: Expression) -> Expression:
         return BaserowExtract(
