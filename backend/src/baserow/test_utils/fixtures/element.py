@@ -1,8 +1,8 @@
 from copy import deepcopy
 
 from baserow.contrib.builder.elements.models import (
-    CollectionElementField,
     ButtonElement,
+    CollectionElementField,
     ColumnElement,
     HeadingElement,
     ImageElement,

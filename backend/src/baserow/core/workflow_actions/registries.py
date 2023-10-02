@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Type, TYPE_CHECKING
+from typing import Any, Dict, Type
 
 from baserow.core.registry import (
     CustomFieldsInstanceMixin,
@@ -43,7 +43,7 @@ class WorkflowActionType(
 
     @abstractmethod
     def import_serialized(
-        self, page: "Page", serialized_values: Dict[str, Any], id_mapping: Dict
+        self, parent: Any, serialized_values: Dict[str, Any], id_mapping: Dict
     ) -> WorkflowAction:
         pass
 

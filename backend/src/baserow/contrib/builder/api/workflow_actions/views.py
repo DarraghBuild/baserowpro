@@ -1,8 +1,9 @@
 from typing import Dict
 
 from django.db import transaction
+
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -10,11 +11,11 @@ from rest_framework.views import APIView
 from baserow.api.decorators import validate_body_custom_fields
 from baserow.api.schemas import CLIENT_SESSION_ID_SCHEMA_PARAMETER, get_error_schema
 from baserow.api.utils import (
-    type_from_data_or_registry,
-    validate_data_custom_fields,
+    CustomFieldRegistryMappingSerializer,
     DiscriminatorCustomFieldsMappingSerializer,
     map_exceptions,
-    CustomFieldRegistryMappingSerializer,
+    type_from_data_or_registry,
+    validate_data_custom_fields,
 )
 from baserow.contrib.builder.api.elements.errors import ERROR_ELEMENT_DOES_NOT_EXIST
 from baserow.contrib.builder.api.pages.errors import ERROR_PAGE_DOES_NOT_EXIST

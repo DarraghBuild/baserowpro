@@ -1,10 +1,10 @@
 from abc import abstractmethod
-from typing import Dict, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict
 
 from baserow.contrib.builder.elements.handler import ElementHandler
 from baserow.contrib.builder.workflow_actions.models import (
-    NotificationWorkflowAction,
     BuilderWorkflowAction,
+    NotificationWorkflowAction,
 )
 from baserow.contrib.builder.workflow_actions.types import BuilderWorkflowActionDict
 from baserow.core.formula.serializers import FormulaSerializerField
