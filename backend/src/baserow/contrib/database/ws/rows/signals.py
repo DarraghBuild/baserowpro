@@ -13,6 +13,7 @@ from baserow.contrib.database.table.models import GeneratedTableModel
 from baserow.ws.registries import page_registry
 from baserow.contrib.database.api.rows.serializers import RowHistorySerializer
 
+
 @receiver(row_signals.rows_created)
 def rows_created(
     sender,
@@ -123,7 +124,8 @@ def rows_history_updated(
     def send_by_row():
         for row_history_entry in row_history_entries:
             serialized_entry = RowHistorySerializer(row_history_entry).data
-            row_page_type.broadcast({
+            row_page_type.broadcast(
+                {
                     "type": "row_history_updated",
                     "row_history_entry": serialized_entry,
                     "table_id": table_id,
@@ -134,6 +136,7 @@ def rows_history_updated(
             )
 
     transaction.on_commit(send_by_row)
+
 
 class RealtimeRowMessages:
     """

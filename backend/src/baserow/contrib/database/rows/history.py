@@ -158,7 +158,9 @@ class RowHistoryHandler:
         if row_history_entries:
             row_history_entries = RowHistory.objects.bulk_create(row_history_entries)
             rows_history_updated.send(
-                RowHistoryHandler, table_id=params.table_id, row_history_entries=row_history_entries
+                RowHistoryHandler,
+                table_id=params.table_id,
+                row_history_entries=row_history_entries,
             )
 
     @classmethod

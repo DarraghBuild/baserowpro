@@ -18,6 +18,7 @@ from baserow.ws.tasks import broadcast_to_channel_group
 from baserow.contrib.database.rows.handler import RowHandler
 from baserow.contrib.database.rows.exceptions import RowDoesNotExist
 
+
 class TablePageType(PageType):
     type = "table"
     parameters = ["table_id"]
@@ -114,14 +115,19 @@ class RowPageType(PageType):
             )
             row_handler = RowHandler()
             row_handler.get_row(user, table, row_id)
-        except (UserNotInWorkspace, TableDoesNotExist, PermissionDenied, RowDoesNotExist):
+        except (
+            UserNotInWorkspace,
+            TableDoesNotExist,
+            PermissionDenied,
+            RowDoesNotExist,
+        ):
             return False
 
         return True
 
     def get_group_name(self, table_id, row_id, **kwargs):
         return f"table-{table_id}-row-{row_id}"
-    
+
     def broadcast(self, payload, ignore_web_socket_id=None, **kwargs):
         """
         Broadcasts a payload to everyone within the group.

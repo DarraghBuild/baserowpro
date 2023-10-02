@@ -12,10 +12,11 @@ class AcceptingTestPageType(PageType):
 
     def can_add(self, user, web_socket_id, test_param, **kwargs):
         return True
-    
+
     def get_group_name(self, test_param, **kwargs):
         return f"test-page-{test_param}"
-    
+
+
 class NotAcceptingTestPageType(AcceptingTestPageType):
     type = "test_page_type_not_accepting"
 
@@ -34,6 +35,7 @@ def test_page_types():
 
 
 # Core consumer
+
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
@@ -161,7 +163,9 @@ async def test_core_consumer_add_to_page_failure(data_fixture, test_page_types):
 
     # Page that will return False from can_add()
     # won't send the confirmation
-    await communicator.send_json_to({"page": "test_page_type_not_accepting", "test_param": 1})
+    await communicator.send_json_to(
+        {"page": "test_page_type_not_accepting", "test_param": 1}
+    )
     assert communicator.output_queue.qsize() == 0
 
     await communicator.disconnect()
@@ -182,10 +186,10 @@ async def test_core_consumer_remove_page_success(data_fixture, test_page_types):
 
     await communicator.send_json_to({"page": "test_page_type", "test_param": 1})
     response = await communicator.receive_json_from(timeout=0.1)
-    
+
     await communicator.send_json_to({"remove_page": "test_page_type", "test_param": 1})
     response = await communicator.receive_json_from(timeout=0.1)
-    
+
     assert response["type"] == "page_discard"
     assert response["page"] == "test_page_type"
     assert response["parameters"]["test_param"] == 1
@@ -194,7 +198,7 @@ async def test_core_consumer_remove_page_success(data_fixture, test_page_types):
     # even if it is unsubscribed already
     await communicator.send_json_to({"remove_page": "test_page_type", "test_param": 1})
     response = await communicator.receive_json_from(timeout=0.1)
-    
+
     assert response["type"] == "page_discard"
     assert response["page"] == "test_page_type"
     assert response["parameters"]["test_param"] == 1
@@ -266,7 +270,7 @@ async def test_get_page_context(data_fixture, test_page_types):
 # - remove_page_scope() ?
 # - test remove_all_page_scopes
 # - test broadcast_to_users
-# - messages are 
+# - messages are
 # - broadcast_to_users_individual_payloads
 # - broadcast_to_group
 # - test remove_user_from_group
@@ -309,7 +313,7 @@ def test_subscribed_pages_removes_pages_without_error():
 
     pages.add(scope_1)
     pages.add(scope_2)
-    
+
     assert len(pages) == 2
 
     # should not throw error

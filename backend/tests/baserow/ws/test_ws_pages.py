@@ -8,6 +8,7 @@ from django.contrib.auth.models import AnonymousUser
 
 # TablePageType
 
+
 @pytest.mark.django_db
 @pytest.mark.websockets
 def test_table_page_can_add(data_fixture):
@@ -36,7 +37,7 @@ def test_table_page_can_add(data_fixture):
 def test_table_page_get_group_name(data_fixture):
     table_page = page_registry.get("table")
     table_id = 22
-    
+
     assert table_page.get_group_name(table_id) == "table-22"
 
 
@@ -86,8 +87,12 @@ def test_public_view_page_can_add(data_fixture):
 
     # Success
     view_page.can_add(user_1, user_1_websocket_id, public_grid_view.slug) is True
-    view_page.can_add(AnonymousUser(), anonymous_websocket_id, public_grid_view.slug) is True
-    view_page.can_add(user_1, user_1_websocket_id, password_protected_grid_view.slug) is True
+    view_page.can_add(
+        AnonymousUser(), anonymous_websocket_id, public_grid_view.slug
+    ) is True
+    view_page.can_add(
+        user_1, user_1_websocket_id, password_protected_grid_view.slug
+    ) is True
 
     # View doesn't exist
     view_page.can_add(user_1, user_1_websocket_id, "non-existing-slug") is False
@@ -96,19 +101,29 @@ def test_public_view_page_can_add(data_fixture):
     view_page.can_add(user_1, user_1_websocket_id, non_public_grid_view.slug) is False
 
     # Some views don't have realtime events
-    view_page.can_add(user_1, user_1_websocket_id, public_form_view_which_cant_be_subbed.slug) is False
-    view_page.can_add(AnonymousUser(), anonymous_websocket_id, public_form_view_which_cant_be_subbed.slug) is False
+    view_page.can_add(
+        user_1, user_1_websocket_id, public_form_view_which_cant_be_subbed.slug
+    ) is False
+    view_page.can_add(
+        AnonymousUser(),
+        anonymous_websocket_id,
+        public_form_view_which_cant_be_subbed.slug,
+    ) is False
 
     # Not allowed when view is password protected
-    view_page.can_add(user_2, user_2_websocket_id, password_protected_grid_view.slug) is False
-    view_page.can_add(AnonymousUser(), anonymous_websocket_id, password_protected_grid_view.slug) is False
+    view_page.can_add(
+        user_2, user_2_websocket_id, password_protected_grid_view.slug
+    ) is False
+    view_page.can_add(
+        AnonymousUser(), anonymous_websocket_id, password_protected_grid_view.slug
+    ) is False
 
 
 @pytest.mark.websockets
 def test_public_view_page_get_group_name(data_fixture):
     view_page = page_registry.get("view")
     slug = "public-view-slug"
-    
+
     assert view_page.get_group_name(slug) == "view-public-view-slug"
 
 
@@ -158,7 +173,9 @@ def test_row_page_can_add(data_fixture):
     row_page.can_add(user_2, user_2_websocket_id, table_1.id, row_1.id) is False
 
     # Permission denied
-    row_page.can_add(AnonymousUser(), anonymous_websocket_id, table_1.id, row_1.id) is False
+    row_page.can_add(
+        AnonymousUser(), anonymous_websocket_id, table_1.id, row_1.id
+    ) is False
 
 
 @pytest.mark.websockets
@@ -193,9 +210,9 @@ def test_row_page_broadcast(mock_broadcast_to_channel_group, data_fixture):
 # @pytest.mark.websockets
 # async def test_table_page_join(data_fixture):
 #     """
-    
+
 #     """
-    
+
 #     table_page = page_registry.get("table")
 #     user_1, token_1 = data_fixture.create_user_and_token()
 #     table_1 = data_fixture.create_database_table(user=user_1)

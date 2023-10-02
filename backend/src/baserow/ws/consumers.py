@@ -14,7 +14,7 @@ class PageContext:
     intends to be subscribed or unsubscribed from
     getting changes relevant to the page.
     """
-    
+
     web_socket_id: str
     user: Optional[AbstractUser]
     page_type: PageType
@@ -26,11 +26,11 @@ class PageScope:
     """
     Represents one page that a user can be subscribed to.
     Different page parameters can be used to represent
-    subscriptions to the same page types with different 
-    values (e.g. being subscribed to a table page with 
+    subscriptions to the same page types with different
+    values (e.g. being subscribed to a table page with
     table_id=1 or table_id=2)
     """
-    
+
     page_type: PageType
     page_parameters: dict[str, any]
 
@@ -65,7 +65,7 @@ class SubscribedPages:
 
     def __len__(self):
         return len(self.pages)
-    
+
     def __iter__(self):
         return iter(self.pages)
 
@@ -98,7 +98,9 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         if "remove_page" in content:
             await self.remove_page_scope(content)
 
-    async def get_page_context(self, content: dict, page_name_attr: str) -> Optional[PageContext]:
+    async def get_page_context(
+        self, content: dict, page_name_attr: str
+    ) -> Optional[PageContext]:
         """
         Helper method that will construct a PageContext object for adding
         or removing page scopes from the consumer.
@@ -142,10 +144,10 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         """
 
         context = await self.get_page_context(content, "page")
-        
+
         if not context:
             return
-        
+
         user, web_socket_id, page_type, parameters = attrgetter(
             "user", "web_socket_id", "page_type", "parameters"
         )(context)
@@ -170,13 +172,13 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
     async def remove_page_scope(self, content: dict, send_confirmation=True):
         # TODO: docs
         context = await self.get_page_context(content, "remove_page")
-        
+
         if not context:
             return
-        
-        user, page_type, parameters = attrgetter(
-            "user", "page_type", "parameters"
-        )(context)
+
+        user, page_type, parameters = attrgetter("user", "page_type", "parameters")(
+            context
+        )
 
         group_name = page_type.get_group_name(**parameters)
         await self.channel_layer.group_discard(group_name, self.channel_name)
@@ -197,16 +199,16 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         """
         Unsubscribes the connection from all pages.
         """
-        
+
         if self.scope.get("pages"):
             for page_scope in self.scope["pages"]:
-                    content = {
-                        "user": self.scope["user"],
-                        "web_socket_id": self.scope["web_socket_id"],
-                        "remove_page": page_scope.page_type,
-                        "parameters": page_scope.page_parameters,
-                    }
-                    await self.remove_page_scope(content, send_confirmation=True)
+                content = {
+                    "user": self.scope["user"],
+                    "web_socket_id": self.scope["web_socket_id"],
+                    "remove_page": page_scope.page_type,
+                    "parameters": page_scope.page_parameters,
+                }
+                await self.remove_page_scope(content, send_confirmation=True)
 
     async def broadcast_to_users(self, event):
         """
