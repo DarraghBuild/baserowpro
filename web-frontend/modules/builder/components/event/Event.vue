@@ -15,7 +15,6 @@
         class="margin-top-2"
         :available-workflow-action-types="availableWorkflowActionTypes"
         :workflow-action="workflowAction"
-        @type-changed="workflowActionTypeChanged(workflowAction, $event)"
         @delete="deleteWorkflowAction(workflowAction)"
         @update="updateWorkflowAction(workflowAction, $event)"
       />
@@ -40,6 +39,7 @@ import WorkflowAction from '@baserow/modules/core/components/workflowActions/Wor
 import { NotificationWorkflowActionType } from '@baserow/modules/builder/workflowActionTypes'
 import { mapActions } from 'vuex'
 import { notifyIf } from '@baserow/modules/core/utils/error'
+import _ from 'lodash'
 
 const DEFAULT_WORKFLOW_ACTION_TYPE = NotificationWorkflowActionType.getType()
 
@@ -104,6 +104,11 @@ export default {
       }
     },
     updateWorkflowAction(workflowAction, values) {
+      // In this case there weren't any actual changes
+      if (_.isMatch(workflowAction, values)) {
+        return
+      }
+
       try {
         this.actionUpdateWorkflowAction({
           page: this.page,

@@ -3,7 +3,7 @@
     <WorkflowActionSelector
       :available-workflow-action-types="availableWorkflowActionTypes"
       :workflow-action="workflowAction"
-      @change="$emit('update', $event)"
+      @change="$emit('update', { type: $event })"
       @delete="$emit('delete')"
     />
     <component

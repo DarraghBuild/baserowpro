@@ -2,7 +2,7 @@
   <div class="workflow-action-selector">
     <Dropdown
       class="workflow-action-selector__options"
-      :value="workflowActionType"
+      :value="workflowActionType.getType()"
       :show-search="false"
       @change="$emit('change', $event)"
     >
@@ -10,7 +10,7 @@
         v-for="availableWorkflowActionType in availableWorkflowActionTypes"
         :key="availableWorkflowActionType.getType()"
         :name="availableWorkflowActionType.label"
-        :value="availableWorkflowActionType"
+        :value="availableWorkflowActionType.getType()"
       ></DropdownItem>
     </Dropdown>
     <div class="margin-left-2">
