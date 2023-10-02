@@ -75,7 +75,7 @@ export default {
     ...mapActions({
       actionCreateWorkflowAction: 'workflowAction/create',
       actionDeleteWorkflowAction: 'workflowAction/delete',
-      actionUpdateWorkflowAction: 'workflowAction/update',
+      actionUpdateWorkflowAction: 'workflowAction/updateDebounced',
     }),
     getIcon(expanded) {
       return expanded ? 'iconoir-nav-arrow-down' : 'iconoir-nav-arrow-right'

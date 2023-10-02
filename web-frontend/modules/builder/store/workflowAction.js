@@ -1,5 +1,10 @@
 import WorkflowActionService from '@baserow/modules/builder/services/workflowAction'
-import ElementService from '@baserow/modules/builder/services/element'
+
+const updateContext = {
+  updateTimeout: null,
+  promiseResolve: null,
+  lastUpdatedValues: null,
+}
 
 const state = {}
 
@@ -87,6 +92,52 @@ const actions = {
       await dispatch('forceUpdate', { page, workflowAction, values: oldValues })
       throw error
     }
+  },
+  async updateDebounced({ dispatch }, { page, workflowAction, values }) {
+    const oldValues = {}
+    const newValues = {}
+    Object.keys(values).forEach((name) => {
+      if (Object.prototype.hasOwnProperty.call(workflowAction, name)) {
+        oldValues[name] = workflowAction[name]
+        newValues[name] = values[name]
+      }
+    })
+
+    await dispatch('forceUpdate', { page, workflowAction, values: newValues })
+
+    return new Promise((resolve, reject) => {
+      const fire = async () => {
+        try {
+          await WorkflowActionService(this.$client).update(
+            workflowAction.id,
+            values
+          )
+          resolve()
+        } catch (error) {
+          await dispatch('forceUpdate', {
+            page,
+            workflowAction,
+            values: updateContext.lastUpdatedValues,
+          })
+          reject(error)
+        }
+        updateContext.lastUpdatedValues = null
+      }
+
+      if (updateContext.promiseResolve) {
+        updateContext.promiseResolve()
+        updateContext.promiseResolve = null
+      }
+
+      clearTimeout(updateContext.updateTimeout)
+
+      if (!updateContext.lastUpdatedValues) {
+        updateContext.lastUpdatedValues = oldValues
+      }
+
+      updateContext.updateTimeout = setTimeout(fire, 500)
+      updateContext.promiseResolve = resolve
+    })
   },
 }
 
