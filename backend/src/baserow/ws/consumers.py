@@ -31,7 +31,7 @@ class PageScope:
     table_id=1 or table_id=2)
     """
     
-    page_type: str
+    page_type: PageType
     page_parameters: dict[str, any]
 
 
@@ -58,7 +58,10 @@ class SubscribedPages:
             print("removing")
             print(page_scope)
             print()
-            self.pages.remove(page_scope)
+            try:
+                self.pages.remove(page_scope)
+            except ValueError:
+                pass
 
     def __len__(self):
         return len(self.pages)
@@ -95,8 +98,16 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         if "remove_page" in content:
             await self.remove_page_scope(content)
 
-    async def get_page_context(self, content, page_name_attr: str) -> Optional[PageContext]:
-        # TODO: docs
+    async def get_page_context(self, content: dict, page_name_attr: str) -> Optional[PageContext]:
+        """
+        Helper method that will construct a PageContext object for adding
+        or removing page scopes from the consumer.
+
+        :param content: Dictionary representing the JSON that the client sent.
+        :param page_name_attr: Identifies the name of the parameter in the
+            content dictionary that refers to the page type.
+        """
+
         user = self.scope["user"]
         web_socket_id = self.scope["web_socket_id"]
 
@@ -106,7 +117,7 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         try:
             page_type = page_registry.get(content[page_name_attr])
         except page_registry.does_not_exist_exception_class:
-            return
+            return None
 
         parameters = {
             parameter: content.get(parameter) for parameter in page_type.parameters
@@ -119,7 +130,7 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
             web_socket_id=web_socket_id,
         )
 
-    async def add_page_scope(self, content):
+    async def add_page_scope(self, content: dict):
         """
         Subscribes the connection to a page abstraction. Based on the provided the page
         type we can figure out to which page the connection wants to subscribe to. This
@@ -128,7 +139,6 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
 
         :param content: The provided payload by the user. This should contain the page
             type and additional parameters.
-        :type content: dict
         """
 
         context = await self.get_page_context(content, "page")
@@ -157,7 +167,7 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
             {"type": "page_add", "page": page_type.type, "parameters": parameters}
         )
 
-    async def remove_page_scope(self, content, send_confirmation=True):
+    async def remove_page_scope(self, content: dict, send_confirmation=True):
         # TODO: docs
         context = await self.get_page_context(content, "remove_page")
         
