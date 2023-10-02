@@ -8,6 +8,7 @@ from baserow.ws.auth import ANONYMOUS_USER_TOKEN, get_user
 @pytest.mark.run(order=1)
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.websockets
 async def test_get_user(data_fixture):
     user, token = data_fixture.create_user_and_token()
 
@@ -23,6 +24,7 @@ async def test_get_user(data_fixture):
 @pytest.mark.run(order=2)
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.websockets
 async def test_token_auth_middleware(data_fixture, settings):
     user, token = data_fixture.create_user_and_token()
 

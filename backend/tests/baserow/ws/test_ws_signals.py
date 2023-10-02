@@ -18,6 +18,7 @@ from baserow.core.utils import generate_hash
 
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_to_groups")
+@pytest.mark.websockets
 def test_user_updated_name(mock_broadcast_to_workspaces, data_fixture):
     user = data_fixture.create_user(first_name="Albert")
     workspace_user = CoreHandler().create_workspace(user=user, name="Test")
@@ -35,6 +36,7 @@ def test_user_updated_name(mock_broadcast_to_workspaces, data_fixture):
 
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_to_groups")
+@pytest.mark.websockets
 def test_schedule_user_deletion(mock_broadcast_to_workspaces, data_fixture):
     user = data_fixture.create_user(first_name="Albert", password="albert")
     workspace_user = CoreHandler().create_workspace(user=user, name="Test")
@@ -51,6 +53,7 @@ def test_schedule_user_deletion(mock_broadcast_to_workspaces, data_fixture):
 
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_to_groups")
+@pytest.mark.websockets
 def test_cancel_user_deletion(mock_broadcast_to_workspaces, data_fixture):
     user = data_fixture.create_user(first_name="Albert", password="albert")
     user.profile.to_be_deleted = True
@@ -69,6 +72,7 @@ def test_cancel_user_deletion(mock_broadcast_to_workspaces, data_fixture):
 
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_to_groups")
+@pytest.mark.websockets
 def test_user_permanently_deleted(mock_broadcast_to_workspaces, data_fixture):
     user = data_fixture.create_user(first_name="Albert", password="albert")
     user.profile.to_be_deleted = True
@@ -91,6 +95,7 @@ def test_user_permanently_deleted(mock_broadcast_to_workspaces, data_fixture):
 
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_to_group")
+@pytest.mark.websockets
 def test_workspace_created(mock_broadcast_to_workspace, data_fixture):
     user = data_fixture.create_user()
     workspace_user = CoreHandler().create_workspace(user=user, name="Test")
@@ -105,6 +110,7 @@ def test_workspace_created(mock_broadcast_to_workspace, data_fixture):
 
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_to_users")
+@pytest.mark.websockets
 def test_workspace_restored(mock_broadcast_to_users, data_fixture):
     user = data_fixture.create_user()
     member_user = data_fixture.create_user()
@@ -159,6 +165,7 @@ def test_workspace_restored(mock_broadcast_to_users, data_fixture):
 
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_to_group")
+@pytest.mark.websockets
 def test_workspace_updated(mock_broadcast_to_workspace, data_fixture):
     user = data_fixture.create_user()
     user.web_socket_id = "test"
@@ -182,6 +189,7 @@ def test_workspace_updated(mock_broadcast_to_workspace, data_fixture):
 
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_to_users")
+@pytest.mark.websockets
 def test_workspace_deleted(mock_broadcast_to_users, data_fixture):
     user = data_fixture.create_user()
     workspace = data_fixture.create_workspace(user=user)
@@ -200,6 +208,7 @@ def test_workspace_deleted(mock_broadcast_to_users, data_fixture):
 
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_to_group")
+@pytest.mark.websockets
 def test_workspace_user_added(mock_broadcast_to_workspace, data_fixture):
     user_1 = data_fixture.create_user()
     user_2 = data_fixture.create_user()
@@ -232,6 +241,7 @@ def test_workspace_user_added(mock_broadcast_to_workspace, data_fixture):
 
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_to_group")
+@pytest.mark.websockets
 def test_workspace_user_updated(mock_broadcast_to_workspace, data_fixture):
     user_1 = data_fixture.create_user()
     user_2 = data_fixture.create_user()
@@ -262,6 +272,7 @@ def test_workspace_user_updated(mock_broadcast_to_workspace, data_fixture):
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_to_group")
 @patch("baserow.ws.signals.broadcast_to_users")
+@pytest.mark.websockets
 def test_workspace_user_deleted(
     mock_broadcast_to_users, mock_broadcast_to_workspace, data_fixture
 ):
@@ -303,6 +314,7 @@ def test_workspace_user_deleted(
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_to_group")
 @patch("baserow.ws.signals.broadcast_to_users")
+@pytest.mark.websockets
 def test_user_leaves_workspace(
     mock_broadcast_to_users, mock_broadcast_to_workspace, data_fixture
 ):
@@ -343,6 +355,7 @@ def test_user_leaves_workspace(
 
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_to_users")
+@pytest.mark.websockets
 def test_workspaces_reordered(mock_broadcast_to_users, data_fixture):
     user = data_fixture.create_user()
     workspace_1 = data_fixture.create_workspace(user=user)
@@ -368,6 +381,7 @@ def test_workspaces_reordered(mock_broadcast_to_users, data_fixture):
 
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_application_created")
+@pytest.mark.websockets
 def test_application_created(mock_broadcast_application_created, data_fixture):
     user = data_fixture.create_user()
     workspace = data_fixture.create_workspace(user=user)
@@ -385,6 +399,7 @@ def test_application_created(mock_broadcast_application_created, data_fixture):
 
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_to_permitted_users")
+@pytest.mark.websockets
 def test_application_updated(mock_broadcast_to_permitted_users, data_fixture):
     user = data_fixture.create_user()
     database = data_fixture.create_database_application(user=user)
@@ -399,6 +414,7 @@ def test_application_updated(mock_broadcast_to_permitted_users, data_fixture):
 
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_to_permitted_users")
+@pytest.mark.websockets
 def test_application_deleted(mock_broadcast_to_permitted_users, data_fixture):
     user = data_fixture.create_user()
     database = data_fixture.create_database_application(user=user)
@@ -413,6 +429,7 @@ def test_application_deleted(mock_broadcast_to_permitted_users, data_fixture):
 
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_to_group")
+@pytest.mark.websockets
 def test_applications_reordered(mock_broadcast_to_channel_group, data_fixture):
     user = data_fixture.create_user()
     workspace = data_fixture.create_workspace(user=user)
@@ -432,6 +449,7 @@ def test_applications_reordered(mock_broadcast_to_channel_group, data_fixture):
 
 @pytest.mark.django_db(transaction=True)
 @patch("baserow.ws.signals.broadcast_application_created")
+@pytest.mark.websockets
 def test_duplicate_application(mock_broadcast_to_permitted_users, data_fixture):
     user = data_fixture.create_user()
     workspace = data_fixture.create_workspace(user=user)

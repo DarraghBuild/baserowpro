@@ -1,9 +1,11 @@
+import pytest
 from unittest.mock import patch
 
 from baserow.ws.registries import page_registry
 
 
 @patch("baserow.ws.registries.broadcast_to_channel_group")
+@pytest.mark.websockets
 def test_broadcast(mock_broadcast, data_fixture):
     table_page = page_registry.get("table")
 

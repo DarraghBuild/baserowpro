@@ -8,6 +8,7 @@ from baserow.ws.auth import ANONYMOUS_USER_TOKEN
 @pytest.mark.run(order=3)
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.websockets
 async def test_join_page(data_fixture):
     user_1, token_1 = data_fixture.create_user_and_token()
     table_1 = data_fixture.create_database_table(user=user_1)
@@ -44,6 +45,7 @@ async def test_join_page(data_fixture):
 @pytest.mark.run(order=4)
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.websockets
 async def test_join_page_as_anonymous_user(data_fixture):
     user_1, token_1 = data_fixture.create_user_and_token()
     table_1 = data_fixture.create_database_table(user=user_1)
