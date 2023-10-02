@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Dict, Any
+from typing import Dict, Any, TYPE_CHECKING
 
 from baserow.contrib.builder.elements.handler import ElementHandler
 from baserow.contrib.builder.workflow_actions.models import (
@@ -9,6 +9,9 @@ from baserow.contrib.builder.workflow_actions.models import (
 from baserow.contrib.builder.workflow_actions.types import BuilderWorkflowActionDict
 from baserow.core.formula.serializers import FormulaSerializerField
 from baserow.core.workflow_actions.registries import WorkflowActionType
+
+if TYPE_CHECKING:
+    from baserow.contrib.builder.pages.models import Page
 
 
 class BuilderWorkflowActionType(WorkflowActionType):
@@ -25,6 +28,36 @@ class BuilderWorkflowActionType(WorkflowActionType):
     @abstractmethod
     def get_sample_params(self) -> Dict[str, Any]:
         pass
+
+    def import_serialized(
+        self, page: "Page", serialized_values: Dict[str, Any], id_mapping: Dict
+    ) -> BuilderWorkflowAction:
+        if "builder_workflow_actions" not in id_mapping:
+            id_mapping["builder_workflow_actions"] = {}
+
+        serialized_copy = serialized_values.copy()
+
+        # Remove extra keys
+        workflow_action_id = serialized_copy.pop("id")
+        serialized_copy.pop("type")
+
+        # Convert table id
+        serialized_copy["page_id"] = id_mapping["builder_pages"][
+            serialized_copy["page_id"]
+        ]
+
+        # Convert element id
+        if "element_id" in serialized_copy:
+            serialized_copy["element_id"] = id_mapping["builder_page_elements"][
+                serialized_copy["element_id"]
+            ]
+
+        workflow_action = self.model_class(page=page, **serialized_copy)
+        workflow_action.save()
+
+        id_mapping["builder_workflow_actions"][workflow_action_id] = workflow_action.id
+
+        return workflow_action
 
 
 class NotificationWorkflowActionType(BuilderWorkflowActionType):

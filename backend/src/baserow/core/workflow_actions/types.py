@@ -5,6 +5,7 @@ from baserow.core.workflow_actions.models import WorkflowAction
 
 class WorkflowActionDict(TypedDict):
     id: int
+    type: str
 
 
 WorkflowActionDictSubClass = TypeVar(
