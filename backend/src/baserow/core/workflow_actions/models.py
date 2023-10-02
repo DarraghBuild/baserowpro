@@ -2,6 +2,7 @@ from django.db import models
 
 from baserow.core.mixins import (
     CreatedAndUpdatedOnMixin,
+    HierarchicalModelMixin,
     OrderableMixin,
     PolymorphicContentTypeMixin,
     WithRegistry,
@@ -12,6 +13,7 @@ from baserow.core.registry import ModelRegistryMixin
 class WorkflowAction(
     PolymorphicContentTypeMixin,
     CreatedAndUpdatedOnMixin,
+    HierarchicalModelMixin,
     OrderableMixin,
     models.Model,
     WithRegistry,
