@@ -39,10 +39,12 @@ def test_import_workflow_action(data_fixture, workflow_action_type: WorkflowActi
     page = data_fixture.create_builder_page()
     sample_params = workflow_action_type.get_sample_params()
 
-    serialized = {"id": 9999, "type": workflow_action_type.type}
+    page_after_import = data_fixture.create_builder_page()
+
+    serialized = {"id": 9999, "type": workflow_action_type.type, "page_id": page.id}
     serialized.update(workflow_action_type.get_sample_params())
 
-    id_mapping = {}
+    id_mapping = {"builder_pages": {page.id: page_after_import.id}}
     workflow_action = workflow_action_type.import_serialized(
         page, serialized, id_mapping
     )
