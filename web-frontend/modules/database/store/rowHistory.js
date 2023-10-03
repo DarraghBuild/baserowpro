@@ -78,7 +78,7 @@ export const actions = {
       commit('SET_LOADING', false)
     }
   },
-  async forceCreate({ commit, state }, { rowHistoryEntry, rowId, tableId }) {
+  forceCreate({ commit, state }, { rowHistoryEntry, rowId, tableId }) {
     if (state.loadedTableId === tableId && state.loadedRowId === rowId) {
       commit('ADD_ENTRIES', { entries: [rowHistoryEntry] })
       commit('SET_TOTAL_COUNT', state.totalCount + 1)

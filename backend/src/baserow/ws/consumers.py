@@ -1,10 +1,13 @@
-from typing import Optional
-from operator import attrgetter
 from dataclasses import dataclass
+from operator import attrgetter
+from typing import Optional
+
+from django.contrib.auth.models import AbstractUser
+
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from django.contrib.auth.models import AbstractUser
-from baserow.ws.registries import page_registry, PageType
+
+from baserow.ws.registries import PageType, page_registry
 
 
 @dataclass
@@ -179,7 +182,7 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         Unsubscribes the connection from a page. Based on the provided page
         type and its params we can figure out to which page the connection wants
         to unsubscribe from.
-                
+
         :param content: The provided payload by the user. This should contain the page
             type and additional parameters.
         :param send_confirmation: If True, the client will receive a confirmation

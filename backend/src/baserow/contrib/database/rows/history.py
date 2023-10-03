@@ -8,12 +8,11 @@ from django.dispatch import receiver
 from opentelemetry import trace
 
 from baserow.contrib.database.fields.registries import field_type_registry
-from baserow.core.action.signals import ActionCommandType, action_done
-from baserow.core.telemetry.utils import baserow_trace
-
 from baserow.contrib.database.rows.actions import UpdateRowsActionType
 from baserow.contrib.database.rows.models import RowHistory
 from baserow.contrib.database.rows.signals import rows_history_updated
+from baserow.core.action.signals import ActionCommandType, action_done
+from baserow.core.telemetry.utils import baserow_trace
 
 tracer = trace.get_tracer(__name__)
 

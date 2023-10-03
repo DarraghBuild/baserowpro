@@ -4,6 +4,7 @@ from django.db import transaction
 from django.dispatch import receiver
 
 from baserow.contrib.database.api.rows.serializers import (
+    RowHistorySerializer,
     RowSerializer,
     get_row_serializer_class,
 )
@@ -11,7 +12,6 @@ from baserow.contrib.database.rows import signals as row_signals
 from baserow.contrib.database.rows.registries import row_metadata_registry
 from baserow.contrib.database.table.models import GeneratedTableModel
 from baserow.ws.registries import page_registry
-from baserow.contrib.database.api.rows.serializers import RowHistorySerializer
 
 
 @receiver(row_signals.rows_created)

@@ -1,5 +1,7 @@
 from django.conf import settings
 
+from baserow.contrib.database.rows.exceptions import RowDoesNotExist
+from baserow.contrib.database.rows.handler import RowHandler
 from baserow.contrib.database.table.exceptions import TableDoesNotExist
 from baserow.contrib.database.table.handler import TableHandler
 from baserow.contrib.database.table.operations import (
@@ -15,8 +17,6 @@ from baserow.core.exceptions import PermissionDenied, UserNotInWorkspace
 from baserow.core.handler import CoreHandler
 from baserow.ws.registries import PageType
 from baserow.ws.tasks import broadcast_to_channel_group
-from baserow.contrib.database.rows.handler import RowHandler
-from baserow.contrib.database.rows.exceptions import RowDoesNotExist
 
 
 class TablePageType(PageType):
@@ -84,11 +84,6 @@ class PublicViewPageType(PageType):
 
     def get_group_name(self, slug, **kwargs):
         return f"view-{slug}"
-
-    # TODO: remove? how is this called?
-    # def broadcast_to_views(self, payload, view_slugs):
-    #     for view_slug in view_slugs:
-    #         self.broadcast(payload, ignore_web_socket_id=None, slug=view_slug)
 
 
 class RowPageType(PageType):

@@ -13,7 +13,6 @@ from baserow.ws.tasks import (
 )
 
 
-@pytest.mark.run(order=4)
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.websockets
@@ -60,7 +59,6 @@ async def test_broadcast_to_users(data_fixture):
     await communicator_2.disconnect()
 
 
-@pytest.mark.run(order=5)
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.websockets
@@ -165,7 +163,6 @@ async def test_broadcast_to_channel_group(data_fixture):
     await communicator_2.disconnect()
 
 
-@pytest.mark.run(order=6)
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.websockets
@@ -240,7 +237,6 @@ async def test_broadcast_to_workspace(data_fixture):
     await communicator_3.disconnect()
 
 
-@pytest.mark.run(order=6)
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.websockets
@@ -329,7 +325,6 @@ async def test_broadcast_to_workspaces(data_fixture):
     await communicator_4.disconnect()
 
 
-@pytest.mark.run(order=7)
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.websockets
@@ -371,7 +366,6 @@ async def test_can_broadcast_to_every_single_user(data_fixture):
     await communicator_2.disconnect()
 
 
-@pytest.mark.run(order=8)
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.websockets
@@ -414,7 +408,6 @@ async def test_can_still_ignore_when_sending_to_all_users(data_fixture):
     await communicator_2.disconnect()
 
 
-@pytest.mark.run(order=10)
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.websockets

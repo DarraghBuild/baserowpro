@@ -1,11 +1,13 @@
-import pytest
 from unittest.mock import patch
-from channels.testing import WebsocketCommunicator
-from baserow.ws.registries import page_registry
-from baserow.config.asgi import application
-from baserow.ws.auth import ANONYMOUS_USER_TOKEN
+
 from django.contrib.auth.models import AnonymousUser
 
+import pytest
+from channels.testing import WebsocketCommunicator
+
+from baserow.config.asgi import application
+from baserow.ws.auth import ANONYMOUS_USER_TOKEN
+from baserow.ws.registries import page_registry
 
 # TablePageType
 

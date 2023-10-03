@@ -137,7 +137,7 @@ export class RealTimeHandler {
 
     if (
       !this.pages.some(
-        (elem) => JSON.stringify(elem) == JSON.stringify(pageScope)
+        (elem) => JSON.stringify(elem) === JSON.stringify(pageScope)
       )
     ) {
       this.pages.push(pageScope)
@@ -158,7 +158,7 @@ export class RealTimeHandler {
    */
   unsubscribe(page, parameters) {
     this.pages = this.pages.filter(
-      (item) => JSON.stringify(item) != JSON.stringify({ page, parameters })
+      (item) => JSON.stringify(item) !== JSON.stringify({ page, parameters })
     )
     this.socket.send(
       JSON.stringify({

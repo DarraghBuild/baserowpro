@@ -20,7 +20,9 @@ from baserow.core.utils import generate_hash
 @patch("baserow.ws.signals.broadcast_to_group")
 @patch("baserow.ws.signals.broadcast_to_groups")
 @pytest.mark.websockets
-def test_user_updated_name(mock_broadcast_to_workspaces, mock_broadcast_to_workspace, data_fixture):
+def test_user_updated_name(
+    mock_broadcast_to_workspaces, mock_broadcast_to_workspace, data_fixture
+):
     user = data_fixture.create_user(first_name="Albert")
     workspace_user = CoreHandler().create_workspace(user=user, name="Test")
     workspace_user_2 = CoreHandler().create_workspace(user=user, name="Test 2")
@@ -39,7 +41,9 @@ def test_user_updated_name(mock_broadcast_to_workspaces, mock_broadcast_to_works
 @patch("baserow.ws.signals.broadcast_to_group")
 @patch("baserow.ws.signals.broadcast_to_groups")
 @pytest.mark.websockets
-def test_schedule_user_deletion(mock_broadcast_to_workspaces, mock_broadcast_to_workspace, data_fixture):
+def test_schedule_user_deletion(
+    mock_broadcast_to_workspaces, mock_broadcast_to_workspace, data_fixture
+):
     user = data_fixture.create_user(first_name="Albert", password="albert")
     workspace_user = CoreHandler().create_workspace(user=user, name="Test")
     workspace_user_2 = CoreHandler().create_workspace(user=user, name="Test 2")
@@ -57,7 +61,9 @@ def test_schedule_user_deletion(mock_broadcast_to_workspaces, mock_broadcast_to_
 @patch("baserow.ws.signals.broadcast_to_group")
 @patch("baserow.ws.signals.broadcast_to_groups")
 @pytest.mark.websockets
-def test_cancel_user_deletion(mock_broadcast_to_workspaces, mock_broadcast_to_workspace, data_fixture):
+def test_cancel_user_deletion(
+    mock_broadcast_to_workspaces, mock_broadcast_to_workspace, data_fixture
+):
     user = data_fixture.create_user(first_name="Albert", password="albert")
     user.profile.to_be_deleted = True
     user.save()
@@ -77,7 +83,9 @@ def test_cancel_user_deletion(mock_broadcast_to_workspaces, mock_broadcast_to_wo
 @patch("baserow.ws.signals.broadcast_to_group")
 @patch("baserow.ws.signals.broadcast_to_groups")
 @pytest.mark.websockets
-def test_user_permanently_deleted(mock_broadcast_to_workspaces, mock_broadcast_to_workspace, data_fixture):
+def test_user_permanently_deleted(
+    mock_broadcast_to_workspaces, mock_broadcast_to_workspace, data_fixture
+):
     user = data_fixture.create_user(first_name="Albert", password="albert")
     user.profile.to_be_deleted = True
     user.profile.save()
@@ -215,7 +223,12 @@ def test_workspace_deleted(mock_broadcast_to_users, data_fixture):
 @patch("baserow.ws.signals.broadcast_to_users")
 @patch("baserow.ws.signals.broadcast_to_group")
 @pytest.mark.websockets
-def test_workspace_user_added(mock_broadcast_to_workspace, mock_broadcast_to_users, mock_broadcast_to_users2, data_fixture):
+def test_workspace_user_added(
+    mock_broadcast_to_workspace,
+    mock_broadcast_to_users,
+    mock_broadcast_to_users2,
+    data_fixture,
+):
     user_1 = data_fixture.create_user()
     user_2 = data_fixture.create_user()
     workspace = data_fixture.create_workspace()
@@ -249,7 +262,9 @@ def test_workspace_user_added(mock_broadcast_to_workspace, mock_broadcast_to_use
 @patch("baserow_enterprise.role.receivers.broadcast_to_users")
 @patch("baserow.ws.signals.broadcast_to_group")
 @pytest.mark.websockets
-def test_workspace_user_updated(mock_broadcast_to_workspace, mock_broadcast_to_users, data_fixture):
+def test_workspace_user_updated(
+    mock_broadcast_to_workspace, mock_broadcast_to_users, data_fixture
+):
     user_1 = data_fixture.create_user()
     user_2 = data_fixture.create_user()
     workspace = data_fixture.create_workspace()
