@@ -34,6 +34,7 @@ from baserow.contrib.database.table.operations import ListRowsDatabaseTableOpera
 from baserow.contrib.database.views.handler import ViewHandler
 from baserow.contrib.integrations.local_baserow.api.serializers import (
     LocalBaserowTableServiceFilterSerializer,
+    LocalBaserowTableServiceSortSerializer,
 )
 from baserow.contrib.integrations.local_baserow.integration_types import (
     LocalBaserowIntegrationType,
@@ -47,6 +48,7 @@ from baserow.contrib.integrations.local_baserow.models import (
     LocalBaserowGetRow,
     LocalBaserowListRows,
     LocalBaserowTableServiceFilter,
+    LocalBaserowTableServiceSort,
 )
 from baserow.core.formula import resolve_formula
 from baserow.core.formula.registries import formula_runtime_function_registry
@@ -59,6 +61,7 @@ from baserow.core.services.registries import ServiceType
 from baserow.core.services.types import (
     ServiceDict,
     ServiceFilterDictSubClass,
+    ServiceSortDictSubClass,
     ServiceSubClass,
 )
 from baserow.core.utils import atomic_if_not_already
@@ -164,6 +167,7 @@ class LocalBaserowTableServiceType(LocalBaserowServiceType):
     base_serializer_field_names = [
         "table_id",
         "filters",
+        "sortings",
         "view_id",
         "filter_type",
         "search_query",
@@ -175,6 +179,9 @@ class LocalBaserowTableServiceType(LocalBaserowServiceType):
     serializer_field_overrides = {
         "filters": LocalBaserowTableServiceFilterSerializer(
             many=True, source="service_filters", required=False
+        ),
+        "sortings": LocalBaserowTableServiceSortSerializer(
+            many=True, source="service_sorts", required=False
         ),
     }
 
@@ -215,6 +222,22 @@ class LocalBaserowTableServiceType(LocalBaserowServiceType):
             | self.child_request_serializer_field_overrides
         )
 
+    def update_service_sortings(
+        self,
+        service: LocalBaserowTableServiceSubClass,
+        service_sorts: Optional[List[ServiceSortDictSubClass]] = None,
+    ):
+        with atomic_if_not_already():
+            service.service_sorts.all().delete()
+            LocalBaserowTableServiceSort.objects.bulk_create(
+                [
+                    LocalBaserowTableServiceSort(
+                        **service_sort, service=service, order=index
+                    )
+                    for index, service_sort in enumerate(service_sorts)
+                ]
+            )
+
     def update_service_filters(
         self,
         service: LocalBaserowTableServiceSubClass,
@@ -238,24 +261,28 @@ class LocalBaserowTableServiceType(LocalBaserowServiceType):
         changes: Dict[str, Tuple],
     ) -> None:
         """
-        Responsible for updating service filters which have been PATCHED to
-        the data source / service endpoint. At the moment we destroy all
-        current filters, and create the ones present in `service_filters`.
+        Responsible for updating service filters and sorts which have been
+        PATCHED to the data source / service endpoint. At the moment we
+        destroy all current filters and sorts, and create the ones present
+        in `service_filters` / `service_sorts` respectively.
 
-        :param instance: The service we want to manage filters for.
-        :param values: A dictionary which may contain filters.
+        :param instance: The service we want to manage filters/sorts for.
+        :param values: A dictionary which may contain filters/sorts.
         :param changes: A dictionary containing all changes which were made to the
             service prior to `after_update` being called.
         """
 
-        # Following a Table change, from one Table to another, we drop all filters.
-        # This is due to the fact that the filters point at specific table fields.
+        # Following a Table change, from one Table to another, we drop all filters
+        # and sorts. This is due to the fact that both point at specific table fields.
         from_table, to_table = changes.get("table", (None, None))
         if from_table and to_table:
             instance.service_filters.all().delete()
-
-        if "service_filters" in values:
-            self.update_service_filters(instance, values["service_filters"])
+            instance.service_sorts.all().delete()
+        else:
+            if "service_filters" in values:
+                self.update_service_filters(instance, values["service_filters"])
+            if "service_sorts" in values:
+                self.update_service_sortings(instance, values["service_sorts"])
 
     def prepare_values(
         self,

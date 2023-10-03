@@ -1,56 +1,52 @@
 <template>
   <form @submit.prevent>
-    <div>
-      <div class="row">
-        <div class="col col-12">
-          <LocalBaserowTableSelector
-            v-model="values.table_id"
-            class="local-baserow-get-row-form__table-selector"
-            :databases="databases"
-            :view-id.sync="values.view_id"
-          ></LocalBaserowTableSelector>
-        </div>
+    <div class="row">
+      <div class="col col-12">
+        <LocalBaserowTableSelector
+          v-model="values.table_id"
+          class="local-baserow-get-row-form__table-selector"
+          :databases="databases"
+          :view-id.sync="values.view_id"
+        ></LocalBaserowTableSelector>
       </div>
-      <div class="row">
-        <div class="col col-6">
-          <ApplicationBuilderFormulaInputGroup
-            v-model="values.row_id"
-            small-label
-            :label="$t('localBaserowGetRowForm.rowFieldLabel')"
-            :placeholder="$t('localBaserowGetRowForm.rowFieldPlaceHolder')"
-            :data-providers-allowed="DATA_PROVIDERS_ALLOWED_DATA_SOURCES"
-          />
-        </div>
+    </div>
+    <div class="row">
+      <div class="col col-6">
+        <ApplicationBuilderFormulaInputGroup
+          v-model="values.row_id"
+          small-label
+          :label="$t('localBaserowGetRowForm.rowFieldLabel')"
+          :placeholder="$t('localBaserowGetRowForm.rowFieldPlaceHolder')"
+          :data-providers-allowed="DATA_PROVIDERS_ALLOWED_DATA_SOURCES"
+        />
       </div>
-      <div class="row">
-        <div class="col col-12">
-          <Tabs>
-            <Tab
-              :title="$t('localBaserowGetRowForm.filterTabTitle')"
-              class="data-source-form__condition-form-tab"
-            >
-              <LocalBaserowTableServiceConditionalForm
-                v-if="values.table_id && dataSource.schema"
-                v-model="values.filters"
-                :schema="dataSource.schema"
-                :filter-type.sync="values.filter_type"
-              />
-              <p v-if="!values.table_id">
-                {{ $t('localBaserowGetRowForm.noTableChosenForFiltering') }}
-              </p>
-            </Tab>
-            <Tab :title="$t('localBaserowGetRowForm.searchTabTitle')">
-              <FormInput
-                v-model="values.search_query"
-                type="text"
-                small-label
-                :placeholder="
-                  $t('localBaserowGetRowForm.searchFieldPlaceHolder')
-                "
-              />
-            </Tab>
-          </Tabs>
-        </div>
+    </div>
+    <div class="row">
+      <div class="col col-12">
+        <Tabs>
+          <Tab
+            :title="$t('localBaserowGetRowForm.filterTabTitle')"
+            class="data-source-form__condition-form-tab"
+          >
+            <LocalBaserowTableServiceConditionalForm
+              v-if="values.table_id && dataSource.schema"
+              v-model="values.filters"
+              :schema="dataSource.schema"
+              :filter-type.sync="values.filter_type"
+            />
+            <p v-if="!values.table_id">
+              {{ $t('localBaserowGetRowForm.noTableChosenForFiltering') }}
+            </p>
+          </Tab>
+          <Tab :title="$t('localBaserowGetRowForm.searchTabTitle')">
+            <FormInput
+              v-model="values.search_query"
+              type="text"
+              small-label
+              :placeholder="$t('localBaserowGetRowForm.searchFieldPlaceHolder')"
+            />
+          </Tab>
+        </Tabs>
       </div>
     </div>
   </form>

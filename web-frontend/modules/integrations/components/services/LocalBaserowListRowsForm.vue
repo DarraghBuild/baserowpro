@@ -26,6 +26,19 @@
               {{ $t('localBaserowListRowsForm.noTableChosenForFiltering') }}
             </p>
           </Tab>
+          <Tab
+            :title="$t('localBaserowListRowsForm.sortTabTitle')"
+            class="data-source-form__sort-form-tab"
+          >
+            <LocalBaserowTableServiceSortForm
+              v-if="values.table_id && dataSource.schema"
+              v-model="values.sortings"
+              :schema="dataSource.schema"
+            ></LocalBaserowTableServiceSortForm>
+            <p v-if="!values.table_id">
+              {{ $t('localBaserowListRowsForm.noTableChosenForSorting') }}
+            </p>
+          </Tab>
           <Tab :title="$t('localBaserowListRowsForm.searchTabTitle')">
             <FormInput
               v-model="values.search_query"
@@ -43,14 +56,16 @@
 </template>
 
 <script>
+import _ from 'lodash'
 import form from '@baserow/modules/core/mixins/form'
 import LocalBaserowTableSelector from '@baserow/modules/integrations/components/services/LocalBaserowTableSelector'
 import LocalBaserowTableServiceConditionalForm from '@baserow/modules/integrations/components/services/LocalBaserowTableServiceConditionalForm.vue'
-import _ from 'lodash'
+import LocalBaserowTableServiceSortForm from '@baserow/modules/integrations/components/services/LocalBaserowTableServiceSortForm'
 
 export default {
   components: {
     LocalBaserowTableSelector,
+    LocalBaserowTableServiceSortForm,
     LocalBaserowTableServiceConditionalForm,
   },
   mixins: [form],
@@ -59,8 +74,11 @@ export default {
       type: Object,
       required: true,
     },
-    contextData: { type: Object, required: true },
     dataSource: {
+      type: Object,
+      required: true,
+    },
+    contextData: {
       type: Object,
       required: true,
     },
@@ -73,12 +91,14 @@ export default {
         'search_query',
         'filters',
         'filter_type',
+        'sortings',
       ],
       values: {
         table_id: null,
         view_id: null,
         search_query: '',
         filters: [],
+        sortings: [],
         filter_type: 'AND',
       },
     }
@@ -87,14 +107,18 @@ export default {
     databases() {
       return this.contextData?.databases || []
     },
-    storeFilters() {
-      return this.getDefaultValues().filters
+    filtersAndSorts() {
+      const defaultValues = this.getDefaultValues()
+      return [defaultValues.filters, defaultValues.sortings]
     },
   },
   watch: {
-    storeFilters(newValue) {
-      if (!_.isEqual(newValue, this.values.filters)) {
-        this.values.filters = newValue
+    filtersAndSorts(newValue) {
+      if (!_.isEqual(newValue[0], this.values.filters)) {
+        this.values.filters = newValue[0]
+      }
+      if (!_.isEqual(newValue[1], this.values.sortings)) {
+        this.values.sortings = newValue[1]
       }
     },
   },

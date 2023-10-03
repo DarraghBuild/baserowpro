@@ -599,7 +599,7 @@ def test_local_baserow_list_rows_service_dispatch_data_with_view_and_service_sor
 
     # A `ServiceSort` alone.
     service_sort = data_fixture.create_local_baserow_table_service_sort(
-        service=service, field=cost, order=SORT_ORDER_DESC
+        service=service, field=cost, order_by=SORT_ORDER_DESC
     )
     dispatch_data = service_type.dispatch_data(service)
     assert list(dispatch_data["data"].values_list("id", flat=True)) == [
@@ -611,7 +611,7 @@ def test_local_baserow_list_rows_service_dispatch_data_with_view_and_service_sor
 
     # A `ViewSort` & `ServiceSort`, the latter is used.
     data_fixture.create_local_baserow_table_service_sort(
-        service=service, field=cost, order=SORT_ORDER_ASC
+        service=service, field=cost, order_by=SORT_ORDER_ASC
     )
     data_fixture.create_view_sort(view=view, field=cost, order=SORT_ORDER_DESC)
     dispatch_data = service_type.dispatch_data(service)
@@ -1204,7 +1204,7 @@ def test_local_baserow_table_service_type_schema_name():
     )
 
 
-def test_local_baserow_table_service_type_after_update_table_change_deletes_filters():
+def test_local_baserow_table_service_type_after_update_table_change_deletes_filters_and_sorts():
     mock_instance = Mock()
     mock_from_table = Mock()
     mock_to_table = Mock()
@@ -1218,9 +1218,12 @@ def test_local_baserow_table_service_type_after_update_table_change_deletes_filt
 
     service_type.after_update(mock_instance, {}, change_table_from_Table_to_None)
     assert not mock_instance.service_filters.all.return_value.delete.called
+    assert not mock_instance.service_sorts.all.return_value.delete.called
 
     service_type.after_update(mock_instance, {}, change_table_from_None_to_Table)
     assert not mock_instance.service_filters.all.return_value.delete.called
+    assert not mock_instance.service_sorts.all.return_value.delete.called
 
     service_type.after_update(mock_instance, {}, change_table_from_Table_to_Table)
     assert mock_instance.service_filters.all.return_value.delete.called
+    assert mock_instance.service_sorts.all.return_value.delete.called
