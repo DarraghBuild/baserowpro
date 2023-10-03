@@ -46,6 +46,9 @@ class ServiceType(
     # Does this service return a list of record?
     returns_list = False
 
+    # The ServiceFilter applicable for this `model_class`.
+    filter_model_class = None
+
     def prepare_values(
         self,
         values: Dict[str, Any],

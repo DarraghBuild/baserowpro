@@ -76,6 +76,7 @@
         :is="serviceType.formComponent"
         ref="subForm"
         :builder="builder"
+        :data-source="dataSource"
         :default-values="defaultValues"
         :context-data="integration.context_data"
         @values-changed="emitChange($event)"
@@ -95,6 +96,10 @@ export default {
   mixins: [form],
   props: {
     builder: {
+      type: Object,
+      required: true,
+    },
+    dataSource: {
       type: Object,
       required: true,
     },

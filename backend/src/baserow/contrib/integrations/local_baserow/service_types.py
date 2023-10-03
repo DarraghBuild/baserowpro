@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
@@ -32,6 +32,10 @@ from baserow.contrib.database.search.handler import SearchHandler
 from baserow.contrib.database.table.handler import TableHandler
 from baserow.contrib.database.table.operations import ListRowsDatabaseTableOperationType
 from baserow.contrib.database.views.handler import ViewHandler
+from baserow.contrib.integrations.local_baserow.api.serializers import (
+    LocalBaserowTableServiceFilterSerializer,
+    LocalBaserowTableServiceSerializerMixin,
+)
 from baserow.contrib.integrations.local_baserow.integration_types import (
     LocalBaserowIntegrationType,
 )
@@ -43,6 +47,7 @@ from baserow.contrib.integrations.local_baserow.mixins import (
 from baserow.contrib.integrations.local_baserow.models import (
     LocalBaserowGetRow,
     LocalBaserowListRows,
+    LocalBaserowTableServiceFilter,
 )
 from baserow.core.formula import resolve_formula
 from baserow.core.formula.registries import formula_runtime_function_registry
@@ -139,6 +144,82 @@ class LocalBaserowTableServiceType(LocalBaserowServiceType):
     """
     The `ServiceType` for `LocalBaserowTableService` subclasses.
     """
+
+    # The ServiceFilter applicable for this `model_class`.
+    filter_model_class = LocalBaserowTableServiceFilter
+
+    serializer_mixins = [LocalBaserowTableServiceSerializerMixin]
+
+    # All `LocalBaserowTableService` subclasses share these allowed fields.
+    base_allowed_fields = [
+        "table",
+        "view",
+        "filter_type",
+        "search_query",
+        "service_filters",
+    ]
+
+    # Overriden by child classes to add their specific fields.
+    child_allowed_fields = []
+
+    # All `LocalBaserowTableService` subclasses share these serializer field names.
+    base_serializer_field_names = [
+        "service_id",
+        "table_id",
+        "filters",
+        "view_id",
+        "filter_type",
+        "search_query",
+    ]
+
+    # Overriden by child classes to add their specific field names.
+    child_serializer_field_names = []
+
+    serializer_field_overrides = {
+        "filters": LocalBaserowTableServiceFilterSerializer(
+            many=True, source="service_filters", required=False
+        ),
+    }
+
+    base_request_serializer_field_overrides = {
+        "service_id": serializers.IntegerField(
+            source="id", required=False, help_text="The id of the Baserow service."
+        ),
+        "table_id": serializers.IntegerField(
+            required=False,
+            allow_null=True,
+            help_text="The id of the Baserow table we want the data for.",
+        ),
+        "view_id": serializers.IntegerField(
+            required=False,
+            allow_null=True,
+            help_text="The id of the Baserow view we want the data for.",
+        ),
+        "search_query": serializers.CharField(
+            required=False,
+            allow_blank=True,
+            help_text="Any search queries to apply to the "
+            "service when it is dispatched.",
+        ),
+    } | serializer_field_overrides
+
+    # Overriden by child classes to add their specific field names.
+    child_request_serializer_field_overrides = {}
+
+    @property
+    def allowed_fields(self) -> List[str]:
+        return self.base_allowed_fields + self.child_allowed_fields
+
+    @property
+    def serializer_field_names(self) -> List[str]:
+        return self.base_serializer_field_names + self.child_serializer_field_names
+
+    @property
+    def request_serializer_field_overrides(self) -> Dict[str, Serializer]:
+        return (
+            self.base_request_serializer_field_overrides
+            | self.child_request_serializer_field_overrides
+        )
 
     def prepare_values(
         self,
@@ -279,32 +360,6 @@ class LocalBaserowListRowsUserServiceType(
         view_id: int
         search_query: str
 
-    allowed_fields = ["table", "view", "search_query"]
-
-    serializer_field_names = [
-        "table_id",
-        "view_id",
-        "search_query",
-    ]
-
-    request_serializer_field_overrides = {
-        "table_id": serializers.IntegerField(
-            required=False,
-            allow_null=True,
-            help_text="The id of the Baserow table we want the data for.",
-        ),
-        "view_id": serializers.IntegerField(
-            required=False,
-            allow_null=True,
-            help_text="The id of the Baserow view we want the data for.",
-        ),
-        "search_query": serializers.CharField(
-            required=False,
-            allow_blank=True,
-            help_text="Any search terms to apply to the service when it is dispatched.",
-        ),
-    }
-
     def enhance_queryset(self, queryset):
         return queryset.select_related("view", "table").prefetch_related(
             "view__viewfilter_set",
@@ -416,39 +471,6 @@ class LocalBaserowGetRowUserServiceType(
         view_id: int
         row_id: str
         search_query: str
-
-    allowed_fields = ["table", "view", "row_id", "search_query"]
-
-    serializer_field_names = [
-        "table_id",
-        "view_id",
-        "row_id",
-        "search_query",
-    ]
-
-    request_serializer_field_overrides = {
-        "table_id": serializers.IntegerField(
-            required=False,
-            allow_null=True,
-            help_text="The id of the Baserow table we want the data for.",
-        ),
-        "view_id": serializers.IntegerField(
-            required=False,
-            allow_null=True,
-            help_text="The id of the Baserow view we want the data for.",
-        ),
-        "row_id": FormulaSerializerField(
-            required=False,
-            allow_blank=True,
-            help_text="A formula for defining the intended row.",
-        ),
-        "search_query": serializers.CharField(
-            required=False,
-            allow_blank=True,
-            help_text="Any search queries to apply to the "
-            "service when it is dispatched.",
-        ),
-    }
 
     def enhance_queryset(self, queryset):
         return queryset.select_related(

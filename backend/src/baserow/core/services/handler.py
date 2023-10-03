@@ -1,4 +1,4 @@
-from typing import Any, Iterable, Optional, Union, cast
+from typing import Any, Iterable, List, Optional, Union, cast
 
 from django.db.models import QuerySet
 
@@ -11,11 +11,11 @@ from baserow.core.services.exceptions import (
     ServiceDoesNotExist,
     ServiceImproperlyConfigured,
 )
-from baserow.core.services.models import Service
+from baserow.core.services.models import Service, ServiceFilter
 from baserow.core.services.registries import ServiceType, service_type_registry
-from baserow.core.utils import extract_allowed
+from baserow.core.utils import atomic_if_not_already, extract_allowed
 
-from .types import ServiceForUpdate
+from .types import ServiceFilterDictSubClass, ServiceForUpdate
 
 
 class ServiceHandler:
@@ -147,6 +147,30 @@ class ServiceHandler:
 
         return service
 
+    def update_service_filters(
+        self,
+        service_type: ServiceType,
+        service_filters: Optional[List[ServiceFilterDictSubClass]] = None,
+    ) -> None:
+        """
+        Responsible for updating service filters which have been PATCHED to
+        the data source / service endpoint. At the moment we destroy all
+        current filters, and create the ones present in `service_filters`.
+
+        :param service_type: The `ServiceType` of the service.
+        :param service_filters: An optional list of `ServiceFilterDictSubClass`.
+        :return: None
+        """
+
+        bulk_data = []
+        model_class = cast(ServiceFilter, service_type.filter_model_class)
+
+        with atomic_if_not_already():
+            model_class.objects.all().delete()
+            for service_filter in service_filters:
+                bulk_data.append(model_class(**service_filter))
+            model_class.objects.bulk_create(bulk_data)
+
     def update_service(
         self, service_type: ServiceType, service: ServiceForUpdate, **kwargs
     ) -> Service:
@@ -163,6 +187,13 @@ class ServiceHandler:
         allowed_updates = extract_allowed(
             kwargs, shared_allowed_fields + service_type.allowed_fields
         )
+
+        # If there are service filters in the update data, pop it off
+        # and pass it to `update_service_filters`, which will wipe all current
+        # filters and create these.
+        if "service_filters" in allowed_updates:
+            service_filters = allowed_updates.pop("service_filters", [])
+            self.update_service_filters(service_type, service_filters)
 
         for key, value in allowed_updates.items():
             setattr(service, key, value)

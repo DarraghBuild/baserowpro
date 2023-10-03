@@ -8,6 +8,15 @@
     <div class="row">
       <div class="col col-12">
         <Tabs>
+          <Tab
+            :title="$t('localBaserowListRowsForm.filterTabTitle')"
+            class="data-source-form__condition-form-tab"
+          >
+            <LocalBaserowTableServiceConditionalForm
+              :data-source="dataSource"
+              @values-changed="$emit('values-changed', $event)"
+            />
+          </Tab>
           <Tab :title="$t('localBaserowListRowsForm.searchTabTitle')">
             <FormInput
               v-model="values.search_query"
@@ -27,16 +36,21 @@
 <script>
 import form from '@baserow/modules/core/mixins/form'
 import LocalBaserowTableSelector from '@baserow/modules/integrations/components/services/LocalBaserowTableSelector'
+import LocalBaserowTableServiceConditionalForm from '@baserow/modules/integrations/components/services/LocalBaserowTableServiceConditionalForm.vue'
 
 export default {
-  components: { LocalBaserowTableSelector },
+  components: {
+    LocalBaserowTableSelector,
+    LocalBaserowTableServiceConditionalForm,
+  },
   mixins: [form],
   props: {
     builder: {
       type: Object,
       required: true,
     },
-    contextData: {
+    contextData: { type: Object, required: true },
+    dataSource: {
       type: Object,
       required: true,
     },

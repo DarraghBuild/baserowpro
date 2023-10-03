@@ -27,3 +27,36 @@
 .data-source-form__integration-dropdown {
   min-width: 180px;
 }
+
+.data-source-form__condition-form-tab {
+  padding-left: 0;
+  .filters__items {
+    min-width: 534px;
+  }
+}
+
+.data-source-form {
+  .tabs__header {
+    border-bottom: none;
+    padding-left: 0;
+  }
+  li.tabs__item {
+    justify-content: center;
+    flex-wrap: nowrap;
+    height: 32px;
+    color: #070810;
+    font-weight: 600;
+    width: 80px;
+    font-size: 14px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    &.tabs__item--active {
+      background-color: #f0f4fc;
+      &.tabs__item--active::after {
+        display: none;
+      }
+    }
+  }
+}
