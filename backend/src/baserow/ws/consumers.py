@@ -216,14 +216,15 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         Unsubscribes the connection from all currently subscribed pages.
         """
 
-        for page_scope in self.scope["pages"].copy():
-            content = {
-                "user": self.scope["user"],
-                "web_socket_id": self.scope["web_socket_id"],
-                "remove_page": page_scope.page_type,
-                **page_scope.page_parameters,
-            }
-            await self.remove_page_scope(content, send_confirmation=True)
+        if self.scope.get("pages"):
+            for page_scope in self.scope["pages"].copy():
+                content = {
+                    "user": self.scope["user"],
+                    "web_socket_id": self.scope["web_socket_id"],
+                    "remove_page": page_scope.page_type,
+                    **page_scope.page_parameters,
+                }
+                await self.remove_page_scope(content, send_confirmation=True)
 
     async def broadcast_to_users(self, event):
         """
