@@ -37,7 +37,7 @@ def test_page_types():
     page_registry.unregister(NotAcceptingTestPageType.type)
 
 
-# # Core consumer
+# Core consumer
 
 
 @pytest.mark.asyncio
@@ -56,48 +56,47 @@ async def test_core_consumer_connect_not_authenticated(data_fixture):
     assert response["type"] == "authentication"
     assert response["success"] is False
     assert response["web_socket_id"] is None
-    communicator.disconnect()
+    await communicator.disconnect()
 
 
-# @pytest.mark.asyncio
-# @pytest.mark.django_db(transaction=True)
-# @pytest.mark.websockets
-# async def test_core_consumer_connect_authenticated(data_fixture):
-#     user_1, token_1 = data_fixture.create_user_and_token()
-#     communicator = WebsocketCommunicator(
-#         application,
-#         f"ws/core/?jwt_token={token_1}",
-#         headers=[(b"origin", b"http://localhost")],
-#     )
-#     connected, subprotocol = await communicator.connect()
-#     assert connected is True
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.websockets
+async def test_core_consumer_connect_authenticated(data_fixture):
+    user_1, token_1 = data_fixture.create_user_and_token()
+    communicator = WebsocketCommunicator(
+        application,
+        f"ws/core/?jwt_token={token_1}",
+        headers=[(b"origin", b"http://localhost")],
+    )
+    connected, subprotocol = await communicator.connect()
+    assert connected is True
 
-#     response = await communicator.receive_json_from()
-#     assert response["type"] == "authentication"
-#     assert response["success"] is True
-#     assert response["web_socket_id"] is not None
-#     communicator.disconnect()
+    response = await communicator.receive_json_from()
+    assert response["type"] == "authentication"
+    assert response["success"] is True
+    assert response["web_socket_id"] is not None
+    await communicator.disconnect()
 
 
-# @pytest.mark.asyncio
-# @pytest.mark.django_db(transaction=True)
-# @pytest.mark.websockets
-# async def test_core_consumer_connect_authenticated_anonymous(data_fixture):
-#     user_1, token_1 = data_fixture.create_user_and_token()
-#     communicator = WebsocketCommunicator(
-#         application,
-#         f"ws/core/?jwt_token={ANONYMOUS_USER_TOKEN}",
-#         headers=[(b"origin", b"http://localhost")],
-#     )
-#     await communicator.connect()
-#     # connected, subprotocol = await communicator.connect()
-#     # assert connected is True
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.websockets
+async def test_core_consumer_connect_authenticated_anonymous(data_fixture):
+    user_1, token_1 = data_fixture.create_user_and_token()
+    communicator = WebsocketCommunicator(
+        application,
+        f"ws/core/?jwt_token={ANONYMOUS_USER_TOKEN}",
+        headers=[(b"origin", b"http://localhost")],
+    )
+    connected, subprotocol = await communicator.connect()
+    assert connected is True
 
-#     # response = await communicator.receive_json_from()
-#     # assert response["type"] == "authentication"
-#     # assert response["success"] is True
-#     # assert response["web_socket_id"] is not None
-#     communicator.disconnect()
+    response = await communicator.receive_json_from()
+    assert response["type"] == "authentication"
+    assert response["success"] is True
+    assert response["web_socket_id"] is not None
+    await communicator.disconnect()
 
 
 @pytest.mark.asyncio
