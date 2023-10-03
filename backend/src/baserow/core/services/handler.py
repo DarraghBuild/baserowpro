@@ -149,6 +149,7 @@ class ServiceHandler:
 
     def update_service_filters(
         self,
+        service: ServiceForUpdate,
         service_type: ServiceType,
         service_filters: Optional[List[ServiceFilterDictSubClass]] = None,
     ) -> None:
@@ -157,6 +158,7 @@ class ServiceHandler:
         the data source / service endpoint. At the moment we destroy all
         current filters, and create the ones present in `service_filters`.
 
+        :param service: The service we want to manage filters for.
         :param service_type: The `ServiceType` of the service.
         :param service_filters: An optional list of `ServiceFilterDictSubClass`.
         :return: None
@@ -166,7 +168,7 @@ class ServiceHandler:
         model_class = cast(ServiceFilter, service_type.filter_model_class)
 
         with atomic_if_not_already():
-            model_class.objects.all().delete()
+            model_class.objects.filter(service=service).delete()
             for service_filter in service_filters:
                 bulk_data.append(model_class(**service_filter))
             model_class.objects.bulk_create(bulk_data)
@@ -193,7 +195,7 @@ class ServiceHandler:
         # filters and create these.
         if "service_filters" in allowed_updates:
             service_filters = allowed_updates.pop("service_filters", [])
-            self.update_service_filters(service_type, service_filters)
+            self.update_service_filters(service, service_type, service_filters)
 
         for key, value in allowed_updates.items():
             setattr(service, key, value)
