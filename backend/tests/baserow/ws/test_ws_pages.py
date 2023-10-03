@@ -6,6 +6,7 @@ from baserow.config.asgi import application
 from baserow.ws.auth import ANONYMOUS_USER_TOKEN
 from django.contrib.auth.models import AnonymousUser
 
+
 # TablePageType
 
 

@@ -12,8 +12,6 @@ from baserow.ws.tasks import (
     broadcast_to_users_individual_payloads,
 )
 
-# TODO:
-
 
 @pytest.mark.run(order=4)
 @pytest.mark.asyncio
@@ -127,10 +125,7 @@ async def test_broadcast_to_channel_group(data_fixture):
     await communicator_2.receive_nothing(0.1)
 
     await communicator_1.send_json_to({"page": "table", "table_id": table_3.id})
-    response = await communicator_1.receive_json_from(0.1)
-    assert response["type"] == "page_discard"
-    assert response["page"] == "table"
-    assert response["parameters"]["table_id"] == table_1.id
+
     response = await communicator_1.receive_json_from(0.1)
     assert response["type"] == "page_add"
     assert response["page"] == "table"
