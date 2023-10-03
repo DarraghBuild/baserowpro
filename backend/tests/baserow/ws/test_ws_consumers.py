@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import AsyncMock
 from channels.testing import WebsocketCommunicator
 from baserow.config.asgi import application
 from baserow.ws.auth import ANONYMOUS_USER_TOKEN
@@ -266,14 +267,15 @@ async def test_get_page_context(data_fixture, test_page_types):
 
 
 # TODO:
-# - add_page_scope() ?
-# - remove_page_scope() ?
-# - test remove_all_page_scopes
+# - add_page_scope() -> add mock for the channel layer
+# - remove_page_scope() -> add mock for the channel layer
+
+# Consider what is already tested by ws_tasks:
 # - test broadcast_to_users
-# - messages are
 # - broadcast_to_users_individual_payloads
 # - broadcast_to_group
-# - test remove_user_from_group
+# - test remove_user_from_group => should call remove_all_page_scopes?
+
 # - how does Page.broadcast() gets called? test the page type processes it
 
 # table_page.broadcast({"message": "test"}, table_id=1)
@@ -287,10 +289,40 @@ async def test_get_page_context(data_fixture, test_page_types):
 # table_page.broadcast({"message": "test"}, table_id=2)
 # assert communicator_1.output_queue.qsize() == 0
 
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.websockets
+async def test_core_consumer_remove_all_page_scopes(data_fixture, test_page_types):
+    user_1, token_1 = data_fixture.create_user_and_token()
+    scope_1 = PageScope("test_page_type", {"test_param": 1})
+    scope_2 = PageScope("test_page_type", {"test_param": 2})
+    pages = SubscribedPages()
+    pages.add(scope_1)
+    pages.add(scope_2)
+
+    consumer = CoreConsumer()
+    consumer.scope = {
+        "pages": pages,
+        "user": user_1,
+        "web_socket_id": 123
+    }
+    consumer.channel_name = "test_channel_name"
+    consumer.channel_layer = AsyncMock()
+    async def base_send(message):
+        pass
+    consumer.base_send = base_send
+
+    assert len(consumer.scope["pages"]) == 2
+
+    await consumer.remove_all_page_scopes()
+
+    assert len(consumer.scope["pages"]) == 0
+
 
 # SubscribedPages
 
 
+@pytest.mark.websockets
 def test_subscribed_pages_adds_page_without_duplicates():
     scope_1 = PageScope("test_page_type", {"test_param": 1})
     scope_2 = PageScope("test_page_type", {"test_param": 2})
@@ -306,6 +338,27 @@ def test_subscribed_pages_adds_page_without_duplicates():
     assert len(pages) == 3
 
 
+@pytest.mark.websockets
+def test_subscribed_pages_removes_pages_by_parameters():
+    scope_1 = PageScope("test_page_type", {"test_param": 1})
+    scope_2 = PageScope("test_page_type", {"test_param": 2})
+    scope_3 = PageScope("test_page_type", {"test_param": 3})
+    pages = SubscribedPages()
+
+    pages.add(scope_1)
+    pages.add(scope_2)
+    pages.add(scope_3)
+
+    assert len(pages) == 3
+
+    pages.remove(scope_2)
+
+    assert scope_1 in pages.pages
+    assert scope_2 not in pages.pages
+    assert scope_3 in pages.pages
+
+
+@pytest.mark.websockets
 def test_subscribed_pages_removes_pages_without_error():
     scope_1 = PageScope("test_page_type", {"test_param": 1})
     scope_2 = PageScope("test_page_type", {"test_param": 2})

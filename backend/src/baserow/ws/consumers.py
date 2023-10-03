@@ -31,7 +31,7 @@ class PageScope:
     table_id=1 or table_id=2)
     """
 
-    page_type: PageType
+    page_type: str
     page_parameters: dict[str, any]
 
 
@@ -62,6 +62,11 @@ class SubscribedPages:
                 self.pages.remove(page_scope)
             except ValueError:
                 pass
+
+    def copy(self):
+        new = SubscribedPages()
+        new.pages = self.pages.copy()
+        return new
 
     def __len__(self):
         return len(self.pages)
@@ -134,7 +139,7 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
 
     async def add_page_scope(self, content: dict):
         """
-        Subscribes the connection to a page abstraction. Based on the provided the page
+        Subscribes the connection to a page abstraction. Based on the provided page
         type we can figure out to which page the connection wants to subscribe to. This
         is for example used when the users visits a page that they might want to
         receive real time updates for.
@@ -162,7 +167,7 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         group_name = page_type.get_group_name(**parameters)
         await self.channel_layer.group_add(group_name, self.channel_name)
 
-        page_scope = PageScope(page_type=page_type, page_parameters=parameters)
+        page_scope = PageScope(page_type=page_type.type, page_parameters=parameters)
         self.scope["pages"].add(page_scope)
 
         await self.send_json(
@@ -170,7 +175,17 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         )
 
     async def remove_page_scope(self, content: dict, send_confirmation=True):
-        # TODO: docs
+        """
+        Unsubscribes the connection from a page. Based on the provided page
+        type and its params we can figure out to which page the connection wants
+        to unsubscribe from.
+                
+        :param content: The provided payload by the user. This should contain the page
+            type and additional parameters.
+        :param send_confirmation: If True, the client will receive a confirmation
+            message about unsubscribing.
+        """
+
         context = await self.get_page_context(content, "remove_page")
 
         if not context:
@@ -183,7 +198,8 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         group_name = page_type.get_group_name(**parameters)
         await self.channel_layer.group_discard(group_name, self.channel_name)
 
-        page_scope = PageScope(page_type=page_type, page_parameters=parameters)
+        page_scope = PageScope(page_type=page_type.type, page_parameters=parameters)
+
         self.scope["pages"].remove(page_scope)
 
         if send_confirmation:
@@ -197,18 +213,17 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
 
     async def remove_all_page_scopes(self):
         """
-        Unsubscribes the connection from all pages.
+        Unsubscribes the connection from all currently subscribed pages.
         """
 
-        if self.scope.get("pages"):
-            for page_scope in self.scope["pages"]:
-                content = {
-                    "user": self.scope["user"],
-                    "web_socket_id": self.scope["web_socket_id"],
-                    "remove_page": page_scope.page_type,
-                    "parameters": page_scope.page_parameters,
-                }
-                await self.remove_page_scope(content, send_confirmation=True)
+        for page_scope in self.scope["pages"].copy():
+            content = {
+                "user": self.scope["user"],
+                "web_socket_id": self.scope["web_socket_id"],
+                "remove_page": page_scope.page_type,
+                **page_scope.page_parameters,
+            }
+            await self.remove_page_scope(content, send_confirmation=True)
 
     async def broadcast_to_users(self, event):
         """
