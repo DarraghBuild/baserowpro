@@ -16,6 +16,7 @@ from baserow.contrib.database.views.models import (
     ViewGroupBy,
     ViewSort,
 )
+from baserow_premium.views.models import OWNERSHIP_TYPE_PERSONAL
 from baserow.contrib.database.views.registries import (
     decorator_type_registry,
     decorator_value_provider_type_registry,
@@ -321,6 +322,7 @@ class ViewSerializer(serializers.ModelSerializer):
             "id": {"read_only": True},
             "table_id": {"read_only": True},
             "public_view_has_password": {"read_only": True},
+            "ownership_type": {"read_only": True},
             "created_by_id": {"read_only": True},
         }
 
@@ -394,10 +396,26 @@ class UpdateViewSerializer(serializers.ModelSerializer):
             representation["raw_public_view_password"] = public_view_password
         return representation
 
+    def validate_ownership_type(self, value):
+        if value not in [
+            OWNERSHIP_TYPE_COLLABORATIVE,
+            OWNERSHIP_TYPE_PERSONAL,
+        ]:
+            raise serializers.ValidationError(
+                f"Ownership type must be one of the above: '{OWNERSHIP_TYPE_COLLABORATIVE}', '{OWNERSHIP_TYPE_PERSONAL}'."
+            )
+        return value
+
     class Meta:
         ref_name = "view_update"
         model = View
-        fields = ("name", "filter_type", "filters_disabled", "public_view_password", "ownership_type")
+        fields = (
+            "name",
+            "filter_type",
+            "filters_disabled",
+            "public_view_password",
+            "ownership_type",
+        )
         extra_kwargs = {
             "name": {"required": False},
             "filter_type": {"required": False},
