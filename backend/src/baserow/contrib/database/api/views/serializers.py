@@ -321,7 +321,6 @@ class ViewSerializer(serializers.ModelSerializer):
             "id": {"read_only": True},
             "table_id": {"read_only": True},
             "public_view_has_password": {"read_only": True},
-            "ownership_type": {"read_only": True},
             "created_by_id": {"read_only": True},
         }
 
@@ -398,7 +397,7 @@ class UpdateViewSerializer(serializers.ModelSerializer):
     class Meta:
         ref_name = "view_update"
         model = View
-        fields = ("name", "filter_type", "filters_disabled", "public_view_password")
+        fields = ("name", "filter_type", "filters_disabled", "public_view_password", "ownership_type")
         extra_kwargs = {
             "name": {"required": False},
             "filter_type": {"required": False},
