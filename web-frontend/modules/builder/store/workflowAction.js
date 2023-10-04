@@ -30,6 +30,11 @@ const mutations = {
       }
     })
   },
+  SET_ITEM(state, { page, workflowAction: workflowActionToSet, values }) {
+    page.workflowActions = page.workflowActions.map((workflowAction) =>
+      workflowAction.id === workflowActionToSet.id ? values : workflowAction
+    )
+  },
 }
 
 const actions = {
@@ -41,6 +46,9 @@ const actions = {
   },
   forceUpdate({ commit }, { page, workflowAction, values }) {
     commit('UPDATE_ITEM', { page, workflowAction, values })
+  },
+  forceSet({ commit }, { page, workflowAction, values }) {
+    commit('SET_ITEM', { page, workflowAction, values })
   },
   async create(
     { dispatch },
@@ -88,7 +96,7 @@ const actions = {
         workflowAction.id,
         values
       )
-      await dispatch('forceUpdate', { page, workflowAction, values: data })
+      await dispatch('forceSet', { page, workflowAction, values: data })
     } catch (error) {
       await dispatch('forceUpdate', { page, workflowAction, values: oldValues })
       throw error
@@ -113,7 +121,7 @@ const actions = {
             workflowAction.id,
             values
           )
-          await dispatch('forceUpdate', {
+          await dispatch('forceSet', {
             page,
             workflowAction,
             values: data,
