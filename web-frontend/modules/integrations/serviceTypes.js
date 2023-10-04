@@ -31,6 +31,10 @@ export class LocalBaserowGetRowServiceType extends ServiceType {
     return LocalBaserowGetRowForm
   }
 
+  getDataSchema(service) {
+    return service.schema
+  }
+
   getOrder() {
     return 10
   }
@@ -62,6 +66,10 @@ export class LocalBaserowListRowsServiceType extends ServiceType {
 
   get isCollection() {
     return true
+  }
+
+  getDataSchema(service) {
+    return service.schema
   }
 
   getOrder() {

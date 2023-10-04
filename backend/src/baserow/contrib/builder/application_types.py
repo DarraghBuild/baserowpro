@@ -239,6 +239,9 @@ class BuilderApplicationType(ApplicationType):
                 builder, serialized_integration, id_mapping, cache=self.cache
             )
             imported_integrations.append(integration)
+
+            id_mapping["integrations"][serialized_integration["id"]] = integration.id
+
             progress.increment(state=IMPORT_SERIALIZED_IMPORTING)
 
         return imported_integrations
@@ -313,6 +316,9 @@ class BuilderApplicationType(ApplicationType):
         if "builder_data_sources" not in id_mapping:
             id_mapping["builder_data_sources"] = {}
 
+        if "integrations" not in id_mapping:
+            id_mapping["integrations"] = {}
+
         if "builder_workflow_actions" not in id_mapping:
             id_mapping["builder_workflow_actions"] = {}
 
@@ -352,7 +358,10 @@ class BuilderApplicationType(ApplicationType):
                     integration = None
                     integration_id = serialized_service.pop("integration_id", None)
                     if integration_id:
-                        integration = id_mapping["integrations"][integration_id]
+                        integration_id = id_mapping["integrations"].get(
+                            integration_id, integration_id
+                        )
+                        integration = Integration.objects.get(id=integration_id)
 
                     service = service_type.import_serialized(
                         integration,
@@ -379,11 +388,14 @@ class BuilderApplicationType(ApplicationType):
         # Then we create all the element instances.
         for serialized_page in serialized_pages:
             for serialized_element in serialized_page["elements"]:
-                self.import_element(
-                    serialized_element,
-                    serialized_page,
-                    id_mapping,
-                )
+                # check that the element has not already been imported because it
+                # was a parent of another element
+                if serialized_element["id"] not in id_mapping["builder_page_elements"]:
+                    self.import_element(
+                        serialized_element,
+                        serialized_page,
+                        id_mapping,
+                    )
 
                 progress.increment(state=IMPORT_SERIALIZED_IMPORTING)
 
@@ -446,18 +458,10 @@ class BuilderApplicationType(ApplicationType):
                 if element["id"] == parent_element_id:
                     self.import_element(element, serialized_page, id_mapping)
 
-        # The element either has no parents or they were all created already
-        serialized_element["parent_element_id"] = id_mapping[
-            "builder_page_elements"
-        ].get(serialized_element["parent_element_id"], None)
         element_type = element_type_registry.get(serialized_element["type"])
         element_imported = element_type.import_serialized(
             page, serialized_element, id_mapping
         )
-
-        id_mapping["builder_page_elements"][
-            serialized_element["id"]
-        ] = element_imported.id
 
         serialized_page["_element_objects"].append(element_imported)
 

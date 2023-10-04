@@ -70,6 +70,7 @@ import {
 import {
   PageParameterDataProviderType,
   DataSourceDataProviderType,
+  CurrentRecordDataProviderType,
 } from '@baserow/modules/builder/dataProviderTypes'
 
 import { MainThemeConfigBlock } from '@baserow/modules/builder/themeConfigBlockTypes'
@@ -183,13 +184,16 @@ export default (context) => {
 
   app.$registry.register(
     'builderDataProvider',
+    new CurrentRecordDataProviderType(context)
+  )
+  app.$registry.register(
+    'builderDataProvider',
     new DataSourceDataProviderType(context)
   )
   app.$registry.register(
     'builderDataProvider',
     new PageParameterDataProviderType(context)
   )
-
   app.$registry.register('themeConfigBlock', new MainThemeConfigBlock(context))
 
   app.$registry.register(

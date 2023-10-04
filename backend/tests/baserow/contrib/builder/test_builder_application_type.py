@@ -305,6 +305,16 @@ IMPORT_REFERENCE = {
                     ],
                 },
                 {
+                    "id": 502,
+                    "type": "paragraph",
+                    "parent_element_id": 500,
+                    "place_in_container": "1",
+                    "style_padding_top": 10,
+                    "style_padding_bottom": 10,
+                    "order": 1.5,
+                    "value": "test",
+                },
+                {
                     "id": 500,
                     "type": "column",
                     "parent_element_id": None,
@@ -443,7 +453,7 @@ def test_builder_application_import(data_fixture):
 
     [page1, page2] = builder.page_set.all()
 
-    assert page1.element_set.count() == 5
+    assert page1.element_set.count() == 6
     assert page2.element_set.count() == 1
 
     assert page1.datasource_set.count() == 2
@@ -466,6 +476,7 @@ def test_builder_application_import(data_fixture):
     [
         element1,
         element_inside_container,
+        element_inside_container2,
         element2,
         table_element,
         container_element,
@@ -482,6 +493,7 @@ def test_builder_application_import(data_fixture):
     assert element1.level == 2
 
     assert element_inside_container.parent_element.specific == container_element
+    assert element_inside_container2.parent_element.specific == container_element
 
     [workflow_action] = BuilderWorkflowActionHandler().get_workflow_actions(page1)
 

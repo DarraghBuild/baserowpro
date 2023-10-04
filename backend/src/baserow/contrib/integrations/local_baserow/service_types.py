@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.fields import (
     BooleanField,
     CharField,
@@ -73,14 +74,18 @@ class LocalBaserowServiceType(ServiceType):
         :return: A JSON Schema formatted dictionary.
         """
 
-        return_type = "array" if self.returns_list else "object"
-        properties_name = "items" if self.returns_list else "properties"
-
-        return {
-            properties_name: properties,
-            "title": self.get_schema_name(service),
-            "type": return_type,
-        }
+        if self.returns_list:
+            return {
+                "items": {"type": "object", "properties": properties},
+                "title": self.get_schema_name(service),
+                "type": "array",
+            }
+        else:
+            return {
+                "properties": properties,
+                "title": self.get_schema_name(service),
+                "type": "object",
+            }
 
     def guess_json_type_from_response_serialize_field(
         self, serializer_field: Union[Field, Serializer]
@@ -108,14 +113,22 @@ class LocalBaserowServiceType(ServiceType):
         elif isinstance(serializer_field, BooleanField):
             base_type = "boolean"
         elif isinstance(serializer_field, ListSerializer):
-            base_type = "array"
             # ListSerializer.child is required, so add its subtype.
             sub_type = self.guess_json_type_from_response_serialize_field(
                 serializer_field.child
             )
-            return {"type": base_type, "items": {"oneOf": [sub_type]}}
+            return {"type": "array", "items": sub_type}
         elif issubclass(serializer_field.__class__, Serializer):
-            base_type = "object"
+            properties = {}
+            for name, child_serializer in serializer_field.get_fields().items():
+                properties[name] = {
+                    "title": name,
+                    **self.guess_json_type_from_response_serialize_field(
+                        child_serializer
+                    ),
+                }
+
+            return {"type": "object", "properties": properties}
         else:
             base_type = None
 
@@ -126,6 +139,64 @@ class LocalBaserowTableServiceType(LocalBaserowServiceType):
     """
     The `ServiceType` for `LocalBaserowTableService` subclasses.
     """
+
+    def prepare_values(
+        self,
+        values: Dict[str, Any],
+        user: AbstractUser,
+        instance: Optional[ServiceSubClass] = None,
+    ) -> Dict[str, Any]:
+        """Load the table & view instance instead of the ID."""
+
+        if "table_id" in values:
+            table_id = values.pop("table_id")
+            if table_id is not None:
+                table = TableHandler().get_table(table_id)
+                values["table"] = table
+
+                # Reset the view if the table has changed
+                if (
+                    "view_id" not in values
+                    and instance
+                    and instance.view_id
+                    and instance.view.table_id != table_id
+                ):
+                    values["view"] = None
+            else:
+                values["table"] = None
+
+        if "view_id" in values:
+            view_id = values.pop("view_id")
+            if view_id is not None:
+                view = ViewHandler().get_view(view_id)
+
+                # Check that the view table_id match the given table
+                if "table" in values and view.table_id != values["table"].id:
+                    raise DRFValidationError(
+                        detail=f"The view with ID {view_id} is not related to the "
+                        "given table.",
+                        code="invalid_view",
+                    )
+
+                # Check that the view table_id match the existing table
+                elif (
+                    instance
+                    and instance.table_id
+                    and view.table_id != instance.table_id
+                ):
+                    raise DRFValidationError(
+                        detail=f"The view with ID {view_id} is not related to the "
+                        "given table.",
+                        code="invalid_view",
+                    )
+                else:
+                    # Add the missing table
+                    values["table"] = view.table
+                values["view"] = view
+            else:
+                values["view"] = None
+
+        return super().prepare_values(values, user)
 
     def generate_schema(
         self, service: LocalBaserowTableServiceSubClass
@@ -143,14 +214,14 @@ class LocalBaserowTableServiceType(LocalBaserowServiceType):
         if not table:
             return None
 
-        properties = {}
+        properties = {"id": {"type": "number", "title": "ID"}}
         fields = FieldHandler().get_fields(table, specific=True)
         for field in fields:
             field_type = field_type_registry.get_by_model(field)
             # Only `TextField` has a default value at the moment.
             default_value = getattr(field, "text_default", None)
             field_serializer = field_type.get_serializer(field, FieldSerializer)
-            properties[str(field.id)] = {
+            properties[field.db_column] = {
                 "title": field.name,
                 "default": default_value,
                 "original_type": field_type.type,
@@ -242,29 +313,6 @@ class LocalBaserowListRowsUserServiceType(
             "view__viewgroupby_set",
         )
 
-    def prepare_values(
-        self, values: Dict[str, Any], user: AbstractUser
-    ) -> Dict[str, Any]:
-        """Load the table & view instance instead of the ID."""
-
-        if "table_id" in values:
-            table_id = values.pop("table_id")
-            if table_id is not None:
-                table = TableHandler().get_table(table_id)
-                values["table"] = table
-            else:
-                values["table"] = None
-
-        if "view_id" in values:
-            view_id = values.pop("view_id")
-            if view_id is not None:
-                view = ViewHandler().get_view(view_id)
-                values["view"] = view
-            else:
-                values["view"] = None
-
-        return super().prepare_values(values, user)
-
     def transform_serialized_value(
         self, prop_name: str, value: Any, id_mapping: Dict[str, Any]
     ):
@@ -345,7 +393,6 @@ class LocalBaserowListRowsUserServiceType(
             dispatch_data["baserow_table_model"],
             RowSerializer,
             is_response=True,
-            user_field_names=True,
         )
         return serializer(dispatch_data["data"], many=True).data
 
@@ -408,29 +455,6 @@ class LocalBaserowGetRowUserServiceType(
             "table", "table__database", "table__database__workspace", "view"
         )
 
-    def prepare_values(
-        self, values: Dict[str, Any], user: AbstractUser
-    ) -> Dict[str, Any]:
-        """Load the table & view instance instead of the ID."""
-
-        if "table_id" in values:
-            table_id = values.pop("table_id")
-            if table_id is not None:
-                table = TableHandler().get_table(table_id)
-                values["table"] = table
-            else:
-                values["table"] = None
-
-        if "view_id" in values:
-            view_id = values.pop("view_id")
-            if view_id is not None:
-                view = ViewHandler().get_view(view_id)
-                values["view"] = view
-            else:
-                values["view"] = None
-
-        return super().prepare_values(values, user)
-
     def transform_serialized_value(
         self, prop_name: str, value: Any, id_mapping: Dict[str, Any]
     ):
@@ -458,10 +482,7 @@ class LocalBaserowGetRowUserServiceType(
         """
 
         serializer = get_row_serializer_class(
-            dispatch_data["baserow_table_model"],
-            RowSerializer,
-            is_response=True,
-            user_field_names=True,
+            dispatch_data["baserow_table_model"], RowSerializer, is_response=True
         )
         serialized_row = serializer(dispatch_data["data"]).data
 
