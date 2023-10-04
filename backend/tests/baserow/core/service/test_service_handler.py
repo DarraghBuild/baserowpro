@@ -107,13 +107,11 @@ def test_update_service_filters(data_fixture):
         service_filters=[
             {
                 "field": name_field,
-                "service": service,
                 "type": "equal",
                 "value": "James Bond",
             },
             {
                 "field": rating_field,
-                "service": service,
                 "type": "equal",
                 "value": "5",
             },
@@ -134,7 +132,6 @@ def test_update_service_filters(data_fixture):
         service_filters=[
             {
                 "field": name_field,
-                "service": service,
                 "type": "equal",
                 "value": "Avengers",
             },
@@ -170,8 +167,9 @@ def test_update_service_invalid_values(data_fixture):
 @pytest.mark.django_db
 def test_delete_service(data_fixture):
     service = data_fixture.create_local_baserow_get_row_service()
+    service_type = service_type_registry.get("local_baserow_get_row")
 
-    ServiceHandler().delete_service(service)
+    ServiceHandler().delete_service(service_type, service)
 
     assert Service.objects.count() == 0
 

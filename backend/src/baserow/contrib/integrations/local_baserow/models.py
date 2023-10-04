@@ -82,6 +82,13 @@ class LocalBaserowTableServiceFilter(ServiceFilter):
         blank=True,
         help_text="The filter value that must be compared to the field's value.",
     )
+    order = models.DecimalField(
+        help_text="Lowest first.",
+        max_digits=40,
+        decimal_places=20,
+        editable=False,
+        default=1,
+    )
 
     def __str__(self):
         return self.value

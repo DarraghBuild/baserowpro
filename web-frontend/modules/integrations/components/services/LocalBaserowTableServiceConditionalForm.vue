@@ -1,15 +1,6 @@
 <template>
-  <div>
-    <div v-if="!dataSourceFilteringPermitted">
-      <p>
-        {{
-          $t(
-            'localBaserowTableServiceConditionalForm.noTableChosenForFiltering'
-          )
-        }}
-      </p>
-    </div>
-    <div v-if="dataSourceFilteringPermitted && dataSource.filters.length === 0">
+  <div v-if="value">
+    <div v-if="value.length === 0">
       <div class="filters__none">
         <div class="filters__none-title">
           {{ $t('localBaserowTableServiceConditionalForm.noFilterTitle') }}
@@ -20,18 +11,17 @@
       </div>
     </div>
     <ViewFieldConditionsForm
-      v-if="dataSourceFilteringPermitted"
       :filters="getSortedDataSourceFilters()"
       :disable-filter="false"
-      :filter-type="dataSource.filter_type"
+      :filter-type="filterType"
       :fields="dataSourceFields"
       :read-only="false"
       class="filters__items"
       @deleteFilter="deleteFilter($event)"
       @updateFilter="updateFilter($event)"
-      @selectOperator="$emit('values-changed', { filter_type: $event })"
+      @selectOperator="$emit('update:filterType', $event)"
     />
-    <div v-if="dataSourceFilteringPermitted" class="filters_footer">
+    <div class="filters_footer">
       <a class="filters__add" @click.prevent="addFilter()">
         <i class="filters__add-icon iconoir-plus"></i>
         {{ $t('localBaserowTableServiceConditionalForm.addFilter') }}</a
@@ -44,6 +34,7 @@
 import ViewFieldConditionsForm from '@baserow/modules/database/components/view/ViewFieldConditionsForm.vue'
 import { hasCompatibleFilterTypes } from '@baserow/modules/database/utils/field'
 import { notifyIf } from '@baserow/modules/core/utils/error'
+import { uuid } from '@baserow/modules/core/utils/string'
 
 export default {
   name: 'LocalBaserowTableServiceConditionalForm',
@@ -51,19 +42,20 @@ export default {
     ViewFieldConditionsForm,
   },
   props: {
-    dataSource: {
+    value: {
+      type: Array,
+      required: true,
+    },
+    schema: {
       type: Object,
+      required: true,
+    },
+    filterType: {
+      type: String,
       required: true,
     },
   },
   computed: {
-    /*
-     * Responsible for informing whether the data source is ready
-     * for filters or not - for now, we just need a `table_id`.
-     */
-    dataSourceFilteringPermitted() {
-      return this.dataSource.table_id !== null
-    },
     filterTypes() {
       return this.$registry.getAll('viewFilter')
     },
@@ -73,12 +65,13 @@ export default {
      * to display the filters applicable for each field type.
      */
     dataSourceFields() {
-      const schema = this.dataSource.schema
-      if (schema === null) {
+      if (this.schema === null) {
         return []
       }
       const schemaProperties =
-        schema.type === 'array' ? schema.items : schema.properties
+        this.schema.type === 'array'
+          ? this.schema.items
+          : this.schema.properties
       return Object.values(schemaProperties).map((prop) => prop.metadata)
     },
   },
@@ -96,12 +89,12 @@ export default {
     },
     /*
      * Responsible for returning all current data source filters, but
-     * sorted by their ID. Without the sorting, `ViewFieldConditionsForm`
+     * sorted by their `order`. Without the sorting, `ViewFieldConditionsForm`
      * will add/update them in a haphazard way.
      */
     getSortedDataSourceFilters() {
-      const dataSourceFilters = [...this.dataSource.filters]
-      return dataSourceFilters.sort((a, b) => a.id - b.id)
+      const dataSourceFilters = [...this.value]
+      return dataSourceFilters.sort((a, b) => a.order - b.order)
     },
     /*
      * Responsible for asynchronously adding a new data source filter.
@@ -121,16 +114,14 @@ export default {
             ),
           })
         } else {
-          const newFilters = [...this.dataSource.filters]
+          const newFilters = [...this.value]
           newFilters.push({
+            id: uuid(), // Necessary or we can't distinguish between filters locally.
             field: field.id,
             type: 'equal',
             value: '',
-            service: this.dataSource.service_id,
           })
-          this.$emit('values-changed', {
-            filters: newFilters,
-          })
+          this.$emit('input', newFilters)
         }
       } catch (error) {
         notifyIf(error, 'dataSource')
@@ -140,26 +131,22 @@ export default {
      * Responsible for removing the chosen filter from the data source's filters.
      */
     deleteFilter(filter) {
-      const newFilters = this.dataSource.filters.filter(({ id }) => {
+      const newFilters = this.value.filter(({ id }) => {
         return id !== filter.id
       })
-      this.$emit('values-changed', {
-        filters: newFilters,
-      })
+      this.$emit('input', newFilters)
     },
     /*
      * Responsible for updating the chosen filter in the data source's filters.
      */
     updateFilter({ filter, values }) {
-      const newFilters = this.dataSource.filters.map((filterConf) => {
+      const newFilters = this.value.map((filterConf) => {
         if (filterConf.id === filter.id) {
           return { ...filterConf, ...values }
         }
         return filterConf
       })
-      this.$emit('values-changed', {
-        filters: newFilters,
-      })
+      this.$emit('input', newFilters)
     },
   },
 }

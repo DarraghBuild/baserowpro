@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
@@ -34,7 +34,6 @@ from baserow.contrib.database.table.operations import ListRowsDatabaseTableOpera
 from baserow.contrib.database.views.handler import ViewHandler
 from baserow.contrib.integrations.local_baserow.api.serializers import (
     LocalBaserowTableServiceFilterSerializer,
-    LocalBaserowTableServiceSerializerMixin,
 )
 from baserow.contrib.integrations.local_baserow.integration_types import (
     LocalBaserowIntegrationType,
@@ -57,7 +56,12 @@ from baserow.core.formula.validator import ensure_integer
 from baserow.core.handler import CoreHandler
 from baserow.core.services.exceptions import DoesNotExist, ServiceImproperlyConfigured
 from baserow.core.services.registries import ServiceType
-from baserow.core.services.types import ServiceDict, ServiceSubClass
+from baserow.core.services.types import (
+    ServiceDict,
+    ServiceFilterDictSubClass,
+    ServiceSubClass,
+)
+from baserow.core.utils import atomic_if_not_already
 
 LocalBaserowTableServiceSubClass = Union[LocalBaserowGetRow, LocalBaserowListRows]
 
@@ -156,7 +160,6 @@ class LocalBaserowTableServiceType(LocalBaserowServiceType):
         "view",
         "filter_type",
         "search_query",
-        "service_filters",
     ]
 
     # Overriden by child classes to add their specific fields.
@@ -164,7 +167,6 @@ class LocalBaserowTableServiceType(LocalBaserowServiceType):
 
     # All `LocalBaserowTableService` subclasses share these serializer field names.
     base_serializer_field_names = [
-        "service_id",
         "table_id",
         "filters",
         "view_id",
@@ -182,9 +184,6 @@ class LocalBaserowTableServiceType(LocalBaserowServiceType):
     }
 
     base_request_serializer_field_overrides = {
-        "service_id": serializers.IntegerField(
-            source="id", required=False, help_text="The id of the Baserow service."
-        ),
         "table_id": serializers.IntegerField(
             required=False,
             allow_null=True,
@@ -220,6 +219,48 @@ class LocalBaserowTableServiceType(LocalBaserowServiceType):
             self.base_request_serializer_field_overrides
             | self.child_request_serializer_field_overrides
         )
+
+    def update_service_filters(
+        self,
+        service: LocalBaserowTableServiceSubClass,
+        service_filters: Optional[List[ServiceFilterDictSubClass]] = None,
+    ):
+        with atomic_if_not_already():
+            service.service_filters.all().delete()
+            LocalBaserowTableServiceFilter.objects.bulk_create(
+                [
+                    LocalBaserowTableServiceFilter(
+                        **service_filter, service=service, order=index
+                    )
+                    for index, service_filter in enumerate(service_filters)
+                ]
+            )
+
+    def after_update(
+        self,
+        instance: LocalBaserowTableServiceSubClass,
+        values: Dict,
+        changes: Dict[str, Tuple],
+    ) -> None:
+        """
+        Responsible for updating service filters which have been PATCHED to
+        the data source / service endpoint. At the moment we destroy all
+        current filters, and create the ones present in `service_filters`.
+
+        :param instance: The service we want to manage filters for.
+        :param values: A dictionary which may contain filters.
+        :param changes: A dictionary containing all changes which were made to the
+            service prior to `after_update` being called.
+        """
+
+        # Following a Table change, from one Table to another, we drop all filters.
+        # This is due to the fact that the filters point at specific table fields.
+        from_table, to_table = changes.get("table", (None, None))
+        if from_table and to_table:
+            instance.service_filters.all().delete()
+
+        if "service_filters" in values:
+            self.update_service_filters(instance, values["service_filters"])
 
     def prepare_values(
         self,
@@ -465,6 +506,16 @@ class LocalBaserowGetRowUserServiceType(
     integration_type = LocalBaserowIntegrationType.type
     type = "local_baserow_get_row"
     model_class = LocalBaserowGetRow
+
+    child_allowed_fields = ["row_id"]
+    child_serializer_field_names = ["row_id"]
+    child_request_serializer_field_overrides = {
+        "row_id": FormulaSerializerField(
+            required=False,
+            allow_blank=True,
+            help_text="A formula for defining the intended row.",
+        ),
+    }
 
     class SerializedDict(ServiceDict):
         table_id: int

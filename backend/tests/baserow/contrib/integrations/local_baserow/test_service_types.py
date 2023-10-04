@@ -19,6 +19,7 @@ from baserow.contrib.integrations.local_baserow.service_types import (
     LocalBaserowGetRowUserServiceType,
     LocalBaserowListRowsUserServiceType,
     LocalBaserowServiceType,
+    LocalBaserowTableServiceType,
 )
 from baserow.core.exceptions import PermissionException
 from baserow.core.services.exceptions import DoesNotExist, ServiceImproperlyConfigured
@@ -1201,3 +1202,25 @@ def test_local_baserow_table_service_type_schema_name():
         LocalBaserowListRowsUserServiceType().get_schema_name(mock_service)
         == "Table123Schema"
     )
+
+
+def test_local_baserow_table_service_type_after_update_table_change_deletes_filters():
+    mock_instance = Mock()
+    mock_from_table = Mock()
+    mock_to_table = Mock()
+    change_table_from_Table_to_None = {"table": (mock_from_table, None)}
+    change_table_from_None_to_Table = {"table": (None, mock_to_table)}
+    change_table_from_Table_to_Table = {"table": (mock_from_table, mock_to_table)}
+
+    service_type_cls = LocalBaserowTableServiceType
+    service_type_cls.model_class = Mock()
+    service_type = service_type_cls()
+
+    service_type.after_update(mock_instance, {}, change_table_from_Table_to_None)
+    assert not mock_instance.service_filters.all.return_value.delete.called
+
+    service_type.after_update(mock_instance, {}, change_table_from_None_to_Table)
+    assert not mock_instance.service_filters.all.return_value.delete.called
+
+    service_type.after_update(mock_instance, {}, change_table_from_Table_to_Table)
+    assert mock_instance.service_filters.all.return_value.delete.called
