@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Type, cast, Optional, Iterable
+from typing import Iterable, Optional, Type, cast
 
 from django.db.models import QuerySet
 
