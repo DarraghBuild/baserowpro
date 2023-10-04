@@ -388,10 +388,6 @@ class ElementHandler:
         This helper function duplicates all the workflow actions associated with the
         element.
 
-        TODO: we need to send a realtime event here or attach the created workflow
-            actions in the API response, otherwise the user won't see the action
-            on the duplicated element immediately
-
         :param element: The original element
         :param element_duplicated: The duplicated reference of the original element
         """
