@@ -207,9 +207,11 @@ class BuilderConfig(AppConfig):
         from .workflow_actions.registries import builder_workflow_action_type_registry
         from .workflow_actions.workflow_action_types import (
             NotificationWorkflowActionType,
+            OpenPageWorkflowActionType,
         )
 
         builder_workflow_action_type_registry.register(NotificationWorkflowActionType())
+        builder_workflow_action_type_registry.register(OpenPageWorkflowActionType())
 
         from .domains.receivers import connect_to_domain_pre_delete_signal
 

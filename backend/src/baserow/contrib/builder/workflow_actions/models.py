@@ -43,3 +43,7 @@ class BuilderWorkflowAction(WorkflowAction):
 class NotificationWorkflowAction(BuilderWorkflowAction):
     title = FormulaField(default="")
     description = FormulaField(default="")
+
+
+class OpenPageWorkflowAction(BuilderWorkflowAction):
+    url = FormulaField(default="")

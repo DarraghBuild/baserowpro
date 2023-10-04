@@ -100,16 +100,22 @@ class WorkflowActionHandler(ABC):
         :return: The updated workflow action.
         """
 
-        allowed_updates = extract_allowed(
-            kwargs, workflow_action.get_type().allowed_fields
+        has_type_changed = (
+            "type" in kwargs and kwargs["type"] != workflow_action.get_type().type
         )
 
-        allowed_updates = workflow_action.get_type().prepare_value_for_db(
+        if has_type_changed:
+            workflow_action_type = self.registry.get(kwargs["type"])
+        else:
+            workflow_action_type = workflow_action.get_type()
+
+        allowed_updates = extract_allowed(kwargs, workflow_action_type.allowed_fields)
+
+        allowed_updates = workflow_action_type.prepare_value_for_db(
             allowed_updates, instance=workflow_action
         )
 
-        if "type" in allowed_updates:
-            workflow_action_type = self.registry.get_by_type(allowed_updates["type"])
+        if has_type_changed:
             self.delete_workflow_action(workflow_action)
             workflow_action = self.create_workflow_action(
                 workflow_action_type, **allowed_updates
@@ -120,4 +126,4 @@ class WorkflowActionHandler(ABC):
 
             workflow_action.save()
 
-        return workflow_action
+        return workflow_action.specific

@@ -32,3 +32,16 @@ class BuilderWorkflowActionHandler(WorkflowActionHandler):
         base_queryset = base_queryset.filter(page=page)
 
         return super().get_all_workflow_actions(base_queryset)
+
+    def update_workflow_action(
+        self, workflow_action: BuilderWorkflowAction, **kwargs
+    ) -> WorkflowAction:
+
+        # When we are switching types we want to preserve the event and element and
+        # page ids
+        if "type" in kwargs and kwargs["type"] != workflow_action.get_type().type:
+            kwargs["page_id"] = workflow_action.page_id
+            kwargs["element_id"] = workflow_action.element_id
+            kwargs["event"] = workflow_action.event
+
+        return super().update_workflow_action(workflow_action, **kwargs)

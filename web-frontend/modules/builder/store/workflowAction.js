@@ -84,10 +84,11 @@ const actions = {
     await dispatch('forceUpdate', { page, workflowAction, values: newValues })
 
     try {
-      await WorkflowActionService(this.$client).update(
+      const { data } = await WorkflowActionService(this.$client).update(
         workflowAction.id,
         values
       )
+      await dispatch('forceUpdate', { page, workflowAction, values: data })
     } catch (error) {
       await dispatch('forceUpdate', { page, workflowAction, values: oldValues })
       throw error
@@ -108,10 +109,15 @@ const actions = {
     return new Promise((resolve, reject) => {
       const fire = async () => {
         try {
-          await WorkflowActionService(this.$client).update(
+          const { data } = await WorkflowActionService(this.$client).update(
             workflowAction.id,
             values
           )
+          await dispatch('forceUpdate', {
+            page,
+            workflowAction,
+            values: data,
+          })
           resolve()
         } catch (error) {
           await dispatch('forceUpdate', {

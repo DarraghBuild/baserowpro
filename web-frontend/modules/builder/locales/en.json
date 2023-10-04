@@ -298,13 +298,18 @@
       "dataSource": "Data source"
     },
     "workflowActionTypes": {
-        "notificationLabel": "Show Notification"
+        "notificationLabel": "Show Notification",
+        "openPageLabel": "Open Page"
     },
     "notificationWorkflowActionForm": {
         "titleLabel": "Title",
         "titlePlaceholder": "Enter text...",
         "descriptionLabel": "Description",
         "descriptionPlaceholder": "Enter text..."
+    },
+    "openPageWorkflowActionForm": {
+        "urlLabel": "URL",
+        "urlPlaceholder": "Enter text..."
     },
     "event": {
         "addAction": "Add action"

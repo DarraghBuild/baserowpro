@@ -5,9 +5,11 @@ from baserow.contrib.builder.elements.handler import ElementHandler
 from baserow.contrib.builder.workflow_actions.models import (
     BuilderWorkflowAction,
     NotificationWorkflowAction,
+    OpenPageWorkflowAction,
 )
 from baserow.contrib.builder.workflow_actions.types import BuilderWorkflowActionDict
 from baserow.core.formula.serializers import FormulaSerializerField
+from baserow.core.formula.types import BaserowFormula
 from baserow.core.workflow_actions.registries import WorkflowActionType
 
 if TYPE_CHECKING:
@@ -15,7 +17,7 @@ if TYPE_CHECKING:
 
 
 class BuilderWorkflowActionType(WorkflowActionType):
-    allowed_fields = ["page", "element", "element_id", "event"]
+    allowed_fields = ["page", "page_id", "element", "element_id", "event"]
 
     def prepare_value_for_db(
         self, values: Dict, instance: BuilderWorkflowAction = None
@@ -80,8 +82,8 @@ class NotificationWorkflowActionType(BuilderWorkflowActionType):
     }
 
     class SerializedDict(BuilderWorkflowActionDict):
-        title: str
-        description: str
+        title: BaserowFormula
+        description: BaserowFormula
 
     @property
     def allowed_fields(self):
@@ -89,3 +91,27 @@ class NotificationWorkflowActionType(BuilderWorkflowActionType):
 
     def get_sample_params(self) -> Dict[str, Any]:
         return {"title": "'hello'", "description": "'there'"}
+
+
+class OpenPageWorkflowActionType(BuilderWorkflowActionType):
+    type = "open_page"
+    model_class = OpenPageWorkflowAction
+    serializer_field_names = ["url"]
+    serializer_field_overrides = {
+        "url": FormulaSerializerField(
+            help_text="The url to open. Must be an formula.",
+            required=False,
+            allow_blank=True,
+            default="",
+        ),
+    }
+
+    class SerializedDict(BuilderWorkflowActionDict):
+        url: BaserowFormula
+
+    @property
+    def allowed_fields(self):
+        return super().allowed_fields + ["url"]
+
+    def get_sample_params(self) -> Dict[str, Any]:
+        return {"url": "'hello'"}

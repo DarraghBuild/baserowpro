@@ -32,7 +32,6 @@ class BuilderWorkflowActionSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "id": {"read_only": True},
             "element_id": {"read_only": True},
-            "type": {"read_only": True},
         }
 
 
