@@ -799,6 +799,7 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
         :raises ValueError: When the provided view not an instance of View.
         :return: The updated view instance.
         """
+        from baserow_premium.views.signals import premium_check_ownership_type
 
         if not isinstance(view, View):
             raise ValueError("The view is not an instance of View.")
@@ -835,6 +836,11 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
                 workspace=workspace,
                 context=view,
             )
+
+        # Make sure that only users with premium features enabled can convert a
+        # view to being personal:
+        premium_check_ownership_type(user, workspace, view.ownership_type)
+
         view.save()
 
         new_view_values = self._get_prepared_values_for_data(
