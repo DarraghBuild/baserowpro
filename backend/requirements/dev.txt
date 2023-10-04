@@ -346,7 +346,7 @@ typing-extensions==4.4.0
     #   djangorestframework-stubs
     #   jsonschema-spec
     #   mypy
-urllib3==1.26.12
+urllib3==1.26.17
     # via
     #   -c base.txt
     #   requests
