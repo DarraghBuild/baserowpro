@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Type, cast
+from typing import Type, cast, Optional, Iterable
 
+from django.db.models import QuerySet
+
+from baserow.core.db import specific_iterator
 from baserow.core.registry import Registry
 from baserow.core.utils import extract_allowed
 from baserow.core.workflow_actions.exceptions import WorkflowActionDoesNotExist
@@ -39,6 +42,21 @@ class WorkflowActionHandler(ABC):
             return self.model.objects.get(id=workflow_action_id).specific
         except self.model.DoesNotExist:
             raise WorkflowActionDoesNotExist()
+
+    def get_all_workflow_actions(
+        self, base_queryset: Optional[QuerySet] = None
+    ) -> Iterable[WorkflowAction]:
+        """
+        Gets all the workflow actions of the defined model.
+
+        :param base_queryset: A query set that lets you prefilter the results
+        :return: A list of workflow actions
+        """
+
+        if base_queryset is None:
+            base_queryset = self.model.objects
+
+        return specific_iterator(base_queryset)
 
     def create_workflow_action(
         self, workflow_action_type: WorkflowActionType, **kwargs

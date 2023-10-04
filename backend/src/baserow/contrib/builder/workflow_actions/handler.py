@@ -7,7 +7,6 @@ from baserow.contrib.builder.workflow_actions.models import BuilderWorkflowActio
 from baserow.contrib.builder.workflow_actions.registries import (
     builder_workflow_action_type_registry,
 )
-from baserow.core.db import specific_iterator
 from baserow.core.workflow_actions.handler import WorkflowActionHandler
 from baserow.core.workflow_actions.models import WorkflowAction
 
@@ -30,4 +29,6 @@ class BuilderWorkflowActionHandler(WorkflowActionHandler):
         if base_queryset is None:
             base_queryset = self.model.objects
 
-        return specific_iterator(base_queryset.filter(page=page))
+        base_queryset = base_queryset.filter(page=page)
+
+        return super().get_all_workflow_actions(base_queryset)
