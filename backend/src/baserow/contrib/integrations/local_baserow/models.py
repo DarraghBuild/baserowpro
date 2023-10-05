@@ -96,6 +96,9 @@ class LocalBaserowTableServiceFilter(ServiceFilter):
     def __repr__(self):
         return f"<LocalBaserowTableServiceFilter {self.field} {self.type} {self.value}>"
 
+    class Meta:
+        ordering = ("order", "id")
+
 
 class LocalBaserowTableServiceSort(ServiceSort):
     """

@@ -70,9 +70,11 @@ export default {
       }
       const schemaProperties =
         this.schema.type === 'array'
-          ? this.schema.items
+          ? this.schema.items.properties
           : this.schema.properties
-      return Object.values(schemaProperties).map((prop) => prop.metadata)
+      return Object.values(schemaProperties)
+        .filter(({ metadata }) => metadata)
+        .map((prop) => prop.metadata)
     },
   },
   methods: {
