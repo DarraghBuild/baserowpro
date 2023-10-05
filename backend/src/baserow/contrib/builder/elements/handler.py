@@ -337,7 +337,7 @@ class ElementHandler:
 
         # We are just creating new elements here so other data id should remain
         id_mapping = defaultdict(lambda: MirrorDict())
-        id_mapping["builder_elements"] = {}
+        id_mapping["builder_page_elements"] = {}
 
         return self._duplicate_element_recursive(element, id_mapping)
 
