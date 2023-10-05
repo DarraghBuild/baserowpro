@@ -29,6 +29,7 @@ from baserow.contrib.builder.api.elements.serializers import (
     ElementSerializer,
     MoveElementSerializer,
     UpdateElementSerializer,
+    DuplicateElementSerializer,
 )
 from baserow.contrib.builder.api.pages.errors import ERROR_PAGE_DOES_NOT_EXIST
 from baserow.contrib.builder.elements.exceptions import (
@@ -366,13 +367,12 @@ class DuplicateElementView(APIView):
 
         element = ElementHandler().get_element_for_update(element_id)
 
-        elements_duplicated = ElementService().duplicate_element(request.user, element)
+        elements_and_workflow_actions_duplicated = ElementService().duplicate_element(
+            request.user, element
+        )
 
-        elements_serialized = [
-            element_type_registry.get_serializer(
-                element_current, ElementSerializer
-            ).data
-            for element_current in elements_duplicated
-        ]
+        serializer = DuplicateElementSerializer(
+            elements_and_workflow_actions_duplicated
+        )
 
-        return Response(elements_serialized)
+        return Response(serializer.data)

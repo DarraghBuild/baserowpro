@@ -371,7 +371,7 @@ def test_before_places_in_container_removed_no_change(data_fixture):
 def test_duplicate_element_single_element(data_fixture):
     element = data_fixture.create_builder_paragraph_element(value="test")
 
-    [element_duplicated] = ElementHandler().duplicate_element(element)
+    [element_duplicated] = ElementHandler().duplicate_element(element)["elements"]
 
     assert element.id != element_duplicated.id
     assert element.value == element_duplicated.value
@@ -392,7 +392,7 @@ def test_duplicate_element_multiple_elements(data_fixture):
         container_element_duplicated,
         child_duplicated,
         child_two_duplicated,
-    ] = ElementHandler().duplicate_element(container_element)
+    ] = ElementHandler().duplicate_element(container_element)["elements"]
 
     assert container_element.id != container_element_duplicated.id
     assert container_element.column_amount == container_element_duplicated.column_amount
@@ -424,7 +424,7 @@ def test_duplicate_element_deeply_nested(data_fixture):
         container_element_duplicated,
         child_first_level_duplicated,
         child_second_level_duplicated,
-    ] = ElementHandler().duplicate_element(container_element)
+    ] = ElementHandler().duplicate_element(container_element)["elements"]
 
     assert container_element.id != container_element_duplicated.id
     assert container_element.column_amount == container_element_duplicated.column_amount
@@ -454,14 +454,10 @@ def test_duplicate_element_with_workflow_action(data_fixture):
         page=page, element=element
     )
 
-    [element_duplicated] = ElementHandler().duplicate_element(element)
+    result = ElementHandler().duplicate_element(element)
+    [element_duplicated] = result["elements"]
+    [duplicated_workflow_action] = result["workflow_actions"]
 
-    [
-        initial_workflow_action,
-        duplicated_workflow_action,
-    ] = BuilderWorkflowActionHandler().get_workflow_actions(page=page)
-
-    assert initial_workflow_action.id == workflow_action.id
-    assert initial_workflow_action.element_id == element.id
-
+    assert duplicated_workflow_action.id != workflow_action.id
+    assert duplicated_workflow_action.page_id == workflow_action.page_id
     assert duplicated_workflow_action.element_id == element_duplicated.id
