@@ -122,12 +122,14 @@ class DuplicateElementSerializer(serializers.Serializer):
         help_text="The duplicated workflow actions"
     )
 
+    @extend_schema_field(ElementSerializer(many=True))
     def get_elements(self, obj: ElementsAndWorkflowActions):
         return [
             element_type_registry.get_serializer(element, ElementSerializer).data
             for element in obj["elements"]
         ]
 
+    @extend_schema_field(BuilderWorkflowActionSerializer(many=True))
     def get_workflow_actions(self, obj: ElementsAndWorkflowActions):
         return [
             builder_workflow_action_type_registry.get_serializer(

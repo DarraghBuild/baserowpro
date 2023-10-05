@@ -343,9 +343,7 @@ class DuplicateElementView(APIView):
         operation_id="duplicate_builder_page_element",
         description="Duplicates an element and all of the elements children",
         responses={
-            200: DiscriminatorCustomFieldsMappingSerializer(
-                element_type_registry, ElementSerializer, many=True
-            ),
+            200: DuplicateElementSerializer,
             400: get_error_schema(["ERROR_REQUEST_BODY_VALIDATION"]),
             404: get_error_schema(
                 [
