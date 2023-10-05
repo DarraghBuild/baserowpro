@@ -149,9 +149,6 @@ class LocalBaserowTableServiceType(LocalBaserowServiceType):
     The `ServiceType` for `LocalBaserowTableService` subclasses.
     """
 
-    # The ServiceFilter applicable for this `model_class`.
-    filter_model_class = LocalBaserowTableServiceFilter
-
     # All `LocalBaserowTableService` subclasses share these allowed fields.
     base_allowed_fields = [
         "table",
