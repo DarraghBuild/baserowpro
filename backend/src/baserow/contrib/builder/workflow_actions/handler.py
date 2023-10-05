@@ -36,7 +36,6 @@ class BuilderWorkflowActionHandler(WorkflowActionHandler):
     def update_workflow_action(
         self, workflow_action: BuilderWorkflowAction, **kwargs
     ) -> WorkflowAction:
-
         # When we are switching types we want to preserve the event and element and
         # page ids
         if "type" in kwargs and kwargs["type"] != workflow_action.get_type().type:
