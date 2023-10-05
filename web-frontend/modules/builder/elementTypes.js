@@ -409,29 +409,6 @@ export class TableElementType extends ElementType {
     return TableElementForm
   }
 
-  prepareValuesForRequest(values) {
-    const prepared = { ...values }
-
-    if (!prepared?.fields?.length || prepared.fields.length === 0) {
-      prepared.fields = [
-        {
-          name: `${this.app.i18n.t('tableElementForm.fieldDefaultName')} 1`,
-          value: '',
-        },
-        {
-          name: `${this.app.i18n.t('tableElementForm.fieldDefaultName')} 2`,
-          value: '',
-        },
-        {
-          name: `${this.app.i18n.t('tableElementForm.fieldDefaultName')} 3`,
-          value: '',
-        },
-      ]
-    }
-
-    return prepared
-  }
-
   onElementEvent(event, { page, element, dataSourceId }) {
     if (event === ELEMENT_EVENTS.DATA_SOURCE_REMOVED) {
       if (element.data_source_id === dataSourceId) {
@@ -440,6 +417,10 @@ export class TableElementType extends ElementType {
           page,
           element,
           values: { data_source_id: null },
+        })
+        // Empty the element content
+        this.app.store.dispatch('elementContent/clearElementContent', {
+          element,
         })
       }
     }
