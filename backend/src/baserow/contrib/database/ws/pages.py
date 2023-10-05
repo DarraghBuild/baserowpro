@@ -16,7 +16,6 @@ from baserow.contrib.database.views.registries import view_type_registry
 from baserow.core.exceptions import PermissionDenied, UserNotInWorkspace
 from baserow.core.handler import CoreHandler
 from baserow.ws.registries import PageType
-from baserow.ws.tasks import broadcast_to_channel_group
 
 
 class TablePageType(PageType):
@@ -48,6 +47,9 @@ class TablePageType(PageType):
 
     def get_group_name(self, table_id, **kwargs):
         return f"table-{table_id}"
+
+    def get_permission_channel_group_name(self, table_id, **kwargs):
+        return f"permissions-table-{table_id}"
 
 
 class PublicViewPageType(PageType):
@@ -92,8 +94,8 @@ class RowPageType(PageType):
 
     def can_add(self, user, web_socket_id, table_id, row_id, **kwargs):
         """
-        The user should only have access to this page if the table exists and if they
-        have access to the table.
+        The user should only have access to this page if the table and row exist
+        and if he has access to the table.
         """
 
         if not table_id:
@@ -123,20 +125,5 @@ class RowPageType(PageType):
     def get_group_name(self, table_id, row_id, **kwargs):
         return f"table-{table_id}-row-{row_id}"
 
-    def broadcast(self, payload, ignore_web_socket_id=None, **kwargs):
-        """
-        Broadcasts a payload to everyone within the group.
-
-        :param payload: A payload that must be broad casted to all the users in the
-            group.
-        :type payload:  dict
-        :param ignore_web_socket_id: If provided then the payload will not be broad
-            casted to that web socket id. This is often the sender.
-        :type ignore_web_socket_id: Optional[str]
-        :param kwargs: The additional parameters including their provided values.
-        :type kwargs: dict
-        """
-
-        broadcast_to_channel_group.delay(
-            self.get_group_name(**kwargs), payload, ignore_web_socket_id
-        )
+    def get_permission_channel_group_name(self, table_id, **kwargs):
+        return f"permissions-table-{table_id}"

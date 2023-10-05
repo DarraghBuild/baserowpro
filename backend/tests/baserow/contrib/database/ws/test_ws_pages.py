@@ -44,6 +44,14 @@ def test_table_page_get_group_name(data_fixture):
     assert table_page.get_group_name(table_id) == "table-22"
 
 
+@pytest.mark.websockets
+def test_table_page_get_permission_channel_group_name(data_fixture):
+    table_page = page_registry.get("table")
+    table_id = 22
+
+    assert table_page.get_permission_channel_group_name(table_id) == "permissions-table-22"
+
+
 @patch("baserow.ws.registries.broadcast_to_channel_group")
 @pytest.mark.websockets
 def test_table_page_broadcast(mock_broadcast_to_channel_group, data_fixture):
@@ -189,7 +197,14 @@ def test_row_page_get_group_name(data_fixture):
     assert row_page.get_group_name(table_id, row_id) == "table-22-row-2"
 
 
-@patch("baserow.contrib.database.ws.pages.broadcast_to_channel_group")
+@pytest.mark.websockets
+def test_row_page_get_permission_channel_group_name(data_fixture):
+    row_page = page_registry.get("row")
+    table_id = 22
+    assert row_page.get_permission_channel_group_name(table_id) == "permissions-table-22"
+
+
+@patch("baserow.ws.registries.broadcast_to_channel_group")
 @pytest.mark.websockets
 def test_row_page_broadcast(mock_broadcast_to_channel_group, data_fixture):
     row_page = page_registry.get("row")

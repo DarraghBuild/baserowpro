@@ -47,6 +47,12 @@ class SubscribedPages:
         self.pages: list[PageScope] = []
 
     def add(self, page_scope: PageScope):
+        """
+        Adds a page to the list of subscribed pages.
+
+        :param page_scope: Page to add.
+        """
+
         # TODO: remove prints()
         if page_scope not in self.pages:
             print()
@@ -56,6 +62,12 @@ class SubscribedPages:
             self.pages.append(page_scope)
 
     def remove(self, page_scope: PageScope):
+        """
+        Removes a page from the list of subscribed pages.
+
+        :param page_scope: Page to remove.
+        """
+
         if page_scope in self.pages:
             print()
             print("removing")
@@ -65,6 +77,51 @@ class SubscribedPages:
                 self.pages.remove(page_scope)
             except ValueError:
                 pass
+
+    def is_page_in_permission_group(
+        self, page_scope: PageScope, group_name_to_check: str
+    ) -> bool:
+        """
+        Checks whether an instance of PageScope belongs to the provided
+        permission group.
+
+        :param page_scope: The page to check.
+        :param group_name_to_check: The permission group name that will be
+            compared to permission group name of the page.
+        :return: True if the page has the same permission group name.
+        """
+
+        try:
+            page_type = page_registry.get(page_scope.page_type)
+        except page_registry.does_not_exist_exception_class:
+            return False
+
+        page_perm_group_name = page_type.get_permission_channel_group_name(
+            **page_scope.page_parameters
+        )
+        if page_perm_group_name == group_name_to_check:
+            return True
+
+    def has_pages_with_permission_group(self, group_name_to_check: str) -> bool:
+        """
+        Utility method that determines whether the list of subscribed
+        pages contains any page with the provided permission group.
+
+        This is useful to know for consumers using this class to determine
+        if by unsubscribing to a page they should unsubscribe from a
+        permission group as well or there are still pages that need the
+        same permission group.
+
+        :param group_name_to_check: The permission group name that will be
+            compared to permission group names of the subscribed pages.
+        :return: True if the list of subscribed pages contains any page matching
+            the provided permission group name.
+        """
+
+        for page in self.pages:
+            if self.is_page_in_permission_group(page, group_name_to_check):
+                return True
+        return False
 
     def copy(self):
         new = SubscribedPages()
@@ -100,13 +157,21 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         self.scope["pages"] = SubscribedPages()
         await self.channel_layer.group_add("users", self.channel_name)
 
-    async def receive_json(self, content, **parameters):
-        if "page" in content:
-            await self.add_page_scope(content)
-        if "remove_page" in content:
-            await self.remove_page_scope(content)
+    async def disconnect(self, message):
+        await self._remove_all_page_scopes()
+        await self.channel_layer.group_discard("users", self.channel_name)
 
-    async def get_page_context(
+    async def receive_json(self, content, **parameters):
+        """
+        Processes incoming messages.
+        """
+
+        if "page" in content:
+            await self._add_page_scope(content)
+        if "remove_page" in content:
+            await self._remove_page_scope(content)
+
+    async def _get_page_context(
         self, content: dict, page_name_attr: str
     ) -> Optional[PageContext]:
         """
@@ -140,7 +205,7 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
             web_socket_id=web_socket_id,
         )
 
-    async def add_page_scope(self, content: dict):
+    async def _add_page_scope(self, content: dict):
         """
         Subscribes the connection to a page abstraction. Based on the provided page
         type we can figure out to which page the connection wants to subscribe to. This
@@ -151,7 +216,7 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
             type and additional parameters.
         """
 
-        context = await self.get_page_context(content, "page")
+        context = await self._get_page_context(content, "page")
 
         if not context:
             return
@@ -170,6 +235,12 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         group_name = page_type.get_group_name(**parameters)
         await self.channel_layer.group_add(group_name, self.channel_name)
 
+        permission_group_name = page_type.get_permission_channel_group_name(
+            **parameters
+        )
+        if permission_group_name:
+            await self.channel_layer.group_add(permission_group_name, self.channel_name)
+
         page_scope = PageScope(page_type=page_type.type, page_parameters=parameters)
         self.scope["pages"].add(page_scope)
 
@@ -177,7 +248,7 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
             {"type": "page_add", "page": page_type.type, "parameters": parameters}
         )
 
-    async def remove_page_scope(self, content: dict, send_confirmation=True):
+    async def _remove_page_scope(self, content: dict, send_confirmation=True):
         """
         Unsubscribes the connection from a page. Based on the provided page
         type and its params we can figure out to which page the connection wants
@@ -189,7 +260,7 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
             message about unsubscribing.
         """
 
-        context = await self.get_page_context(content, "remove_page")
+        context = await self._get_page_context(content, "remove_page")
 
         if not context:
             return
@@ -205,6 +276,16 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
 
         self.scope["pages"].remove(page_scope)
 
+        permission_group_name = page_type.get_permission_channel_group_name(
+            **parameters
+        )
+        if permission_group_name and not self.scope[
+            "pages"
+        ].has_pages_with_permission_group(permission_group_name):
+            await self.channel_layer.group_discard(
+                permission_group_name, self.channel_name
+            )
+
         if send_confirmation:
             await self.send_json(
                 {
@@ -214,7 +295,7 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
                 }
             )
 
-    async def remove_all_page_scopes(self):
+    async def _remove_all_page_scopes(self):
         """
         Unsubscribes the connection from all currently subscribed pages.
         """
@@ -227,7 +308,32 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
                     "remove_page": page_scope.page_type,
                     **page_scope.page_parameters,
                 }
-                await self.remove_page_scope(content, send_confirmation=True)
+                await self._remove_page_scope(content, send_confirmation=True)
+
+    async def _remove_page_scopes_associated_with_perm_group(
+        self, permission_group_name: str
+    ):
+        """
+        Unsubscribes the connection from all currently subscribed pages associated
+        with the provided permission channel group.
+
+        :param permission_group_name: The name of the permission channel group.
+        """
+
+        if self.scope.get("pages"):
+            for page_scope in self.scope["pages"].copy():
+                if self.scope["pages"].is_page_in_permission_group(
+                    page_scope, permission_group_name
+                ):
+                    content = {
+                        "user": self.scope["user"],
+                        "web_socket_id": self.scope["web_socket_id"],
+                        "remove_page": page_scope.page_type,
+                        **page_scope.page_parameters,
+                    }
+                    await self._remove_page_scope(content, send_confirmation=True)
+
+    # Event handlers
 
     async def broadcast_to_users(self, event):
         """
@@ -292,13 +398,20 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         if not ignore_web_socket_id or ignore_web_socket_id != web_socket_id:
             await self.send_json(payload)
 
-    async def remove_user_from_group(self, event):
+    async def users_removed_from_permission_group(self, event):
+        """
+        Event handler that reacts to a situation when one or many users were
+        revoked access to resources associated with a permission channel group.
+
+        When that happens the consumer has to check whether it is the consumer of
+        the involed user and if so, remove itself from all pages associated with
+        the permission channel group.
+        """
+
         user_ids_to_remove = event["user_ids_to_remove"]
         user_id = self.scope["user"].id
 
         if user_id in user_ids_to_remove:
-            await self.remove_all_page_scopes()
-
-    async def disconnect(self, message):
-        await self.remove_all_page_scopes()
-        await self.channel_layer.group_discard("users", self.channel_name)
+            await self._remove_page_scopes_associated_with_perm_group(
+                self.scope["permission_group_name"]
+            )

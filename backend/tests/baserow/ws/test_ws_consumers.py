@@ -239,7 +239,7 @@ async def test_get_page_context(data_fixture, test_page_types):
         "page": page_type.type,
         "test_param": 2,
     }
-    result = await consumer.get_page_context(content, "page")
+    result = await consumer._get_page_context(content, "page")
     assert result == PageContext(
         page_type=page_type,
         parameters={"test_param": 2},
@@ -252,7 +252,7 @@ async def test_get_page_context(data_fixture, test_page_types):
         "page": "doesnt_exist",
         "test_param": 2,
     }
-    result = await consumer.get_page_context(content, "page")
+    result = await consumer._get_page_context(content, "page")
     assert result is None
 
     # Missing user
@@ -261,7 +261,7 @@ async def test_get_page_context(data_fixture, test_page_types):
         "page": page_type.type,
         "test_param": 2,
     }
-    result = await consumer.get_page_context(content, "page")
+    result = await consumer._get_page_context(content, "page")
     assert result is None
 
 
@@ -288,7 +288,7 @@ async def test_core_consumer_remove_all_page_scopes(data_fixture, test_page_type
 
     assert len(consumer.scope["pages"]) == 2
 
-    await consumer.remove_all_page_scopes()
+    await consumer._remove_all_page_scopes()
 
     assert len(consumer.scope["pages"]) == 0
 

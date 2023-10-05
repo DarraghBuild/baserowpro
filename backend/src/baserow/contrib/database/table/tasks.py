@@ -89,7 +89,9 @@ def unsubscribe_subject_from_tables_currently_subscribed_to(
     channel_group_names_users_dict = defaultdict(set)
     for user in users:
         for table in tables:
-            channel_group_name = TablePageType().get_group_name(table.id)
+            channel_group_name = TablePageType().get_permission_channel_group_name(
+                table.id
+            )
             if permission_manager is None:
                 channel_group_names_users_dict[channel_group_name].add(user.id)
             else:
@@ -110,8 +112,9 @@ def unsubscribe_subject_from_tables_currently_subscribed_to(
             channel_layer,
             channel_group_name,
             {
-                "type": "remove_user_from_group",
+                "type": "users_removed_from_permission_group",
                 "user_ids_to_remove": list(user_ids),
+                "permission_group_name": channel_group_name,
             },
         )
 
