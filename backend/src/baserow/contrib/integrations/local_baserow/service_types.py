@@ -152,8 +152,6 @@ class LocalBaserowTableServiceType(LocalBaserowServiceType):
     # The ServiceFilter applicable for this `model_class`.
     filter_model_class = LocalBaserowTableServiceFilter
 
-    serializer_mixins = [LocalBaserowTableServiceSerializerMixin]
-
     # All `LocalBaserowTableService` subclasses share these allowed fields.
     base_allowed_fields = [
         "table",
