@@ -8,6 +8,10 @@ from rest_framework import serializers
 
 from baserow.api.services.serializers import PublicServiceSerializer
 from baserow.contrib.builder.api.pages.serializers import PathParamSerializer
+from baserow.contrib.builder.api.theme.serializers import (
+    CombinedThemeConfigBlocksSerializer,
+    serialize_builder_theme,
+)
 from baserow.contrib.builder.data_sources.models import DataSource
 from baserow.contrib.builder.domains.models import Domain
 from baserow.contrib.builder.domains.registries import domain_type_registry
@@ -95,8 +99,15 @@ class PublicElementSerializer(serializers.ModelSerializer):
             "order",
             "parent_element_id",
             "place_in_container",
+            "style_border_top_color",
+            "style_border_top_size",
             "style_padding_top",
+            "style_border_bottom_color",
+            "style_border_bottom_size",
             "style_padding_bottom",
+            "style_background",
+            "style_background_color",
+            "style_width",
         )
         extra_kwargs = {
             "id": {"read_only": True},
@@ -131,11 +142,16 @@ class PublicBuilderSerializer(serializers.ModelSerializer):
         "an array of pages that are in the builder."
     )
 
+    theme = serializers.SerializerMethodField(
+        help_text="This field is specific to the `builder` application and contains "
+        "the theme settings."
+    )
+
     type = serializers.SerializerMethodField(help_text="The type of the object.")
 
     class Meta:
         model = Builder
-        fields = ("id", "name", "pages", "type")
+        fields = ("id", "name", "pages", "type", "theme")
 
     @extend_schema_field(PublicPageSerializer(many=True))
     def get_pages(self, instance: Builder) -> List:
@@ -153,6 +169,10 @@ class PublicBuilderSerializer(serializers.ModelSerializer):
     @extend_schema_field(OpenApiTypes.STR)
     def get_type(self, instance: Builder) -> str:
         return "builder"
+
+    @extend_schema_field(CombinedThemeConfigBlocksSerializer())
+    def get_theme(self, instance):
+        return serialize_builder_theme(instance)
 
 
 class PublicDataSourceSerializer(PublicServiceSerializer):
