@@ -204,7 +204,7 @@ def test_update_data_source_with_filters(api_client, data_fixture):
     assert response.json()["filters"] == [
         {
             "id": service_filter.id,
-            "order": "0.00000000000000000000",
+            "order": 0,
             "field": field.id,
             "type": "equals",
             "value": "foobar",
@@ -246,7 +246,7 @@ def test_update_data_source_with_filters(api_client, data_fixture):
     assert response.json()["filters"] == [
         {
             "id": service_filter.id,
-            "order": "0.00000000000000000000",
+            "order": 0,
             "field": field.id,
             "type": "equals",
             "value": "foobar",

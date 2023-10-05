@@ -1,3 +1,5 @@
+from typing import Type
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import F, OrderBy
@@ -12,6 +14,7 @@ from baserow.contrib.database.views.models import (
 )
 from baserow.core.formula.field import FormulaField
 from baserow.core.integrations.models import Integration
+from baserow.core.mixins import OrderableMixin
 from baserow.core.services.models import (
     SearchableServiceMixin,
     Service,
@@ -60,7 +63,7 @@ class LocalBaserowGetRow(LocalBaserowTableService, SearchableServiceMixin):
     row_id = FormulaField()
 
 
-class LocalBaserowTableServiceFilter(ServiceFilter):
+class LocalBaserowTableServiceFilter(ServiceFilter, OrderableMixin):
     """
     A service filter applicable to a `LocalBaserowTableService` integration service.
     """
@@ -82,13 +85,7 @@ class LocalBaserowTableServiceFilter(ServiceFilter):
         blank=True,
         help_text="The filter value that must be compared to the field's value.",
     )
-    order = models.DecimalField(
-        help_text="Lowest first.",
-        max_digits=40,
-        decimal_places=20,
-        editable=False,
-        default=1,
-    )
+    order = models.PositiveIntegerField()
 
     def __str__(self):
         return self.value
@@ -98,6 +95,18 @@ class LocalBaserowTableServiceFilter(ServiceFilter):
 
     class Meta:
         ordering = ("order", "id")
+
+    @classmethod
+    def get_last_order(cls, service: Type[LocalBaserowTableService]):
+        """
+        Returns the last order for the given service filter.
+
+        :param service: The service we want the order for.
+        :return: The last order.
+        """
+
+        queryset = LocalBaserowTableServiceFilter.objects.filter(service=service)
+        return cls.get_highest_order_of_queryset(queryset) + 1
 
 
 class LocalBaserowTableServiceSort(ServiceSort):
