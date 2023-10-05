@@ -333,7 +333,7 @@
       "urlLabel": "URL",
       "urlPlaceholder": "Enter text..."
     },
-    "event": {
-      "addAction": "Add action"
+    "addAction": {
+      "caption": "Add action"
     }
 }

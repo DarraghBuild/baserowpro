@@ -18,17 +18,11 @@
         @delete="deleteWorkflowAction(workflowAction)"
         @update="updateWorkflowAction(workflowAction, $event)"
       />
-      <div class="margin-top-2">
-        <a
-          v-if="!addingElement"
-          class="anchor event__add-element"
-          @click="addWorkflowAction"
-        >
-          <i class="iconoir-plus margin-right-1"></i>
-          {{ $t('event.addAction') }}
-        </a>
-        <div v-else class="loading"></div>
-      </div>
+      <AddAction
+        class="margin-top-2"
+        :loading="addingAction"
+        @click="addWorkflowAction"
+      />
     </template>
   </Expandable>
 </template>
@@ -40,12 +34,13 @@ import { NotificationWorkflowActionType } from '@baserow/modules/builder/workflo
 import { mapActions } from 'vuex'
 import { notifyIf } from '@baserow/modules/core/utils/error'
 import _ from 'lodash'
+import AddAction from '@baserow/modules/builder/components/event/AddAction'
 
 const DEFAULT_WORKFLOW_ACTION_TYPE = NotificationWorkflowActionType.getType()
 
 export default {
   name: 'Event',
-  components: { WorkflowAction },
+  components: { AddAction, WorkflowAction },
   inject: ['page'],
   props: {
     event: {
@@ -68,7 +63,7 @@ export default {
   },
   data() {
     return {
-      addingElement: false,
+      addingAction: false,
     }
   },
   methods: {
@@ -81,7 +76,7 @@ export default {
       return expanded ? 'iconoir-nav-arrow-down' : 'iconoir-nav-arrow-right'
     },
     async addWorkflowAction() {
-      this.addingElement = true
+      this.addingAction = true
       try {
         await this.actionCreateWorkflowAction({
           page: this.page,
@@ -94,7 +89,7 @@ export default {
       } catch (error) {
         notifyIf(error)
       }
-      this.addingElement = false
+      this.addingAction = false
     },
     deleteWorkflowAction(workflowAction) {
       try {
