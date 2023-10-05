@@ -17,9 +17,6 @@ from baserow.contrib.builder.elements.models import (
     ParagraphElement,
 )
 from baserow.contrib.builder.elements.registries import element_type_registry
-from baserow.contrib.builder.workflow_actions.handler import (
-    BuilderWorkflowActionHandler,
-)
 from baserow.core.exceptions import CannotCalculateIntermediateOrder
 
 

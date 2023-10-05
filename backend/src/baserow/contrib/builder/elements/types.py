@@ -1,9 +1,9 @@
-from typing import NewType, TypeVar, TypedDict, List
+from typing import List, NewType, TypedDict, TypeVar
 
 from baserow.contrib.builder.types import ElementDict
 
-from .models import Element
 from ..workflow_actions.models import BuilderWorkflowAction
+from .models import Element
 
 ElementDictSubClass = TypeVar("ElementDictSubClass", bound=ElementDict)
 ElementSubClass = TypeVar("ElementSubClass", bound=Element)

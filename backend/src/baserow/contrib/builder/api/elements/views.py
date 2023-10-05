@@ -26,10 +26,10 @@ from baserow.contrib.builder.api.elements.errors import (
 )
 from baserow.contrib.builder.api.elements.serializers import (
     CreateElementSerializer,
+    DuplicateElementSerializer,
     ElementSerializer,
     MoveElementSerializer,
     UpdateElementSerializer,
-    DuplicateElementSerializer,
 )
 from baserow.contrib.builder.api.pages.errors import ERROR_PAGE_DOES_NOT_EXIST
 from baserow.contrib.builder.elements.exceptions import (

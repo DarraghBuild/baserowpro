@@ -16,8 +16,8 @@ from baserow.contrib.builder.pages.models import Page
 from baserow.core.db import specific_iterator
 from baserow.core.exceptions import IdDoesNotExist
 from baserow.core.utils import MirrorDict, extract_allowed
-from ..workflow_actions.models import BuilderWorkflowAction
 
+from ..workflow_actions.models import BuilderWorkflowAction
 from ..workflow_actions.registries import builder_workflow_action_type_registry
 from .types import ElementForUpdate, ElementsAndWorkflowActions
 
