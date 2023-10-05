@@ -18,7 +18,7 @@ class AcceptingTestPageType(PageType):
 
     def get_group_name(self, test_param, **kwargs):
         return f"test-page-{test_param}"
-    
+
     def get_permission_channel_group_name(self, test_param, **kwargs):
         return f"permissions-test-page-{test_param}"
 
@@ -36,14 +36,18 @@ class DifferentPermissionsGroupTestPageType(PageType):
 
     def get_group_name(self, test_param, **kwargs):
         return f"different-perm-group-{test_param}"
-    
+
     def get_permission_channel_group_name(self, test_param, **kwargs):
         return f"permissions-different-perm-group-{test_param}"
 
 
 @pytest.fixture
 def test_page_types():
-    page_types = AcceptingTestPageType(), NotAcceptingTestPageType(), DifferentPermissionsGroupTestPageType()
+    page_types = (
+        AcceptingTestPageType(),
+        NotAcceptingTestPageType(),
+        DifferentPermissionsGroupTestPageType(),
+    )
     page_registry.register(page_types[0])
     page_registry.register(page_types[1])
     page_registry.register(page_types[2])
@@ -374,7 +378,10 @@ def test_subscribed_pages_is_page_in_permission_group(test_page_types):
     pages = SubscribedPages()
 
     assert pages.is_page_in_permission_group(scope_1, "permissions-test-page-1") is True
-    assert pages.is_page_in_permission_group(scope_1, "permissions-different-perm-group-1") is False
+    assert (
+        pages.is_page_in_permission_group(scope_1, "permissions-different-perm-group-1")
+        is False
+    )
 
 
 @pytest.mark.websockets
@@ -384,4 +391,7 @@ def test_subscribed_pages_has_pages_with_permission_group(test_page_types):
     pages.add(scope_1)
 
     assert pages.has_pages_with_permission_group("permissions-test-page-1") is True
-    assert pages.has_pages_with_permission_group("permissions-different-perm-group-1") is False
+    assert (
+        pages.has_pages_with_permission_group("permissions-different-perm-group-1")
+        is False
+    )

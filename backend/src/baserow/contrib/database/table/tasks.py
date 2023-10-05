@@ -120,17 +120,17 @@ def unsubscribe_subject_from_tables_currently_subscribed_to(
 
 
 @app.task(bind=True)
-def unsubscribe_user_from_table_currently_subscribed_to(
+def unsubscribe_user_from_tables_when_removed_from_workspace(
     self,
     user_id: int,
     workspace_id: int,
 ):
     """
-    Unsubscribe all users associated with the subject from the table they are currently
-    viewing.
+    Task that will unsubscribe the provided user from web socket
+    CoreConsumer pages that belong to the provided workspace.
 
-    :param user_id: The id of the user that is supposed to be unsubscribed
-    :param workspace_id: The id of the workspace the user belongs to
+    :param user_id: The id of the user that is supposed to be unsubscribed.
+    :param workspace_id: The id of the workspace the user belonged to.
     """
 
     unsubscribe_subject_from_tables_currently_subscribed_to(

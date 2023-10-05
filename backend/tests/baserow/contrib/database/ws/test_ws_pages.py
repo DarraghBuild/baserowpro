@@ -49,7 +49,9 @@ def test_table_page_get_permission_channel_group_name(data_fixture):
     table_page = page_registry.get("table")
     table_id = 22
 
-    assert table_page.get_permission_channel_group_name(table_id) == "permissions-table-22"
+    assert (
+        table_page.get_permission_channel_group_name(table_id) == "permissions-table-22"
+    )
 
 
 @patch("baserow.ws.registries.broadcast_to_channel_group")
@@ -201,7 +203,9 @@ def test_row_page_get_group_name(data_fixture):
 def test_row_page_get_permission_channel_group_name(data_fixture):
     row_page = page_registry.get("row")
     table_id = 22
-    assert row_page.get_permission_channel_group_name(table_id) == "permissions-table-22"
+    assert (
+        row_page.get_permission_channel_group_name(table_id) == "permissions-table-22"
+    )
 
 
 @patch("baserow.ws.registries.broadcast_to_channel_group")

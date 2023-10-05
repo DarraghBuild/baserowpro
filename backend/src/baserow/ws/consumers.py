@@ -405,7 +405,7 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
         revoked access to resources associated with a permission channel group.
 
         When that happens the consumer has to check whether it is the consumer of
-        the involed user and if so, remove itself from all pages associated with
+        the involved user and if so, remove itself from all pages associated with
         the permission channel group.
         """
 
@@ -414,5 +414,5 @@ class CoreConsumer(AsyncJsonWebsocketConsumer):
 
         if user_id in user_ids_to_remove:
             await self._remove_page_scopes_associated_with_perm_group(
-                self.scope["permission_group_name"]
+                event["permission_group_name"]
             )
