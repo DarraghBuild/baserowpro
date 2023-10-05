@@ -101,6 +101,7 @@ class SubscribedPages:
         )
         if page_perm_group_name == group_name_to_check:
             return True
+        return False
 
     def has_pages_with_permission_group(self, group_name_to_check: str) -> bool:
         """
