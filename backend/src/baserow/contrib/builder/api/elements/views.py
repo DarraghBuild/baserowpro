@@ -341,7 +341,8 @@ class DuplicateElementView(APIView):
         ],
         tags=["Builder elements"],
         operation_id="duplicate_builder_page_element",
-        description="Duplicates an element and all of the elements children",
+        description="Duplicates an element and all of the elements children and the "
+        "associated workflow actions as well.",
         responses={
             200: DuplicateElementSerializer,
             400: get_error_schema(["ERROR_REQUEST_BODY_VALIDATION"]),
