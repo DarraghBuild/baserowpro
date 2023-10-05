@@ -11,3 +11,8 @@
 .event__toggle {
   color: $color-neutral-900;
 }
+
+.event__workflow-action:not(:first-child) {
+  border-top: 1px solid $color-neutral-200;
+  padding-top: 20px;
+}

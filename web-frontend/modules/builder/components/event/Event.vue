@@ -12,7 +12,7 @@
       <WorkflowAction
         v-for="workflowAction in workflowActions"
         :key="workflowAction.id"
-        class="margin-top-2"
+        class="margin-top-2 event__workflow-action"
         :available-workflow-action-types="availableWorkflowActionTypes"
         :workflow-action="workflowAction"
         @delete="deleteWorkflowAction(workflowAction)"
