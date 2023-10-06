@@ -6,7 +6,10 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("builder", "0023_headingelement_font_color"),
+        (
+            "builder",
+            "0024_builderworkflowaction_notificationworkflowaction_openpageworkflowaction",
+        ),
     ]
 
     operations = [
