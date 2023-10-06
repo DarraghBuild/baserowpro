@@ -2,14 +2,17 @@
   <form @submit.prevent>
     <div>
       <div class="row">
-        <div class="col col-8">
+        <div class="col col-12">
           <LocalBaserowTableSelector
             v-model="values.table_id"
             class="local-baserow-get-row-form__table-selector"
             :databases="databases"
             :view-id.sync="values.view_id"
           ></LocalBaserowTableSelector>
-          <div class="col col-4"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col col-6">
           <ApplicationBuilderFormulaInputGroup
             v-model="values.row_id"
             small-label

@@ -1,10 +1,14 @@
 <template>
   <form @submit.prevent>
-    <LocalBaserowTableSelector
-      v-model="values.table_id"
-      :databases="databases"
-      :view-id.sync="values.view_id"
-    ></LocalBaserowTableSelector>
+    <div class="row">
+      <div class="col col-12">
+        <LocalBaserowTableSelector
+          v-model="values.table_id"
+          :databases="databases"
+          :view-id.sync="values.view_id"
+        ></LocalBaserowTableSelector>
+      </div>
+    </div>
     <div class="row">
       <div class="col col-12">
         <Tabs>
