@@ -175,24 +175,6 @@ export default {
         }
       }
     },
-    'values.data_source_id'(newValue) {
-      if (newValue && this.values.lenght === 0) {
-        this.values.fields = [
-          {
-            name: `${this.app.i18n.t('tableElementForm.fieldDefaultName')} 1`,
-            value: '',
-          },
-          {
-            name: `${this.app.i18n.t('tableElementForm.fieldDefaultName')} 2`,
-            value: '',
-          },
-          {
-            name: `${this.app.i18n.t('tableElementForm.fieldDefaultName')} 3`,
-            value: '',
-          },
-        ]
-      }
-    },
   },
   methods: {
     addField() {
