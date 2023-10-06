@@ -324,7 +324,6 @@
       "fieldValueLabel": "Value",
       "addField": "add field",
       "fieldValuePlaceholder": "Enter value...",
-      "fieldDefaultName": "Column",
       "itemsPerPage": "Items per page",
       "itemsPerPagePlaceholder": "Enter value..."
     },
