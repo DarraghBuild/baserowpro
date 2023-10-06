@@ -3,7 +3,7 @@ from typing import Any, Dict, Iterable, List, Optional
 from baserow.config.celery import app
 
 
-async def closing_group_send(channel_layer, channel_group_name: str, message: dict):
+async def send_message_to_channel_group(channel_layer, channel_group_name: str, message: dict):
     """
     Sends a message to a channel group.
 
@@ -49,7 +49,7 @@ def broadcast_to_users(
     from channels.layers import get_channel_layer
 
     channel_layer = get_channel_layer()
-    async_to_sync(closing_group_send)(
+    async_to_sync(send_message_to_channel_group)(
         channel_layer,
         "users",
         {
@@ -145,7 +145,7 @@ def broadcast_to_users_individual_payloads(
     from channels.layers import get_channel_layer
 
     channel_layer = get_channel_layer()
-    async_to_sync(closing_group_send)(
+    async_to_sync(send_message_to_channel_group)(
         channel_layer,
         "users",
         {
@@ -177,7 +177,7 @@ def broadcast_to_channel_group(self, workspace, payload, ignore_web_socket_id=No
     from channels.layers import get_channel_layer
 
     channel_layer = get_channel_layer()
-    async_to_sync(closing_group_send)(
+    async_to_sync(send_message_to_channel_group)(
         channel_layer,
         workspace,
         {
