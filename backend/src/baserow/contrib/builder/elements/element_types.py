@@ -1,6 +1,7 @@
 import abc
 from abc import ABC
 from typing import Any, Dict, List, Optional
+from django.utils.translation import gettext_lazy as _
 
 from django.db.models import IntegerField, QuerySet
 from django.db.models.functions import Cast
@@ -711,3 +712,17 @@ class TableElementType(CollectionElementType):
 
     def get_sample_params(self) -> Dict[str, Any]:
         return {"data_source_id": None}
+
+    def after_create(self, instance, values):
+        default_fields = [
+            {"name": _("Column %(count)s") % {"count": 1}, "value": ""},
+            {"name": _("Column %(count)s") % {"count": 2}, "value": ""},
+            {"name": _("Column %(count)s") % {"count": 3}, "value": ""},
+        ]
+        created_fields = CollectionElementField.objects.bulk_create(
+            [
+                CollectionElementField(**field, order=index)
+                for index, field in enumerate(default_fields)
+            ]
+        )
+        instance.fields.add(*created_fields)
