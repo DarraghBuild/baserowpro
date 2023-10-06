@@ -1,6 +1,5 @@
 import pytest
 from asgiref.sync import sync_to_async
-from channels.db import database_sync_to_async
 from channels.testing import WebsocketCommunicator
 
 from baserow.config.asgi import application
@@ -8,14 +7,13 @@ from baserow.contrib.database.table.tasks import (
     unsubscribe_user_from_tables_when_removed_from_workspace,
 )
 from baserow.ws.tasks import closing_group_send
+from channels.layers import get_channel_layer
 
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.websockets
 async def test_unsubscribe_user_from_tables_when_removed_from_workspace(data_fixture):
-    from channels.layers import get_channel_layer
-
     channel_layer = get_channel_layer()
     user_1, token_1 = data_fixture.create_user_and_token()
     workspace_1 = data_fixture.create_workspace(user=user_1)
@@ -57,7 +55,25 @@ async def test_unsubscribe_user_from_tables_when_removed_from_workspace(data_fix
         user_1.id, workspace_1.id
     )
 
-    # TODO: address page_discard messages
+    # Receiving messages about being removed from the pages
+    response = await communicator.receive_json_from(timeout=0.1)
+    assert response == {
+        "page": "table",
+        "parameters": {
+            "table_id": table_1.id,
+        },
+        "type": "page_discard",
+    }
+
+    response = await communicator.receive_json_from(timeout=0.1)
+    assert response == {
+        "page": "row",
+        "parameters": {
+            "table_id": table_1.id,
+            "row_id": row_1.id,
+        },
+        "type": "page_discard",
+    }
 
     # User should not receive any messages to a table in workspace 1
     await closing_group_send(channel_layer, f"table-{table_1.id}", {"test": "message"})
@@ -70,7 +86,15 @@ async def test_unsubscribe_user_from_tables_when_removed_from_workspace(data_fix
     await communicator.receive_nothing(timeout=0.1)
 
     # User should still receive messages to a table in workspace 2
-    await closing_group_send(channel_layer, f"table-{table_2.id}", {"test": "message"})
+    await closing_group_send(
+        channel_layer,
+        f"table-{table_2.id}",
+        {
+            "type": "broadcast_to_group",
+            "payload": {"test": "message"},
+            "ignore_web_socket_id": None,
+        },
+    )
     response = await communicator.receive_json_from(timeout=0.1)
     assert response == {"test": "message"}
 
