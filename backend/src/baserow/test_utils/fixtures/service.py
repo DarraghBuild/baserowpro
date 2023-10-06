@@ -18,9 +18,17 @@ class ServiceFixtures:
     def create_local_baserow_table_service_filter(self, **kwargs):
         if "type" not in kwargs:
             kwargs["type"] = "equal"
+        if "order" not in kwargs:
+            kwargs["order"] = LocalBaserowTableServiceFilter.get_last_order(
+                kwargs["service"]
+            )
         return LocalBaserowTableServiceFilter.objects.create(**kwargs)
 
     def create_local_baserow_table_service_sort(self, **kwargs):
+        if "order" not in kwargs:
+            kwargs["order"] = LocalBaserowTableServiceSort.get_last_order(
+                kwargs["service"]
+            )
         return LocalBaserowTableServiceSort.objects.create(**kwargs)
 
     def create_service(self, model_class, **kwargs):

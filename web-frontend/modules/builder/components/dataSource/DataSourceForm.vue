@@ -38,10 +38,10 @@
           show-footer
         >
           <DropdownItem
-            v-for="integration in integrations"
-            :key="integration.id"
-            :name="integration.name"
-            :value="integration.id"
+            v-for="integrationItem in integrations"
+            :key="integrationItem.id"
+            :name="integrationItem.name"
+            :value="integrationItem.id"
           />
           <template #emptyState>
             {{ $t('dataSourceForm.noIntegrations') }}
@@ -70,12 +70,15 @@
         {{ headerError }}
       </div>
     </div>
-    <template v-if="serviceType">
+    <div v-if="loading" class="loading margin-bottom-1"></div>
+    <template v-if="serviceType && values.integration_id && !loading">
       <component
         :is="serviceType.formComponent"
         ref="subForm"
         :builder="builder"
+        :data-source="dataSource"
         :default-values="defaultValues"
+        :context-data="integration.context_data"
         @values-changed="emitChange($event)"
       />
     </template>
@@ -96,6 +99,10 @@ export default {
       type: Object,
       required: true,
     },
+    dataSource: {
+      type: Object,
+      required: true,
+    },
     page: {
       type: Object,
       required: true,
@@ -108,6 +115,11 @@ export default {
       type: Number,
       required: true,
     },
+    loading: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -116,6 +128,11 @@ export default {
     }
   },
   computed: {
+    integration() {
+      return this.integrations.find(
+        (integration) => integration.id === this.values.integration_id
+      )
+    },
     serviceTypes() {
       return this.$registry.getOrderedList('service')
     },

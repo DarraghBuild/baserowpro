@@ -240,7 +240,6 @@ class DataSourceView(APIView):
             service_type_from_service = service_type_registry.get_by_model(
                 data_source.service.specific
             )
-            # data["service_type"] = service_type_from_service
             service_type = service_type_from_service
 
         # Do we have a service type in the query payload
@@ -251,9 +250,7 @@ class DataSourceView(APIView):
 
             # Is this service type different from the current service type?
             if service_type_from_query != service_type_from_service:
-                # Add the found service type
                 change_service_type = True
-                service_type = service_type_from_query
 
         if service_type:
             # We have a service type so either we have a service or a type in the query
