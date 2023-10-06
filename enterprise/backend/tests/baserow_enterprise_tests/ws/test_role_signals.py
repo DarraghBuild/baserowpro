@@ -13,6 +13,8 @@ from baserow_enterprise.role.handler import RoleAssignmentHandler
 from baserow_enterprise.role.models import Role
 from baserow_enterprise.teams.handler import TeamHandler
 from tests.baserow.contrib.database.utils import received_message
+from channels.layers import get_channel_layer
+from baserow.ws.tasks import closing_group_send
 
 
 # We have to run this every time between test executions since we are using
@@ -49,6 +51,7 @@ def use_async_event_loop_here(async_event_loop):
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.websockets
 async def test_unsubscribe_subject_from_table_role_deleted(data_fixture):
     user, token = data_fixture.create_user_and_token()
     workspace = data_fixture.create_workspace(members=[user])
@@ -83,6 +86,7 @@ async def test_unsubscribe_subject_from_table_role_deleted(data_fixture):
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.websockets
 async def test_unsubscribe_subject_from_table_role_no_role(data_fixture):
     user, token = data_fixture.create_user_and_token()
     workspace = data_fixture.create_workspace(members=[user])
@@ -120,6 +124,7 @@ async def test_unsubscribe_subject_from_table_role_no_role(data_fixture):
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.websockets
 async def test_unsubscribe_subject_from_table_unrelated_user(data_fixture):
     user = data_fixture.create_user()
     unrelated_user, token = data_fixture.create_user_and_token()
@@ -155,6 +160,7 @@ async def test_unsubscribe_subject_from_table_unrelated_user(data_fixture):
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.websockets
 async def test_unsubscribe_subject_from_table_new_role_no_access(data_fixture):
     user, token = data_fixture.create_user_and_token()
     workspace = data_fixture.create_workspace(members=[user])
@@ -186,6 +192,7 @@ async def test_unsubscribe_subject_from_table_new_role_no_access(data_fixture):
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.websockets
 async def test_unsubscribe_subject_from_table_role_updated(data_fixture):
     user, token = data_fixture.create_user_and_token()
     workspace = data_fixture.create_workspace(members=[user])
@@ -223,6 +230,7 @@ async def test_unsubscribe_subject_from_table_role_updated(data_fixture):
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.websockets
 async def test_unsubscribe_subject_from_table_should_still_have_access(data_fixture):
     user, token = data_fixture.create_user_and_token()
     workspace = data_fixture.create_workspace(user=user)
@@ -260,6 +268,7 @@ async def test_unsubscribe_subject_from_table_should_still_have_access(data_fixt
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.websockets
 async def test_unsubscribe_subject_from_table_teams(
     data_fixture, enterprise_data_fixture
 ):
@@ -300,6 +309,7 @@ async def test_unsubscribe_subject_from_table_teams(
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.websockets
 async def test_unsubscribe_subject_from_table_teams_when_team_trashed(
     data_fixture, enterprise_data_fixture
 ):
@@ -338,6 +348,7 @@ async def test_unsubscribe_subject_from_table_teams_when_team_trashed(
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.websockets
 async def test_unsubscribe_subject_from_table_teams_still_connected(
     data_fixture, enterprise_data_fixture
 ):
@@ -378,6 +389,7 @@ async def test_unsubscribe_subject_from_table_teams_still_connected(
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.websockets
 async def test_unsubscribe_subject_from_table_teams_multiple_users(
     data_fixture, enterprise_data_fixture
 ):
@@ -431,3 +443,95 @@ async def test_unsubscribe_subject_from_table_teams_multiple_users(
     assert await received_message(communicator_2, "page_discard") is True
     await communicator.disconnect()
     await communicator_2.disconnect()
+
+
+# @pytest.mark.asyncio
+# @pytest.mark.django_db(transaction=True)
+# @pytest.mark.websockets
+# async def test_unsubscribe_user_from_tables_and_rows_when_removed_from_workspace(data_fixture):
+#     channel_layer = get_channel_layer()
+#     user_1, token_1 = data_fixture.create_user_and_token()
+#     workspace_1 = data_fixture.create_workspace(user=user_1)
+#     workspace_2 = data_fixture.create_workspace(user=user_1)
+#     application_1 = data_fixture.create_database_application(
+#         workspace=workspace_1, order=1
+#     )
+#     application_2 = data_fixture.create_database_application(
+#         workspace=workspace_2, order=1
+#     )
+#     table_1 = data_fixture.create_database_table(database=application_1)
+#     table_1_model = table_1.get_model()
+#     row_1 = table_1_model.objects.create()
+#     table_2 = data_fixture.create_database_table(database=application_2)
+
+#     communicator = WebsocketCommunicator(
+#         application,
+#         f"ws/core/?jwt_token={token_1}",
+#         headers=[(b"origin", b"http://localhost")],
+#     )
+#     await communicator.connect()
+#     response = await communicator.receive_json_from(timeout=0.1)
+
+#     # Subscribe user to a table and a row from workspace 1
+#     await communicator.send_json_to({"page": "table", "table_id": table_1.id})
+#     response = await communicator.receive_json_from(timeout=0.1)
+
+#     await communicator.send_json_to(
+#         {"page": "row", "table_id": table_1.id, "row_id": row_1.id}
+#     )
+#     response = await communicator.receive_json_from(timeout=0.1)
+
+#     # Subscribe user to a table from workspace 2
+#     await communicator.send_json_to({"page": "table", "table_id": table_2.id})
+#     response = await communicator.receive_json_from(timeout=0.1)
+
+#     # Send a message to consumers that user was removed from the workspace 1
+#     await sync_to_async(unsubscribe_user_from_tables_when_removed_from_workspace)(
+#         user_1.id, workspace_1.id
+#     )
+
+#     # Receiving messages about being removed from the pages
+#     response = await communicator.receive_json_from(timeout=0.1)
+#     assert response == {
+#         "page": "table",
+#         "parameters": {
+#             "table_id": table_1.id,
+#         },
+#         "type": "page_discard",
+#     }
+
+#     response = await communicator.receive_json_from(timeout=0.1)
+#     assert response == {
+#         "page": "row",
+#         "parameters": {
+#             "table_id": table_1.id,
+#             "row_id": row_1.id,
+#         },
+#         "type": "page_discard",
+#     }
+
+#     # User should not receive any messages to a table in workspace 1
+#     await closing_group_send(channel_layer, f"table-{table_1.id}", {"test": "message"})
+#     await communicator.receive_nothing(timeout=0.1)
+
+#     # User should not receive any messages to a row in workspace 1
+#     await closing_group_send(
+#         channel_layer, f"table-{table_1.id}-row-{row_1.id}", {"test": "message"}
+#     )
+#     await communicator.receive_nothing(timeout=0.1)
+
+#     # User should still receive messages to a table in workspace 2
+#     await closing_group_send(
+#         channel_layer,
+#         f"table-{table_2.id}",
+#         {
+#             "type": "broadcast_to_group",
+#             "payload": {"test": "message"},
+#             "ignore_web_socket_id": None,
+#         },
+#     )
+#     response = await communicator.receive_json_from(timeout=0.1)
+#     assert response == {"test": "message"}
+
+#     assert communicator.output_queue.qsize() == 0
+#     await communicator.disconnect()
