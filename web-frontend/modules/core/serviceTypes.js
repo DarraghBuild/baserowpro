@@ -26,7 +26,7 @@ export class ServiceType extends Registerable {
   /**
    * Whether the service returns a collection of records.
    */
-  get isCollection() {
+  get returnsList() {
     return false
   }
 

@@ -105,11 +105,12 @@ class ContainerElementType(ElementType, ABC):
 
 
 class CollectionElementType(ElementType, ABC):
-    allowed_fields = ["data_source", "data_source_id"]
-    serializer_field_names = ["data_source_id", "fields"]
+    allowed_fields = ["data_source", "data_source_id", "items_per_page"]
+    serializer_field_names = ["data_source_id", "fields", "items_per_page"]
 
     class SerializedDict(ElementDict):
         data_source_id: int
+        items_per_page: int
         fields: List[Dict]
 
     @property
@@ -123,6 +124,11 @@ class CollectionElementType(ElementType, ABC):
                 allow_null=True,
                 default=None,
                 help_text=TableElement._meta.get_field("data_source").help_text,
+                required=False,
+            ),
+            "items_per_page": serializers.IntegerField(
+                default=20,
+                help_text=TableElement._meta.get_field("items_per_page").help_text,
                 required=False,
             ),
             "fields": CollectionElementFieldSerializer(
