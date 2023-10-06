@@ -1,5 +1,6 @@
 import pytest
 from asgiref.sync import sync_to_async
+from channels.layers import get_channel_layer
 from channels.testing import WebsocketCommunicator
 
 from baserow.config.asgi import application
@@ -7,13 +8,14 @@ from baserow.contrib.database.table.tasks import (
     unsubscribe_user_from_tables_when_removed_from_workspace,
 )
 from baserow.ws.tasks import closing_group_send
-from channels.layers import get_channel_layer
 
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.websockets
-async def test_unsubscribe_user_from_tables_and_rows_when_removed_from_workspace(data_fixture):
+async def test_unsubscribe_user_from_tables_and_rows_when_removed_from_workspace(
+    data_fixture,
+):
     channel_layer = get_channel_layer()
     user_1, token_1 = data_fixture.create_user_and_token()
     workspace_1 = data_fixture.create_workspace(user=user_1)

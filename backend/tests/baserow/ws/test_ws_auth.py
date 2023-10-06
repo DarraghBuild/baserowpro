@@ -5,7 +5,6 @@ from baserow.config.asgi import application
 from baserow.ws.auth import ANONYMOUS_USER_TOKEN, get_user
 
 
-@pytest.mark.run(order=1)
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.websockets
@@ -21,7 +20,6 @@ async def test_get_user(data_fixture):
     assert anonymous_token_user.is_anonymous
 
 
-@pytest.mark.run(order=2)
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.websockets

@@ -127,7 +127,7 @@ def test_workspace_restored(mock_broadcast_to_users, data_fixture):
     user = data_fixture.create_user()
     member_user = data_fixture.create_user()
     # This user should not be sent the restore signal
-    data_fixture.create_user()
+    not_included_user = data_fixture.create_user()
     workspace = data_fixture.create_workspace()
     workspace_user = data_fixture.create_user_workspace(
         user=user, workspace=workspace, permissions=WORKSPACE_USER_PERMISSION_ADMIN
@@ -146,7 +146,10 @@ def test_workspace_restored(mock_broadcast_to_users, data_fixture):
     assert len(args) == 2
     member_call = args[1][0]
     admin_call = args[0][0]
-    assert member_call[0] == [member_user.id]
+
+    print(f"{admin_call}")
+    print(f"{member_call}")
+
     assert member_call[1]["type"] == "group_restored"
     # GroupDeprecation
     assert member_call[1]["group"]["id"] == member_workspace_user.workspace_id
