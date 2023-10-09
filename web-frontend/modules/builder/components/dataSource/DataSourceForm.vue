@@ -78,7 +78,7 @@
         :builder="builder"
         :data-source="dataSource"
         :default-values="defaultValues"
-        :context-data="integration.context_data"
+        :context-data="integration ? integration.context_data : null"
         @values-changed="emitChange($event)"
       />
     </template>
