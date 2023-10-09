@@ -339,16 +339,16 @@ class ViewSerializer(serializers.ModelSerializer):
         # optional return fields.
         # This way the fields are still dynamic and also show up in the OpenAPI
         # specification.
-        if not self.context["include_filters"]:
+        if not self.context.get("include_filters", False):
             self.fields.pop("filters", None)
 
-        if not self.context["include_sortings"]:
+        if not self.context.get("include_sortings", False):
             self.fields.pop("sortings", None)
 
-        if not self.context["include_decorations"]:
+        if not self.context.get("include_decorations", False):
             self.fields.pop("decorations", None)
 
-        if not self.context["include_group_bys"]:
+        if not self.context.get("include_group_bys", False):
             self.fields.pop("group_bys", None)
 
         return super().to_representation(instance)

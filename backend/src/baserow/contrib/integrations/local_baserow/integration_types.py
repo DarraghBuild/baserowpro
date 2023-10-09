@@ -127,9 +127,14 @@ class LocalBaserowIntegrationType(IntegrationType):
             user = integration.specific.authorized_user
             workspace = integration.application.workspace
 
-            tables_queryset = Table.objects.filter(
-                database__workspace_id=workspace.id, database__workspace__trashed=False
-            ).select_related("database", "database__workspace")
+            tables_queryset = (
+                Table.objects.filter(
+                    database__workspace_id=workspace.id,
+                    database__workspace__trashed=False,
+                )
+                .select_related("database", "database__workspace")
+                .prefetch_related("view_set")
+            )
 
             tables = CoreHandler().filter_queryset(
                 user,
@@ -142,9 +147,12 @@ class LocalBaserowIntegrationType(IntegrationType):
             for table in tables:
                 if table.database not in databases:
                     table.database.tables = []
+                    table.database.views = []
                     databases.append(table.database)
                 database = databases[databases.index(table.database)]
                 database.tables.append(table)
+                for view in table.view_set.all():
+                    database.views.append(view)
 
             databases.sort(key=lambda x: x.order)
 
