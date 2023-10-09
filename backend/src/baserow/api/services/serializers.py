@@ -28,11 +28,12 @@ class ServiceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Service
-        fields = ("id", "integration_id", "type", "schema")
+        fields = ("id", "integration_id", "type", "schema", "uuid")
         extra_kwargs = {
             "id": {"read_only": True},
             "integration_id": {"read_only": True},
             "type": {"read_only": True},
+            "uuid": {"read_only": True},
             "schema": {"read_only": True},
         }
 
@@ -44,17 +45,26 @@ class PublicServiceSerializer(serializers.ModelSerializer):
     """
 
     type = serializers.SerializerMethodField(help_text="The type of the service.")
+    schema = serializers.SerializerMethodField(help_text="The schema of the service.")
 
     @extend_schema_field(OpenApiTypes.STR)
     def get_type(self, instance):
         return service_type_registry.get_by_model(instance.specific_class).type
 
+    @extend_schema_field(OpenApiTypes.OBJECT)
+    def get_schema(self, instance):
+        return service_type_registry.get_by_model(
+            instance.specific_class
+        ).generate_schema(instance)
+
     class Meta:
         model = Service
-        fields = ("id", "type")
+        fields = ("id", "type", "uuid", "schema")
         extra_kwargs = {
             "id": {"read_only": True},
             "type": {"read_only": True},
+            "uuid": {"read_only": True},
+            "schema": {"read_only": True},
         }
 
 

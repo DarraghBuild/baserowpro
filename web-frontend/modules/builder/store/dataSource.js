@@ -306,6 +306,9 @@ const getters = {
   getPageDataSourceById: (state) => (page, id) => {
     return page.dataSources.find((dataSource) => dataSource.id === id)
   },
+  getPageDataSourceByUUId: (state) => (page, uuid) => {
+    return page.dataSources.find((dataSource) => dataSource.uuid === uuid)
+  },
   getLoading: (state) => (page) => {
     return page._.dataSourceLoading
   },

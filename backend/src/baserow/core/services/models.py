@@ -1,5 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from uuid import uuid4
 
 from baserow.core.integrations.models import Integration
 from baserow.core.mixins import (
@@ -12,6 +13,10 @@ from baserow.core.mixins import (
 
 def get_default_service_service():
     return ContentType.objects.get_for_model(Integration)
+
+
+def generate_uuid():
+    return str(uuid4())
 
 
 class Service(
@@ -43,6 +48,8 @@ class Service(
         related_name="services",
         on_delete=models.SET(get_default_service_service),
     )
+
+    uuid = models.CharField(max_length=36, null=True, default=generate_uuid)
 
     class Meta:
         ordering = ("id",)

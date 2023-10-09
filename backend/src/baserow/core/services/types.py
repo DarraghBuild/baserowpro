@@ -7,6 +7,7 @@ class ServiceDict(TypedDict):
     id: int
     integration_id: int
     type: str
+    uuid: str
 
 
 class ServiceFilterDict(TypedDict):

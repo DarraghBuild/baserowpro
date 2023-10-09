@@ -39,12 +39,17 @@ export class DataSourceDataProviderType extends DataProviderType {
     )
   }
 
-  getDataChunk(applicationContext, [dataSourceId, ...rest]) {
+  getDataChunk(applicationContext, [dataSourceUUId, ...rest]) {
     const dataSource = this.app.store.getters[
+      'dataSource/getPageDataSourceByUUId'
+    ](applicationContext.page, dataSourceUUId)
+
+    /* const dataSource = this.app.store.getters[
       'dataSource/getPageDataSourceById'
-    ](applicationContext.page, parseInt(dataSourceId))
+    ](applicationContext.page, parseInt(dataSourceId)) */
 
     const content = this.getDataSourceContent(applicationContext, dataSource)
+    console.log(dataSourceUUId, rest, content)
 
     return content ? _.get(content, rest.join('.')) : null
   }
@@ -79,7 +84,7 @@ export class DataSourceDataProviderType extends DataProviderType {
     return Object.fromEntries(
       dataSources.map((dataSource) => {
         return [
-          dataSource.id,
+          dataSource.uuid,
           this.getDataSourceContent(applicationContext, dataSource),
         ]
       })
@@ -97,7 +102,7 @@ export class DataSourceDataProviderType extends DataProviderType {
         if (dsSchema) {
           delete dsSchema.$schema
         }
-        return [dataSource.id, dsSchema]
+        return [dataSource.uuid, dsSchema]
       })
     )
 
@@ -107,12 +112,12 @@ export class DataSourceDataProviderType extends DataProviderType {
   getPathTitle(applicationContext, pathParts) {
     if (pathParts.length === 2) {
       const page = applicationContext?.page
-      const dataSourceId = parseInt(pathParts[1])
+      const dataSourceUUId = pathParts[1]
       return (
-        this.app.store.getters['dataSource/getPageDataSourceById'](
+        this.app.store.getters['dataSource/getPageDataSourceByUUId'](
           page,
-          dataSourceId
-        )?.name || `data_source_${dataSourceId}`
+          dataSourceUUId
+        )?.name || `data_source_${dataSourceUUId.slice(0, 4)}`
       )
     }
     return super.getPathTitle(applicationContext, pathParts)

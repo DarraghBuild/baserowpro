@@ -89,13 +89,13 @@ class LocalBaserowServiceType(ServiceType):
         if self.returns_list:
             return {
                 "items": {"type": "object", "properties": properties},
-                "title": self.get_schema_name(service),
+                "title": service.uuid,
                 "type": "array",
             }
         else:
             return {
                 "properties": properties,
-                "title": self.get_schema_name(service),
+                "title": service.uuid,
                 "type": "object",
             }
 
