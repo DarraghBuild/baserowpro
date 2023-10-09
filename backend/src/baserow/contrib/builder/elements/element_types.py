@@ -161,7 +161,25 @@ class CollectionElementType(ElementType, ABC):
         return super().prepare_value_for_db(values, instance)
 
     def after_create(self, instance, values):
+        # Create default fields
+        default_fields = [
+            {"name": _("Column %(count)s") % {"count": 1}, "value": ""},
+            {"name": _("Column %(count)s") % {"count": 2}, "value": ""},
+            {"name": _("Column %(count)s") % {"count": 3}, "value": ""},
+        ]
+        created_fields = CollectionElementField.objects.bulk_create(
+            [
+                CollectionElementField(**field, order=index)
+                for index, field in enumerate(default_fields)
+            ]
+        )
+        instance.fields.add(*created_fields)
+
+    def after_update(self, instance, values):
         if "fields" in values:
+            # Remove previous fields
+            instance.fields.clear()
+
             created_fields = CollectionElementField.objects.bulk_create(
                 [
                     CollectionElementField(**field, order=index)
@@ -169,13 +187,6 @@ class CollectionElementType(ElementType, ABC):
                 ]
             )
             instance.fields.add(*created_fields)
-
-    def after_update(self, instance, values):
-        if "fields" in values:
-            # Remove previous fields
-            instance.fields.clear()
-
-            self.after_create(instance, values)
 
     def before_delete(self, instance):
         instance.fields.all().delete()
@@ -712,17 +723,3 @@ class TableElementType(CollectionElementType):
 
     def get_sample_params(self) -> Dict[str, Any]:
         return {"data_source_id": None}
-
-    def after_create(self, instance, values):
-        default_fields = [
-            {"name": _("Column %(count)s") % {"count": 1}, "value": ""},
-            {"name": _("Column %(count)s") % {"count": 2}, "value": ""},
-            {"name": _("Column %(count)s") % {"count": 3}, "value": ""},
-        ]
-        created_fields = CollectionElementField.objects.bulk_create(
-            [
-                CollectionElementField(**field, order=index)
-                for index, field in enumerate(default_fields)
-            ]
-        )
-        instance.fields.add(*created_fields)
