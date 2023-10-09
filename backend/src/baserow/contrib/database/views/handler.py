@@ -69,6 +69,7 @@ from baserow.contrib.database.views.operations import (
     UpdateViewPublicOperationType,
     UpdateViewSlugOperationType,
     UpdateViewSortOperationType,
+    CreateViewOperationType,
 )
 from baserow.contrib.database.views.registries import (
     ViewType,
@@ -828,6 +829,9 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
         )
 
         previous_public_value = view.public
+        previous_ownership_type = view.ownership_type
+        previous_owner = view.created_by
+
         view = set_allowed_attrs(view_values, allowed_fields, view)
         if previous_public_value != view.public:
             CoreHandler().check_permissions(
@@ -839,7 +843,13 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
 
         # Make sure that only users with premium features enabled can convert a
         # view to being personal:
-        premium_check_ownership_type(user, workspace, view.ownership_type)
+        if previous_ownership_type != view.ownership_type:
+            premium_check_ownership_type(user, workspace, view.ownership_type)
+
+            # Change owner of the view object to the one that changed the view
+            # from being personal to being collaborative or vice-versa:
+            if previous_owner != user:
+                view.created_by = user
 
         view.save()
 
