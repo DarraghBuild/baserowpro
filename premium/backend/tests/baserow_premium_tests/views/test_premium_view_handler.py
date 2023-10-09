@@ -739,6 +739,7 @@ def test_update_view_ownership_type_no_premium(
     """A test to make sure it shouldn't be possible to update view `ownership_type`
     if User doesn't have premium features enabled.
     """
+
     workspace = data_fixture.create_workspace(name="Workspace 1")
     initial_owner_of_the_view = premium_data_fixture.create_user(workspace=workspace)
     new_owner_of_the_view = premium_data_fixture.create_user(workspace=workspace)
@@ -794,6 +795,7 @@ def test_update_view_ownership_type_owner_changed(
     """Tests if view owner (`created_by` attribute) is updated when `ownership_type`
     for the view is changed.
     """
+
     workspace = data_fixture.create_workspace(name="Workspace 1")
     initial_owner_of_the_view = premium_data_fixture.create_user(workspace=workspace)
     new_owner_of_the_view = premium_data_fixture.create_user(workspace=workspace)
@@ -850,6 +852,7 @@ def test_update_view_ownership_type_valid_type_string(
     """Tests if view ownership type can only be changed to one of the allowed
     view types (personal or collaborative).
     """
+
     workspace = data_fixture.create_workspace(name="Workspace 1")
     initial_owner_of_the_view = premium_data_fixture.create_user(workspace=workspace)
     database = data_fixture.create_database_application(workspace=workspace)
