@@ -1,5 +1,6 @@
 from django.utils.functional import lazy
 
+from baserow_premium.views.models import OWNERSHIP_TYPE_PERSONAL
 from drf_spectacular.openapi import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
@@ -16,7 +17,6 @@ from baserow.contrib.database.views.models import (
     ViewGroupBy,
     ViewSort,
 )
-from baserow_premium.views.models import OWNERSHIP_TYPE_PERSONAL
 from baserow.contrib.database.views.registries import (
     decorator_type_registry,
     decorator_value_provider_type_registry,
