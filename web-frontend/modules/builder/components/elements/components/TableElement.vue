@@ -23,7 +23,23 @@
             :key="field.id"
             class="table-element__cell"
           >
-            {{ resolveRowFormula(field.value, index) }}
+            <template v-if="field.type === 'text'">
+              {{ resolveRowFormula(field.value, index) }}
+            </template>
+            <template v-if="field.type === 'button'">
+              <a
+                class="link-button-element-button"
+                :href="toUrl(resolveRowFormula(field.value, index))"
+                @click="
+                  onButtonFieldClick(
+                    $event,
+                    toUrl(resolveRowFormula(field.value, index))
+                  )
+                "
+              >
+                Details
+              </a>
+            </template>
           </td>
         </tr>
       </tbody>
@@ -173,6 +189,26 @@ export default {
         replace,
       })
       this.currentOffset += this.element.items_per_page
+    },
+    toUrl(url) {
+      if (url.startsWith('/') && this.mode === 'preview') {
+        return `/builder/${this.builder.id}/preview${url}`
+      } else {
+        return url
+      }
+    },
+    onButtonFieldClick(event, url) {
+      if (this.mode === 'editing') {
+        event.preventDefault()
+        return
+      }
+
+      if (!url) {
+        event.preventDefault()
+      } else {
+        event.preventDefault()
+        this.$router.push(url)
+      }
     },
   },
 }

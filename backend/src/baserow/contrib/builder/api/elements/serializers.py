@@ -126,5 +126,6 @@ class CollectionElementFieldSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
+            "type",
             "value",
         )

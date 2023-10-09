@@ -198,7 +198,10 @@ class CollectionElementType(ElementType, ABC):
         """
 
         if prop_name == "fields":
-            return [{"name": f.name, "value": f.value} for f in element.fields.all()]
+            return [
+                {"name": f.name, "value": f.value, "type": f.type}
+                for f in element.fields.all()
+            ]
 
         return super().get_property_for_serialization(element, prop_name)
 

@@ -310,6 +310,8 @@
       "addField": "add field",
       "fieldValuePlaceholder": "Enter value...",
       "itemsPerPage": "Items per page",
+      "fieldDefaultName": "Column",
+      "fieldType": "Type",
       "itemsPerPagePlaceholder": "Enter value..."
     },
     "tableElement": {
