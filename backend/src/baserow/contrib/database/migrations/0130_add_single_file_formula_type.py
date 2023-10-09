@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("database", "0126_alter_rowhistory_options"),
+        ("database", "0129_add_unique_constraint_viewfieldoptions"),
     ]
 
     operations = [
