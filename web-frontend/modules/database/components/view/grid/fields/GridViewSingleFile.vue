@@ -9,8 +9,8 @@
         />
         <i
           v-else
-          class="fas grid-field-file__icon"
-          :class="'fa-' + getIconClass(value.mime_type)"
+          class="grid-field-file__icon"
+          :class="getIconClass(value.mime_type)"
         ></i>
       </a>
       <SingleFileArrayModal ref="modal" :value="[value]"></SingleFileArrayModal>
@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import { mimetype2fa } from '@baserow/modules/core/utils/fontawesome'
+import { mimetype2icon } from '@baserow/modules/core/utils/fileTypeToIcon'
 import SingleFileArrayModal from '@baserow/modules/database/components/view/grid/fields/SingleFileArrayModal'
 import gridField from '@baserow/modules/database/mixins/gridField'
 
@@ -36,7 +36,7 @@ export default {
   },
   methods: {
     getIconClass(mimeType) {
-      return mimetype2fa(mimeType)
+      return mimetype2icon(mimeType)
     },
     onClick() {
       this.$refs?.modal?.show(0)

@@ -33,7 +33,6 @@ describe('Formula Functions Test', () => {
       'get_file_visible_name',
       'get_image_height',
       'get_image_width',
-
       'ceil',
       'abs',
       'power',

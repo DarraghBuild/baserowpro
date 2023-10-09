@@ -666,8 +666,9 @@ class BaserowFormulaDateType(BaserowFormulaValidType):
         return f"{date_or_datetime}({self.date_format}{optional_time_format})"
 
 
-class BaserowFormulaSingleFileType(BaserowJSONBObjectBaseType, BaserowFormulaValidType):
+class BaserowFormulaSingleFileType(BaserowJSONBObjectBaseType):
     type = "single_file"
+    can_group_by = False
     can_order_by = False
     can_order_by_in_array = False
     baserow_field_type = None

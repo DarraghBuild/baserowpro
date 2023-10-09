@@ -1927,6 +1927,9 @@ class BaserowCount(OneArgumentBaserowFunction):
         func_call: BaserowFunctionCall[UnTyped],
         arg: BaserowExpression[BaserowFormulaValidType],
     ) -> BaserowExpression[BaserowFormulaType]:
+        if BaserowGetFileCount().can_accept_arg(arg):
+            return BaserowGetFileCount()(arg)
+
         return func_call.with_valid_type(
             BaserowFormulaNumberType(number_decimal_places=0)
         )
@@ -1936,20 +1939,20 @@ class BaserowCount(OneArgumentBaserowFunction):
 
 
 class BaserowGetFileCount(OneArgumentBaserowFunction):
-    """
-    TODO: In the future the normal count function should just return this function in
-          its type_function method if someone is counting an array file field type.
-    """
-
     type = "get_file_count"
     arg_type = [BaserowFormulaArrayType]
+
+    def can_accept_arg(self, arg):
+        return isinstance(arg.expression_type, BaserowFormulaArrayType) and isinstance(
+            arg.expression_type.sub_type, BaserowFormulaSingleFileType
+        )
 
     def type_function(
         self,
         func_call: BaserowFunctionCall[UnTyped],
         arg: BaserowExpression[BaserowFormulaValidType],
     ) -> BaserowExpression[BaserowFormulaType]:
-        if not isinstance(arg.expression_type.sub_type, BaserowFormulaSingleFileType):
+        if not self.can_accept_arg(arg):
             return func_call.with_invalid_type("can only count file fields")
         else:
             return func_call.with_valid_type(

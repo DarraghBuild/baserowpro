@@ -3,14 +3,14 @@
     <ul class="card-file__list">
       <li class="card-file__item">
         <img
-          v-if="props.value?.is_image"
+          v-if="props.value.is_image"
           class="card-file__image"
-          :src="props.value?.thumbnails?.tiny?.url"
+          :src="props.value.thumbnails?.tiny?.url"
         />
         <i
           v-else
-          class="fas card-file__icon"
-          :class="'fa-' + $options.methods.getIconClass(props.value.mime_type)"
+          class="card-file__icon"
+          :class="$options.methods.getIconClass(props.value.mime_type)"
         ></i>
       </li>
     </ul>
@@ -18,14 +18,14 @@
 </template>
 
 <script>
-import { mimetype2fa } from '@baserow/modules/core/utils/fontawesome'
+import { mimetype2icon } from '@baserow/modules/core/utils/fileTypeToIcon'
 
 export default {
   height: 22,
   name: 'RowCardFieldSingleFile',
   methods: {
     getIconClass(mimeType) {
-      return mimetype2fa(mimeType)
+      return mimetype2icon(mimeType)
     },
   },
 }

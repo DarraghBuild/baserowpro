@@ -9,8 +9,8 @@
         />
         <i
           v-else
-          class="fas grid-field-file__icon"
-          :class="'fa-' + $options.methods.getIconClass(props.value.mime_type)"
+          class="grid-field-file__icon"
+          :class="$options.methods.getIconClass(props.value.mime_type)"
         ></i>
       </a>
     </div>
@@ -18,13 +18,13 @@
 </template>
 
 <script>
-import { mimetype2fa } from '@baserow/modules/core/utils/fontawesome'
+import { mimetype2icon } from '@baserow/modules/core/utils/fileTypeToIcon'
 
 export default {
   name: 'FunctionalGridViewSingleFile',
   methods: {
     getIconClass(mimeType) {
-      return mimetype2fa(mimeType)
+      return mimetype2icon(mimeType)
     },
   },
 }
