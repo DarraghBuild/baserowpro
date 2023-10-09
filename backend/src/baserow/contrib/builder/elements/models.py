@@ -487,6 +487,11 @@ class CollectionElementField(models.Model):
         max_length=225,
         help_text="The name of the field.",
     )
+    type = models.CharField(
+        default="text",
+        max_length=225,
+        help_text="The type of the field.",
+    )
     value = FormulaField(default="", help_text="The value of the field.")
 
     class Meta:

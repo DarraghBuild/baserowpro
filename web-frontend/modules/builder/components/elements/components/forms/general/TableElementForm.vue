@@ -88,6 +88,17 @@
                 />
               </template>
             </FormInput>
+            <FormElement class="control control--horizontal">
+              <label class="control__label">
+                {{ $t('tableElementForm.fieldType') }}
+              </label>
+              <div class="control__elements">
+                <Dropdown v-model="field.type" :show-search="false">
+                  <DropdownItem name="Text" value="text" />
+                  <DropdownItem name="Details link" value="button" />
+                </Dropdown>
+              </div>
+            </FormElement>
             <ApplicationBuilderFormulaInputGroup
               v-model="field.value"
               :label="$t('tableElementForm.fieldValueLabel')"
@@ -184,6 +195,7 @@ export default {
           this.values.fields.map(({ name }) => name)
         ),
         value: '',
+        type: 'text',
         id: uuid(), // Temporary id
       })
     },
