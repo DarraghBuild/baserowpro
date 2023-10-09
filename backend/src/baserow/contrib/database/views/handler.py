@@ -39,7 +39,6 @@ from baserow.contrib.database.views.operations import (
     CreateViewDecorationOperationType,
     CreateViewFilterOperationType,
     CreateViewGroupByOperationType,
-    CreateViewOperationType,
     CreateViewSortOperationType,
     DeleteViewDecorationOperationType,
     DeleteViewFilterOperationType,
@@ -800,6 +799,7 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
         :raises ValueError: When the provided view not an instance of View.
         :return: The updated view instance.
         """
+
         from baserow_premium.views.signals import premium_check_ownership_type
 
         if not isinstance(view, View):
