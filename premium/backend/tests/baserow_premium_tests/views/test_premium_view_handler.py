@@ -1,5 +1,6 @@
 import pytest
 from baserow_premium.views.handler import get_rows_grouped_by_single_select_field
+from baserow_premium.views.models import OWNERSHIP_TYPE_PERSONAL
 
 from baserow.contrib.database.views.exceptions import ViewDoesNotExist, ViewNotInTable
 from baserow.contrib.database.views.handler import ViewHandler
@@ -8,7 +9,6 @@ from baserow.contrib.database.views.models import (
     GridView,
     View,
 )
-from baserow_premium.views.models import OWNERSHIP_TYPE_PERSONAL
 from baserow.core.exceptions import PermissionDenied
 
 
@@ -767,7 +767,9 @@ def test_update_view_ownership_type_no_premium(
 
     with pytest.raises(PermissionDenied):
         handler.update_view(
-            user=new_owner_of_the_view, view=view, ownership_type=OWNERSHIP_TYPE_PERSONAL
+            user=new_owner_of_the_view,
+            view=view,
+            ownership_type=OWNERSHIP_TYPE_PERSONAL,
         )
 
     # The view owner shouldn't have changed and the new owner of the view shouldn't
@@ -871,14 +873,18 @@ def test_update_view_ownership_type_valid_type_string(
     # Update the view from being collaborative to being personal and then back
     # to being collaborative again, all should be good:
     handler.update_view(
-        user=initial_owner_of_the_view, view=view, ownership_type=OWNERSHIP_TYPE_PERSONAL
+        user=initial_owner_of_the_view,
+        view=view,
+        ownership_type=OWNERSHIP_TYPE_PERSONAL,
     )
     view.refresh_from_db()
     assert view.created_by == initial_owner_of_the_view
     assert view.ownership_type == OWNERSHIP_TYPE_PERSONAL
 
     handler.update_view(
-        user=initial_owner_of_the_view, view=view, ownership_type=OWNERSHIP_TYPE_COLLABORATIVE
+        user=initial_owner_of_the_view,
+        view=view,
+        ownership_type=OWNERSHIP_TYPE_COLLABORATIVE,
     )
     view.refresh_from_db()
     assert view.created_by == initial_owner_of_the_view
