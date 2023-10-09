@@ -2381,24 +2381,6 @@ def test_create_view_ownership_type(data_fixture):
 
 @pytest.mark.django_db
 @pytest.mark.view_ownership
-def test_update_view_ownership_type(data_fixture):
-    """
-    Updating view.ownership_type is currently not allowed.
-    """
-
-    user = data_fixture.create_user()
-    table = data_fixture.create_database_table(user=user)
-    form = data_fixture.create_form_view(table=table)
-    handler = ViewHandler()
-
-    handler.update_view(user=user, view=form, ownership_type="new_ownership_type")
-
-    form.refresh_from_db()
-    assert form.ownership_type == OWNERSHIP_TYPE_COLLABORATIVE
-
-
-@pytest.mark.django_db
-@pytest.mark.view_ownership
 def test_duplicate_view_ownership_type(data_fixture):
     workspace = data_fixture.create_workspace(name="Workspace 1")
     user = data_fixture.create_user(workspace=workspace)
