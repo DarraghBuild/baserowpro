@@ -39,6 +39,7 @@ from baserow.contrib.database.views.operations import (
     CreateViewDecorationOperationType,
     CreateViewFilterOperationType,
     CreateViewGroupByOperationType,
+    CreateViewOperationType,
     CreateViewSortOperationType,
     DeleteViewDecorationOperationType,
     DeleteViewFilterOperationType,
@@ -69,7 +70,6 @@ from baserow.contrib.database.views.operations import (
     UpdateViewPublicOperationType,
     UpdateViewSlugOperationType,
     UpdateViewSortOperationType,
-    CreateViewOperationType,
 )
 from baserow.contrib.database.views.registries import (
     ViewType,
