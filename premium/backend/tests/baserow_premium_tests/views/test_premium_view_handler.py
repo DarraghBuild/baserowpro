@@ -837,7 +837,7 @@ def test_update_view_ownership_type_owner_changed(
             name="Not my view anymore",
         )
 
-    # New user should gain the access to the view:
+    # New user is the only one that still has access to the view:
     handler.get_view_as_user(new_owner_of_the_view, view.id)
     new_view_name = "My new view name"
     handler.update_view(user=new_owner_of_the_view, view=view, name=new_view_name)
