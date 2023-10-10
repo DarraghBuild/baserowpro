@@ -281,15 +281,15 @@ class FieldType(
         :return: A Q filter.
         """
 
-        empty_is_null_model_field_types = [
+        empty_is_null_model_field_types = (
             ManyToManyField,
             ForeignKey,
             DurationField,
             ArrayField,
             DurationFieldUsingPostgresFormatting,
-        ]
+        )
         # If the model_field is a ManyToMany field we only have to check if it is None.
-        if any(isinstance(model_field, f) for f in empty_is_null_model_field_types):
+        if isinstance(model_field, empty_is_null_model_field_types):
             return Q(**{f"{field_name}": None})
 
         if isinstance(model_field, BooleanField):
@@ -298,11 +298,8 @@ class FieldType(
         q = Q(**{f"{field_name}__isnull": True})
         q = q | Q(**{f"{field_name}": None})
 
-        empty_is_empty_list_or_object_model_field_types = [JSONField, PostgresJSONField]
-        if any(
-            isinstance(model_field, f)
-            for f in empty_is_empty_list_or_object_model_field_types
-        ):
+        empty_is_empty_list_or_object_model_field_types = (JSONField, PostgresJSONField)
+        if isinstance(model_field, empty_is_empty_list_or_object_model_field_types):
             q = q | Q(**{f"{field_name}": []}) | Q(**{f"{field_name}": {}})
 
         # If the model field accepts an empty string as value we are going to add

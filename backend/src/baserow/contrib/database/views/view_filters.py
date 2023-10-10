@@ -47,9 +47,11 @@ from baserow.contrib.database.formula import (
     BaserowFormulaNumberType,
     BaserowFormulaTextType,
 )
+from baserow.contrib.database.formula.types.formula_types import (
+    BaserowFormulaSingleFileType,
+)
 from baserow.core.models import WorkspaceUser
 
-from ..formula.types.formula_types import BaserowFormulaSingleFileType
 from .registries import ViewFilterType
 
 DATE_FILTER_EMPTY_VALUE = ""

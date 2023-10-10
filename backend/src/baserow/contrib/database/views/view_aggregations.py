@@ -43,8 +43,10 @@ from baserow.contrib.database.formula import (
     BaserowFormulaNumberType,
     BaserowFormulaTextType,
 )
+from baserow.contrib.database.formula.types.formula_types import (
+    BaserowFormulaSingleFileType,
+)
 
-from ..formula.types.formula_types import BaserowFormulaSingleFileType
 from .registries import ViewAggregationType
 from .utils import AnnotatedAggregation
 
