@@ -614,7 +614,7 @@ export class BaserowFormulaFileType extends BaserowFormulaTypeDefinition {
   }
 
   getIconClass() {
-    return 'file'
+    return 'iconoir-empty-page'
   }
 
   getRowEditArrayFieldComponent() {
