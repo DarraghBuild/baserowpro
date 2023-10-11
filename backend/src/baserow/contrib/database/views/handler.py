@@ -17,11 +17,13 @@ from django.db import models as django_models
 from django.db.models import Count, Q
 from django.db.models.expressions import F, OrderBy
 from django.db.models.query import QuerySet
+from baserow.core.exceptions import PermissionDenied
 
 import jwt
 from loguru import logger
 from opentelemetry import trace
 from redis.exceptions import LockNotOwnedError
+from baserow.contrib.database.views.exceptions import ViewOwnershipTypeDoesNotExist
 
 from baserow.contrib.database.api.utils import get_include_exclude_field_ids
 from baserow.contrib.database.db.schema import safe_django_schema_editor
@@ -841,15 +843,15 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
                 context=view,
             )
 
-        # Make sure that only users with premium features enabled can convert a
-        # view to being personal:
         if previous_ownership_type != view.ownership_type:
-            premium_check_ownership_type(user, workspace, view.ownership_type)
+            # check if provided ownership_type exists and can be set:
+            try:
+                ownership_type = view_ownership_type_registry.get(view.ownership_type)
+            except ViewOwnershipTypeDoesNotExist:
+                raise PermissionDenied()
 
-            # Change owner of the view object to the one that changed the view
-            # from being personal to being collaborative or vice-versa:
-            if previous_owner != user:
-                view.created_by = user
+            # and actually set it for the view:
+            ownership_type.change_ownership_or_raise(user, view)
 
         view.save()
 

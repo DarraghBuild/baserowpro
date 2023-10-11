@@ -1202,6 +1202,19 @@ class ViewOwnershipType(Instance):
 
         return CreateViewOperationType
 
+    def change_ownership_or_raise(self, user, view):
+        """
+        """
+
+        from baserow_premium.views.signals import premium_check_ownership_type
+
+        workspace = view.table.database.workspace
+
+        premium_check_ownership_type(user, workspace, view.ownership_type)
+        view.created_by = user
+
+        return True
+
 
 class ViewOwnershipTypeRegistry(Registry):
     """

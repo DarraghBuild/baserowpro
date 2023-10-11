@@ -24,6 +24,7 @@ from baserow.contrib.database.views.registries import (
     view_ownership_type_registry,
     view_type_registry,
 )
+from baserow.contrib.database.views.exceptions import ViewOwnershipTypeDoesNotExist
 
 
 class ListQueryParamatersSerializer(serializers.Serializer):
@@ -397,12 +398,12 @@ class UpdateViewSerializer(serializers.ModelSerializer):
         return representation
 
     def validate_ownership_type(self, value):
-        if value not in [
-            OWNERSHIP_TYPE_COLLABORATIVE,
-            OWNERSHIP_TYPE_PERSONAL,
-        ]:
+        try:
+            view_ownership_type_registry.get(value)
+        except ViewOwnershipTypeDoesNotExist:
+            allowed_ownerships = ",".join("'%s'" % v for v in view_ownership_type_registry.get_types())
             raise serializers.ValidationError(
-                f"Ownership type must be one of the above: '{OWNERSHIP_TYPE_COLLABORATIVE}', '{OWNERSHIP_TYPE_PERSONAL}'."
+                f"Ownership type must be one of the above: {allowed_ownerships}."
             )
         return value
 
