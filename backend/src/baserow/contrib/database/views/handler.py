@@ -802,8 +802,6 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
         :return: The updated view instance.
         """
 
-        from baserow_premium.views.signals import premium_check_ownership_type
-
         if not isinstance(view, View):
             raise ValueError("The view is not an instance of View.")
 
