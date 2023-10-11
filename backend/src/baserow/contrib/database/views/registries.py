@@ -210,7 +210,7 @@ class ViewType(
             "name": view.name,
             "order": view.order,
             "ownership_type": view.ownership_type,
-            "created_by": view.created_by.email if view.created_by else None,
+            "owned_by": view.owned_by.email if view.owned_by else None,
         }
 
         if self.can_filter:
@@ -302,8 +302,8 @@ class ViewType(
             id_mapping["database_view_group_bys"] = {}
             id_mapping["database_view_decorations"] = {}
 
-        if "created_by" not in id_mapping:
-            id_mapping["created_by"] = {}
+        if "owned_by" not in id_mapping:
+            id_mapping["owned_by"] = {}
 
             created_by_workspace = table.database.workspace
 
@@ -321,7 +321,7 @@ class ViewType(
                 ).select_related("user")
 
                 for workspaceuser in workspaceusers_from_workspace:
-                    id_mapping["created_by"][
+                    id_mapping["owned_by"][
                         workspaceuser.user.email
                     ] = workspaceuser.user
 
@@ -335,8 +335,8 @@ class ViewType(
         if not ownership_type.can_import_view(serialized_values, id_mapping):
             return None
 
-        email = serialized_values.get("created_by", None)
-        serialized_values["created_by"] = id_mapping["created_by"].get(email, None)
+        email = serialized_values.get("owned_by", None)
+        serialized_values["owned_by"] = id_mapping["owned_by"].get(email, None)
 
         serialized_copy = serialized_values.copy()
         view_id = serialized_copy.pop("id")
@@ -1211,7 +1211,7 @@ class ViewOwnershipType(Instance):
         workspace = view.table.database.workspace
 
         premium_check_ownership_type(user, workspace, view.ownership_type)
-        view.created_by = user
+        view.owned_by = user
 
         return True
 

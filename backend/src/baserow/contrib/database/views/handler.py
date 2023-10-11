@@ -674,7 +674,7 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
         last_order = model_class.get_last_order(table)
 
         instance = model_class.objects.create(
-            table=table, order=last_order, created_by=user, **view_values
+            table=table, order=last_order, owned_by=user, **view_values
         )
 
         if instance.public:
@@ -830,7 +830,7 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
 
         previous_public_value = view.public
         previous_ownership_type = view.ownership_type
-        previous_owner = view.created_by
+        previous_owner = view.owned_by
 
         view = set_allowed_attrs(view_values, allowed_fields, view)
         if previous_public_value != view.public:

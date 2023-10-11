@@ -18,17 +18,17 @@ class PersonalViewOwnershipType(ViewOwnershipType):
     type = "personal"
 
     def get_trashed_item_owner(self, view):
-        return view.created_by
+        return view.owned_by
 
     def can_import_view(self, serialized_values, id_mapping):
-        email = serialized_values.get("created_by", None)
-        return id_mapping["created_by"].get(email, None) is not None
+        email = serialized_values.get("owned_by", None)
+        return id_mapping["owned_by"].get(email, None) is not None
 
     def should_broadcast_signal_to(self, view):
-        if view.created_by is None:
+        if view.owned_by is None:
             return "", None
 
-        return "users", [view.created_by_id]
+        return "users", [view.owned_by_id]
 
     def before_form_view_submitted(self, form, request):
         """
@@ -40,7 +40,7 @@ class PersonalViewOwnershipType(ViewOwnershipType):
         """
 
         CoreHandler().check_permissions(
-            form.created_by,
+            form.owned_by,
             CreateRowDatabaseTableOperationType.type,
             form.table.database.workspace,
             form.table,
@@ -54,7 +54,7 @@ class PersonalViewOwnershipType(ViewOwnershipType):
         """
 
         if not CoreHandler().check_permissions(
-            view.created_by,
+            view.owned_by,
             CreatePublicViewOperationType.type,
             view.table.database.workspace,
             view.table,

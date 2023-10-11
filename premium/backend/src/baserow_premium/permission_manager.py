@@ -170,7 +170,7 @@ class ViewOwnershipPermissionManagerType(PermissionManagerType):
 
             if premium:
                 if view.ownership_type == OWNERSHIP_TYPE_PERSONAL:
-                    if view.created_by_id != actor.id:
+                    if view.owned_by_id != actor.id:
                         result_by_check[check] = PermissionDenied(
                             "The user doesn't own this personal view"
                         )
@@ -260,7 +260,7 @@ class ViewOwnershipPermissionManagerType(PermissionManagerType):
         ):
             return queryset.filter(
                 ~Q(ownership_type=OWNERSHIP_TYPE_PERSONAL)
-                | (Q(ownership_type=OWNERSHIP_TYPE_PERSONAL) & Q(created_by=actor))
+                | (Q(ownership_type=OWNERSHIP_TYPE_PERSONAL) & Q(owned_by=actor))
             )
         else:
             return queryset.exclude(ownership_type=OWNERSHIP_TYPE_PERSONAL)

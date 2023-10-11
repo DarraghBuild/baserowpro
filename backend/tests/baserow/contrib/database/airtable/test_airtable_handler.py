@@ -276,7 +276,7 @@ def test_to_baserow_database_export():
             "ownership_type": "collaborative",
             "public": False,
             "field_options": [],
-            "created_by": None,
+            "owned_by": None,
         }
     ]
 

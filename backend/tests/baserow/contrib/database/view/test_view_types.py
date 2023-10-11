@@ -452,7 +452,7 @@ def test_import_export_view_ownership_type(data_fixture):
         row_identifier_type="count",
     )
     grid_view.ownership_type = "personal"
-    grid_view.created_by = user2
+    grid_view.owned_by = user2
     grid_view.save()
     grid_view_type = view_type_registry.get("grid")
 
@@ -463,7 +463,7 @@ def test_import_export_view_ownership_type(data_fixture):
 
     assert grid_view.id != imported_grid_view.id
     assert grid_view.ownership_type == imported_grid_view.ownership_type
-    assert grid_view.created_by == imported_grid_view.created_by
+    assert grid_view.owned_by == imported_grid_view.owned_by
 
     # view should not be imported if the user is gone
 
@@ -476,7 +476,7 @@ def test_import_export_view_ownership_type(data_fixture):
     assert imported_grid_view is None
 
     # created by is not set
-    grid_view.created_by = None
+    grid_view.owned_by = None
     grid_view.ownership_type = "collaborative"
     grid_view.save()
 
@@ -487,7 +487,7 @@ def test_import_export_view_ownership_type(data_fixture):
 
     assert grid_view.id != imported_grid_view.id
     assert imported_grid_view.ownership_type == "collaborative"
-    assert imported_grid_view.created_by is None
+    assert imported_grid_view.owned_by is None
 
 
 @pytest.mark.django_db
@@ -507,7 +507,7 @@ def test_import_export_view_ownership_type_not_in_registry(data_fixture):
         row_identifier_type="count",
     )
     grid_view.ownership_type = "personal"
-    grid_view.created_by = user2
+    grid_view.owned_by = user2
     grid_view.save()
     grid_view_type = view_type_registry.get("grid")
     serialized = grid_view_type.export_serialized(grid_view, None, None)

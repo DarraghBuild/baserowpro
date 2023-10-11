@@ -335,7 +335,7 @@ def test_create_view_personal_ownership_type(
     )
 
     grid = GridView.objects.all().first()
-    assert grid.created_by == user
+    assert grid.owned_by == user
     assert grid.ownership_type == "personal"
 
 
@@ -401,7 +401,7 @@ def test_duplicate_view_personal_ownership_type(
 
     duplicated_view = handler.duplicate_view(user, view)
     assert duplicated_view.ownership_type == "personal"
-    assert duplicated_view.created_by == user
+    assert duplicated_view.owned_by == user
 
     with pytest.raises(PermissionDenied):
         handler.get_view_as_user(user2, duplicated_view.id)
@@ -764,7 +764,7 @@ def test_update_view_ownership_type_no_premium(
         name="Form",
         ownership_type=OWNERSHIP_TYPE_COLLABORATIVE,
     )
-    assert view.created_by == initial_owner_of_the_view
+    assert view.owned_by == initial_owner_of_the_view
 
     with pytest.raises(PermissionDenied):
         handler.update_view(
@@ -773,7 +773,7 @@ def test_update_view_ownership_type_no_premium(
 
     # The view owner shouldn't have changed and the new owner of the view shouldn't
     # be able to update the view:
-    assert view.created_by == initial_owner_of_the_view
+    assert view.owned_by == initial_owner_of_the_view
     with pytest.raises(PermissionDenied):
         handler.update_view(
             user=new_owner_of_the_view,
@@ -817,12 +817,12 @@ def test_update_view_ownership_type_owner_changed(
         name="Form",
         ownership_type=OWNERSHIP_TYPE_COLLABORATIVE,
     )
-    assert view.created_by == initial_owner_of_the_view
+    assert view.owned_by == initial_owner_of_the_view
 
     handler.update_view(
         user=new_owner_of_the_view, view=view, ownership_type=OWNERSHIP_TYPE_PERSONAL
     )
-    assert view.created_by == new_owner_of_the_view
+    assert view.owned_by == new_owner_of_the_view
 
     # Old (initial) user should loose the access to the view:
     with pytest.raises(PermissionDenied):
@@ -877,14 +877,14 @@ def test_update_view_ownership_type_valid_type_string(
         user=initial_owner_of_the_view, view=view, ownership_type=OWNERSHIP_TYPE_PERSONAL
     )
     view.refresh_from_db()
-    assert view.created_by == initial_owner_of_the_view
+    assert view.owned_by == initial_owner_of_the_view
     assert view.ownership_type == OWNERSHIP_TYPE_PERSONAL
 
     handler.update_view(
         user=initial_owner_of_the_view, view=view, ownership_type=OWNERSHIP_TYPE_COLLABORATIVE
     )
     view.refresh_from_db()
-    assert view.created_by == initial_owner_of_the_view
+    assert view.owned_by == initial_owner_of_the_view
     assert view.ownership_type == OWNERSHIP_TYPE_COLLABORATIVE
 
     # Attempt to update the view to non existent ownership option:
@@ -893,7 +893,7 @@ def test_update_view_ownership_type_valid_type_string(
             user=initial_owner_of_the_view, view=view, ownership_type="non existent"
         )
     view.refresh_from_db()
-    assert view.created_by == initial_owner_of_the_view
+    assert view.owned_by == initial_owner_of_the_view
     assert view.ownership_type == OWNERSHIP_TYPE_COLLABORATIVE
 
 
@@ -949,19 +949,19 @@ def test_order_views_personal_ownership_type(
         user2, workspace.id
     )
     grid_1 = data_fixture.create_grid_view(
-        table=table, user=user, created_by=user, order=1, ownership_type="collaborative"
+        table=table, user=user, owned_by=user, order=1, ownership_type="collaborative"
     )
     grid_2 = data_fixture.create_grid_view(
-        table=table, user=user, created_by=user, order=2, ownership_type="collaborative"
+        table=table, user=user, owned_by=user, order=2, ownership_type="collaborative"
     )
     grid_3 = data_fixture.create_grid_view(
-        table=table, user=user, created_by=user, order=3, ownership_type="collaborative"
+        table=table, user=user, owned_by=user, order=3, ownership_type="collaborative"
     )
     personal_grid = data_fixture.create_grid_view(
-        table=table, user=user, created_by=user, order=2, ownership_type="personal"
+        table=table, user=user, owned_by=user, order=2, ownership_type="personal"
     )
     personal_grid_2 = data_fixture.create_grid_view(
-        table=table, user=user, created_by=user, order=3, ownership_type="personal"
+        table=table, user=user, owned_by=user, order=3, ownership_type="personal"
     )
 
     handler.order_views(

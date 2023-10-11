@@ -32,7 +32,7 @@ def test_personal_views_created_by_editor_cant_be_shared_publicly(
     )
     table = data_fixture.create_database_table(user)
     view = data_fixture.create_grid_view(
-        user, table=table, created_by=user, ownership_type=OWNERSHIP_TYPE_PERSONAL
+        user, table=table, owned_by=user, ownership_type=OWNERSHIP_TYPE_PERSONAL
     )
     editor_role = RoleAssignmentHandler().get_role_by_uid("EDITOR")
     RoleAssignmentHandler().assign_role(
@@ -61,7 +61,7 @@ def test_personal_views_created_by_builder_can_be_shared_publicly(
     )
     table = data_fixture.create_database_table(user)
     view = data_fixture.create_grid_view(
-        user, table=table, created_by=user, ownership_type=OWNERSHIP_TYPE_PERSONAL
+        user, table=table, owned_by=user, ownership_type=OWNERSHIP_TYPE_PERSONAL
     )
     builder = RoleAssignmentHandler().get_role_by_uid("BUILDER")
     RoleAssignmentHandler().assign_role(
@@ -93,7 +93,7 @@ def test_personal_views_shared_by_builder_stops_working_if_builder_looses_table_
     view = data_fixture.create_grid_view(
         user,
         table=table,
-        created_by=user,
+        owned_by=user,
         ownership_type=OWNERSHIP_TYPE_PERSONAL,
         public=True,
     )
@@ -217,7 +217,7 @@ def test_viewer_can_create_filter_on_their_own_personal_view(api_client, data_fi
         user, table.database.workspace, role=viewer, scope=table
     )
     view = data_fixture.create_grid_view(
-        user, table=table, created_by=user, ownership_type=OWNERSHIP_TYPE_PERSONAL
+        user, table=table, owned_by=user, ownership_type=OWNERSHIP_TYPE_PERSONAL
     )
     response = api_client.post(
         reverse("api:database:views:list_filters", kwargs={"view_id": view.id}),
@@ -248,7 +248,7 @@ def test_viewer_cant_create_filter_on_someone_elses_personal_view(
         user, table.database.workspace, role=viewer, scope=table
     )
     view = data_fixture.create_grid_view(
-        user2, table=table, created_by=user2, ownership_type=OWNERSHIP_TYPE_PERSONAL
+        user2, table=table, owned_by=user2, ownership_type=OWNERSHIP_TYPE_PERSONAL
     )
     response = api_client.post(
         reverse("api:database:views:list_filters", kwargs={"view_id": view.id}),
@@ -272,7 +272,7 @@ def test_viewer_cant_submit_their_own_personal_form_view(api_client, data_fixtur
         user, table.database.workspace, role=viewer, scope=table
     )
     view = data_fixture.create_form_view(
-        user, table=table, created_by=user, ownership_type=OWNERSHIP_TYPE_PERSONAL
+        user, table=table, owned_by=user, ownership_type=OWNERSHIP_TYPE_PERSONAL
     )
     data_fixture.create_form_view_field_option(
         view,
