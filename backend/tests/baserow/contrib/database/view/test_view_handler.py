@@ -2391,7 +2391,8 @@ def test_update_view_ownership_type(data_fixture):
     form = data_fixture.create_form_view(table=table)
     handler = ViewHandler()
 
-    handler.update_view(user=user, view=form, ownership_type="new_ownership_type")
+    with pytest.raises(PermissionDenied):
+        handler.update_view(user=user, view=form, ownership_type="new_ownership_type")
 
     form.refresh_from_db()
     assert form.ownership_type == OWNERSHIP_TYPE_COLLABORATIVE
