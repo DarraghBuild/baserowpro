@@ -63,3 +63,6 @@ BASEROW_PERSONAL_VIEW_LOWEST_ROLE_ALLOWED = "VIEWER"
 # prevent failures caused by the middleware itself
 if "baserow.middleware.ConcurrentUserRequestsMiddleware" in MIDDLEWARE:
     MIDDLEWARE.remove("baserow.middleware.ConcurrentUserRequestsMiddleware")
+
+# To speed test runs
+PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
