@@ -3039,6 +3039,12 @@ class MultipleSelectFieldType(SelectOptionBaseFieldType):
     is_many_to_many_field = True
     _can_group_by = True
 
+    def to_baserow_formula_type(self, field) -> BaserowFormulaType:
+        return BaserowFormulaArrayType(BaserowFormulaSingleSelectType(nullable=True))
+
+    def from_baserow_formula_type(self, formula_type) -> Field:
+        return self.model_class()
+
     def get_serializer_field(self, instance, **kwargs):
         required = kwargs.pop("required", False)
         field_serializer = IntegerOrStringField(

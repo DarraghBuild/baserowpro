@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional, Tuple, Type
 
+from django.contrib.postgres.aggregates import JSONBAgg
 from django.db.models import (
     BooleanField,
     DecimalField,
@@ -336,10 +337,13 @@ class BaserowExpressionToDjangoExpressionGenerator(
     def _make_reference_to_model_field(
         self, db_column: str, model_field: fields.Field, already_in_subquery: bool
     ) -> Expression:
-        from baserow.contrib.database.fields.fields import SingleSelectForeignKey
+        from baserow.contrib.database.fields.fields import (
+            SingleSelectForeignKey,
+            MultipleSelectManyToManyField,
+        )
 
-        if isinstance(model_field, SingleSelectForeignKey):
-            single_select_extractor = ExpressionWrapper(
+        def get_single_select_extractor(db_column, model_field):
+            return ExpressionWrapper(
                 JSONObject(
                     **{
                         "value": f"{db_column}__value",
@@ -349,10 +353,23 @@ class BaserowExpressionToDjangoExpressionGenerator(
                 ),
                 output_field=model_field,
             )
+
+        if isinstance(model_field, SingleSelectForeignKey):
+            single_select_extractor = get_single_select_extractor(
+                db_column, model_field
+            )
             if already_in_subquery:
                 return single_select_extractor
             else:
                 return self._wrap_in_subquery(single_select_extractor)
+        elif isinstance(model_field, MultipleSelectManyToManyField):
+            multiple_select_extractor = JSONBAgg(
+                get_single_select_extractor(db_column, model_field)
+            )
+            if already_in_subquery:
+                return multiple_select_extractor
+            else:
+                return self._wrap_in_subquery(multiple_select_extractor)
         else:
             return ExpressionWrapper(
                 F(db_column),

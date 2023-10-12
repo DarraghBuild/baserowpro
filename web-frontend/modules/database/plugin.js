@@ -213,6 +213,7 @@ import {
   BaserowFormulaInvalidType,
   BaserowFormulaNumberType,
   BaserowFormulaSingleSelectType,
+  BaserowFormulaMultipleSelectType,
   BaserowFormulaSpecialType,
   BaserowFormulaTextType,
   BaserowFormulaFileType,
@@ -599,6 +600,10 @@ export default (context) => {
   app.$registry.register(
     'formula_type',
     new BaserowFormulaSingleSelectType(context)
+  )
+  app.$registry.register(
+    'formula_type',
+    new BaserowFormulaMultipleSelectType(context)
   )
   app.$registry.register('formula_type', new BaserowFormulaLinkType(context))
   app.$registry.register('formula_type', new BaserowFormulaFileType(context))

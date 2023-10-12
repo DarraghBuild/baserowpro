@@ -12,12 +12,13 @@ import FunctionalGridViewFieldArray from '@baserow/modules/database/components/v
 import FunctionalGridViewFieldLink from '@baserow/modules/database/components/view/grid/fields/FunctionalGridViewFieldLink'
 import GridViewFieldArray from '@baserow/modules/database/components/view/grid/fields/GridViewFieldArray'
 import RowEditFieldSingleSelectReadOnly from '@baserow/modules/database/components/row/RowEditFieldSingleSelectReadOnly'
+import RowEditFieldMultipleSelectReadOnly from '@baserow/modules/database/components/row/RowEditFieldMultipleSelectReadOnly'
 import RowEditFieldArray from '@baserow/modules/database/components/row/RowEditFieldArray'
 import RowEditFieldFormulaLink from '@baserow/modules/database/components/row/RowEditFieldFormulaLink'
 import FunctionalFormulaArrayItem from '@baserow/modules/database/components/formula/array/FunctionalFormulaArrayItem'
 import FunctionalFormulaBooleanArrayItem from '@baserow/modules/database/components/formula/array/FunctionalFormulaBooleanArrayItem'
 import FunctionalFormulaDateArrayItem from '@baserow/modules/database/components/formula/array/FunctionalFormulaDateArrayItem'
-import FunctionalFormulaSingleSelectArrayItem from '@baserow/modules/database/components/formula/array/FunctionalFormulaSingleSelectArrayItem'
+import FunctionalGridViewFieldMultipleSelect from '@baserow/modules/database/components/view/grid/fields/FunctionalGridViewFieldMultipleSelect'
 import FunctionalFormulaLinkArrayItem from '@baserow/modules/database/components/formula/array/FunctionalFormulaLinkArrayItem'
 import RowCardFieldArray from '@baserow/modules/database/components/card/RowCardFieldArray'
 import RowEditFieldBlank from '@baserow/modules/database/components/row/RowEditFieldBlank'
@@ -32,6 +33,7 @@ import SingleFileArrayModal from '@baserow/modules/database/components/view/grid
 import GridViewSingleFile from '@baserow/modules/database/components/view/grid/fields/GridViewSingleFile.vue'
 import RowEditSingleFileReadOnly from '@baserow/modules/database/components/row/RowEditSingleFileReadOnly.vue'
 import RowCardFieldSingleFile from '@baserow/modules/database/components/card/RowCardFieldSingleFile.vue'
+import GridViewFieldMultipleSelect from '@baserow/modules/database/components/view/grid/fields/GridViewFieldMultipleSelect'
 
 export class BaserowFormulaTypeDefinition extends Registerable {
   getIconClass() {
@@ -467,12 +469,26 @@ export class BaserowFormulaArrayType extends BaserowFormulaTypeDefinition {
     }
   }
 
-  getFunctionalGridViewFieldComponent() {
-    return FunctionalGridViewFieldArray
+  getFunctionalGridViewFieldComponent(field) {
+    const arrayOverride = this.app.$registry
+      .get('formula_type', field.array_formula_type)
+      ?.getFunctionalGridViewFieldArrayComponent()
+    if (arrayOverride) {
+      return arrayOverride
+    } else {
+      return FunctionalGridViewFieldArray
+    }
   }
 
-  getGridViewFieldComponent() {
-    return GridViewFieldArray
+  getGridViewFieldComponent(field) {
+    const arrayOverride = this.app.$registry
+      .get('formula_type', field.array_formula_type)
+      ?.getGridViewArrayFieldComponent()
+    if (arrayOverride) {
+      return arrayOverride
+    } else {
+      return GridViewFieldArray
+    }
   }
 
   getSortOrder() {
@@ -714,12 +730,58 @@ export class BaserowFormulaSingleSelectType extends BaserowFormulaTypeDefinition
     return 'baserow-icon-single-select'
   }
 
-  getRowEditFieldComponent(field) {
+  getRowEditFieldComponent() {
     return RowEditFieldSingleSelectReadOnly
   }
 
+  getRowEditArrayFieldComponent() {
+    return RowEditFieldMultipleSelectReadOnly
+  }
+
   getFunctionalGridViewFieldArrayComponent() {
-    return FunctionalFormulaSingleSelectArrayItem
+    return FunctionalGridViewFieldMultipleSelect
+  }
+
+  getGridViewArrayFieldComponent() {
+    return GridViewFieldMultipleSelect
+  }
+
+  getSortOrder() {
+    return 8
+  }
+
+  getCanSortInView(field) {
+    return true
+  }
+
+  canBeSortedWhenInArray(field) {
+    return true
+  }
+
+  mapToSortableArray(element) {
+    return element.value
+  }
+
+  canGroupByInView() {
+    return true
+  }
+}
+
+export class BaserowFormulaMultipleSelectType extends BaserowFormulaTypeDefinition {
+  static getType() {
+    return 'multiple_select'
+  }
+
+  getFieldType() {
+    return 'multiple_select'
+  }
+
+  getIconClass() {
+    return 'baserow-icon-multiple-select'
+  }
+
+  getRowEditFieldComponent(field) {
+    return RowEditFieldMultipleSelectReadOnly
   }
 
   getSortOrder() {

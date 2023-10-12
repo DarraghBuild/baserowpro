@@ -26,7 +26,7 @@ export default {
   methods: {
     getComponent(field, $registry) {
       const formulaType = $registry.get('formula_type', field.formula_type)
-      return formulaType.getFunctionalGridViewFieldComponent()
+      return formulaType.getFunctionalGridViewFieldComponent(field)
     },
   },
 }

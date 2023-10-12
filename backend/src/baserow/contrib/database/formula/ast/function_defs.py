@@ -1124,6 +1124,8 @@ class BaserowEqual(TwoArgumentBaserowFunction):
     def arg_types(self) -> BaserowArgumentTypeChecker:
         def type_checker(arg_index: int, arg_types: List[BaserowFormulaType]):
             if arg_index == 1:
+                if arg_types[0].type == "array":
+                    return arg_types[0].sub_type.comparable_types
                 return arg_types[0].comparable_types
             else:
                 return [BaserowFormulaValidType]

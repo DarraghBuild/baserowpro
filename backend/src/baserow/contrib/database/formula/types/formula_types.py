@@ -1031,11 +1031,13 @@ class BaserowFormulaSingleSelectType(
     can_order_by = True
     can_order_by_in_array = True
     can_group_by = True
+    item_is_in_nested_value_object_when_in_array = False
 
     @property
     def comparable_types(self) -> List[Type["BaserowFormulaValidType"]]:
         return [
             type(self),
+            BaserowFormulaTextType,
         ]
 
     @property
