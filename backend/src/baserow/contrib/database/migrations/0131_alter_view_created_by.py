@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("database", "0129_add_unique_constraint_viewfieldoptions"),
+        ("database", "0130_add_single_file_formula_type"),
     ]
 
     operations = [
