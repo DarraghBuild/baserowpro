@@ -8,6 +8,7 @@ from baserow.contrib.database.api.constants import PUBLIC_PLACEHOLDER_ENTITY_ID
 from baserow.contrib.database.api.fields.serializers import FieldSerializer
 from baserow.contrib.database.api.serializers import TableSerializer
 from baserow.contrib.database.fields.registries import field_type_registry
+from baserow.contrib.database.views.exceptions import ViewOwnershipTypeDoesNotExist
 from baserow.contrib.database.views.models import (
     OWNERSHIP_TYPE_COLLABORATIVE,
     View,
@@ -23,7 +24,6 @@ from baserow.contrib.database.views.registries import (
     view_ownership_type_registry,
     view_type_registry,
 )
-from baserow.contrib.database.views.exceptions import ViewOwnershipTypeDoesNotExist
 
 
 class ListQueryParamatersSerializer(serializers.Serializer):
@@ -400,7 +400,9 @@ class UpdateViewSerializer(serializers.ModelSerializer):
         try:
             view_ownership_type_registry.get(value)
         except ViewOwnershipTypeDoesNotExist:
-            allowed_ownerships = ",".join("'%s'" % v for v in view_ownership_type_registry.get_types())
+            allowed_ownerships = ",".join(
+                "'%s'" % v for v in view_ownership_type_registry.get_types()
+            )
             raise serializers.ValidationError(
                 f"Ownership type must be one of the above: {allowed_ownerships}."
             )

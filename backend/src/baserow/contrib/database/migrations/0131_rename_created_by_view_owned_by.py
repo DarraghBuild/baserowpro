@@ -4,15 +4,14 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('database', '0130_alter_view_created_by'),
+        ("database", "0130_alter_view_created_by"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='view',
-            old_name='created_by',
-            new_name='owned_by',
+            model_name="view",
+            old_name="created_by",
+            new_name="owned_by",
         ),
     ]

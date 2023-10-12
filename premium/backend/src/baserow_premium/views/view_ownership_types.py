@@ -1,18 +1,20 @@
 from django.contrib.auth.models import AbstractUser
+
+from baserow_premium.license.features import PREMIUM
+from baserow_premium.license.handler import LicenseHandler
+
 from baserow.contrib.database.table.operations import (
     CreateRowDatabaseTableOperationType,
 )
 from baserow.contrib.database.views.exceptions import ViewDoesNotExist
+from baserow.contrib.database.views.models import View
 from baserow.contrib.database.views.operations import (
     CreateAndUsePersonalViewOperationType,
     CreatePublicViewOperationType,
 )
-from baserow.contrib.database.views.models import View
 from baserow.contrib.database.views.registries import ViewOwnershipType
 from baserow.core.exceptions import PermissionDenied
 from baserow.core.handler import CoreHandler
-from baserow_premium.license.features import PREMIUM
-from baserow_premium.license.handler import LicenseHandler
 
 
 class PersonalViewOwnershipType(ViewOwnershipType):

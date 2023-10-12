@@ -17,13 +17,11 @@ from django.db import models as django_models
 from django.db.models import Count, Q
 from django.db.models.expressions import F, OrderBy
 from django.db.models.query import QuerySet
-from baserow.core.exceptions import PermissionDenied
 
 import jwt
 from loguru import logger
 from opentelemetry import trace
 from redis.exceptions import LockNotOwnedError
-from baserow.contrib.database.views.exceptions import ViewOwnershipTypeDoesNotExist
 
 from baserow.contrib.database.api.utils import get_include_exclude_field_ids
 from baserow.contrib.database.db.schema import safe_django_schema_editor
@@ -36,6 +34,7 @@ from baserow.contrib.database.fields.registries import field_type_registry
 from baserow.contrib.database.rows.handler import RowHandler
 from baserow.contrib.database.search.handler import SearchModes
 from baserow.contrib.database.table.models import GeneratedTableModel, Table
+from baserow.contrib.database.views.exceptions import ViewOwnershipTypeDoesNotExist
 from baserow.contrib.database.views.operations import (
     CreatePublicViewOperationType,
     CreateViewDecorationOperationType,
@@ -77,6 +76,7 @@ from baserow.contrib.database.views.registries import (
     view_ownership_type_registry,
 )
 from baserow.core.db import specific_iterator
+from baserow.core.exceptions import PermissionDenied
 from baserow.core.handler import CoreHandler
 from baserow.core.telemetry.utils import baserow_trace_methods
 from baserow.core.trash.handler import TrashHandler
@@ -828,8 +828,6 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
         )
 
         previous_public_value = view.public
-        previous_ownership_type = view.ownership_type
-        previous_owner = view.owned_by
 
         view = set_allowed_attrs(view_values, allowed_fields, view)
         if previous_public_value != view.public:
