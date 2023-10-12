@@ -742,7 +742,7 @@ def test_update_view_ownership_type_no_premium(
 
     workspace = data_fixture.create_workspace(name="Workspace 1")
     initial_owner_of_the_view = premium_data_fixture.create_user(workspace=workspace)
-    new_owner_of_the_view = premium_data_fixture.create_user(workspace=workspace)
+    user_without_premium = premium_data_fixture.create_user(workspace=workspace)
     database = data_fixture.create_database_application(workspace=workspace)
     table = data_fixture.create_database_table(
         user=initial_owner_of_the_view,
@@ -752,9 +752,9 @@ def test_update_view_ownership_type_no_premium(
     alternative_per_workspace_license_service.restrict_user_premium_to(
         initial_owner_of_the_view, workspace.id
     )
-    # Make sure the new_owner_of_the_view doesn't have PREMIUM enabled:
+    # Make sure the user_without_premium doesn't have PREMIUM enabled:
     # alternative_per_workspace_license_service.restrict_user_premium_to(
-    # new_owner_of_the_view, workspace.id
+    # user_without_premium, workspace.id
     # )
 
     view = handler.create_view(
@@ -766,23 +766,25 @@ def test_update_view_ownership_type_no_premium(
     )
     assert view.owned_by == initial_owner_of_the_view
 
+    # The other user shouldn't be able to change the ownership type of the view,
+    # since he doesn't have PREMIUM enabled:
     with pytest.raises(PermissionDenied):
         handler.update_view(
-            user=new_owner_of_the_view, view=view, ownership_type=OWNERSHIP_TYPE_PERSONAL
+            user=user_without_premium,
+            view=view,
+            ownership_type=OWNERSHIP_TYPE_PERSONAL,
         )
 
-    # The view owner shouldn't have changed and the new owner of the view shouldn't
-    # be able to update the view:
-    assert view.owned_by == initial_owner_of_the_view
-    with pytest.raises(PermissionDenied):
-        handler.update_view(
-            user=new_owner_of_the_view,
-            view=view,
-            name="Not my view anymore",
-        )
-    # New User shuld only be able to view the view, since initially it was set as
-    # being `colalborative`:
-    handler.get_view_as_user(new_owner_of_the_view, view.id)
+    # New User shuld only be able to view / update the view, since initially it
+    # was set as being `colalborative`:
+    handler.get_view_as_user(user_without_premium, view.id)
+    NEW_NAME = "Not my view"
+    result = handler.update_view(
+        user=user_without_premium,
+        view=view,
+        name=NEW_NAME,
+    )
+    assert result.updated_view_instance.name == NEW_NAME
 
 
 @pytest.mark.django_db
@@ -790,7 +792,7 @@ def test_update_view_ownership_type_no_premium(
 def test_update_view_ownership_type_owner_changed(
     data_fixture, premium_data_fixture, alternative_per_workspace_license_service
 ):
-    """Tests if view owner (`created_by` attribute) is updated when `ownership_type`
+    """Tests if view owner (`owned_by` attribute) is updated when `ownership_type`
     for the view is changed.
     """
 
@@ -838,8 +840,11 @@ def test_update_view_ownership_type_owner_changed(
     # New user is the only one that still has access to the view:
     handler.get_view_as_user(new_owner_of_the_view, view.id)
     new_view_name = "My new view name"
-    handler.update_view(user=new_owner_of_the_view, view=view, name=new_view_name)
-    assert view.name == new_view_name
+    result = handler.update_view(
+        user=new_owner_of_the_view, view=view, name=new_view_name
+    )
+    updated_view = result.updated_view_instance
+    assert updated_view.name == new_view_name
 
 
 @pytest.mark.django_db

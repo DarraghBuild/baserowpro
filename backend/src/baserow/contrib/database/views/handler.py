@@ -820,7 +820,6 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
             "filters_disabled",
             "public_view_password",
             "show_logo",
-            "ownership_type",
         ] + view_type.allowed_fields
 
         changed_allowed_keys = extract_allowed(view_values, allowed_fields).keys()
@@ -841,15 +840,14 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
                 context=view,
             )
 
-        if previous_ownership_type != view.ownership_type:
-            # check if provided ownership_type exists and can be set:
+        new_ownership_type = view_values.get("ownership_type", None)
+        if new_ownership_type is not None and new_ownership_type != view.ownership_type:
             try:
-                ownership_type = view_ownership_type_registry.get(view.ownership_type)
+                ownership_type = view_ownership_type_registry.get(new_ownership_type)
             except ViewOwnershipTypeDoesNotExist:
                 raise PermissionDenied()
 
-            # and actually set it for the view:
-            ownership_type.change_ownership_or_raise(user, view)
+            view = ownership_type.change_ownership_or_raise(user, view)
 
         view.save()
 

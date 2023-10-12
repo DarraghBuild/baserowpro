@@ -20,7 +20,7 @@ def test_view_signals_not_collaborative(
     field2 = data_fixture.create_text_field(table=table)
     view = data_fixture.create_grid_view(user=user, table=table)
     view.ownership_type = "personal"
-    view.created_by = user
+    view.owned_by = user
     view.save()
 
     # view_created
@@ -62,7 +62,7 @@ def test_view_signals_not_collaborative(
 
     view = data_fixture.create_grid_view(user=user, table=table)
     view.ownership_type = "personal"
-    view.created_by = user
+    view.owned_by = user
     view.save()
 
     with patch(
@@ -74,7 +74,7 @@ def test_view_signals_not_collaborative(
 
     view = data_fixture.create_grid_view(user=user, table=table)
     view.ownership_type = "personal"
-    view.created_by = user
+    view.owned_by = user
     view.save()
     filter = ViewHandler().create_filter(user, view, field, "equal", "value")
     equal_sort = data_fixture.create_view_sort(user=user, view=view, field=field)
