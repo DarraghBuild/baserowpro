@@ -489,6 +489,55 @@ def test_file_field_type_in_formulas(data_fixture, api_client):
 
 
 @pytest.mark.django_db
+def test_file_field_type_in_double_formula(data_fixture, api_client):
+    user, token = data_fixture.create_user_and_token()
+    table = data_fixture.create_database_table(user=user)
+    user_file_1 = data_fixture.create_user_file(
+        mime_type="text/plain", size=100, original_name="a.txt"
+    )
+    grid_view = data_fixture.create_grid_view(user=user, table=table)
+
+    row_handler = RowHandler()
+
+    file_field = FieldHandler().create_field(
+        user, table, "file", name="file", primary=True
+    )
+
+    row_handler.create_row(
+        user=user,
+        table=table,
+        values={
+            file_field.db_column: [
+                {"name": user_file_1.name},
+            ]
+        },
+    )
+    formula_field_1 = FieldHandler().create_field(
+        user,
+        table,
+        "formula",
+        name="file_formula",
+        formula=f"field('{file_field.name}')",
+    )
+    formula_field_2 = FieldHandler().create_field(
+        user,
+        table,
+        "formula",
+        name="file_formula_2",
+        formula=f"field('{formula_field_1.name}')",
+    )
+
+    url = reverse("api:database:views:grid:list", kwargs={"view_id": grid_view.id})
+    response = api_client.get(url, **{"HTTP_AUTHORIZATION": f"JWT {token}"})
+    response_json = response.json()
+    result = response_json["results"][0]
+
+    assert (
+        result[f"field_{formula_field_1.id}"] == result[f"field_{formula_field_2.id}"]
+    )
+
+
+@pytest.mark.django_db
 def test_filtering_file_field_type(data_fixture, api_client, django_assert_num_queries):
     user, token = data_fixture.create_user_and_token()
     table = data_fixture.create_database_table(user=user)
