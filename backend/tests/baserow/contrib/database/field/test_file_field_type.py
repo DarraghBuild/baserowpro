@@ -27,6 +27,7 @@ from baserow.test_utils.helpers import AnyStr
 
 
 @pytest.mark.django_db
+@pytest.mark.field_file
 def test_file_field_type(data_fixture):
     user = data_fixture.create_user()
     table = data_fixture.create_database_table(user=user)
@@ -192,6 +193,7 @@ def test_file_field_type(data_fixture):
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.field_file
 def test_import_export_file_field(data_fixture, tmpdir):
     user = data_fixture.create_user()
     imported_workspace = data_fixture.create_workspace(user=user)
@@ -355,6 +357,7 @@ def test_file_field_are_row_values_equal(
 
 
 @pytest.mark.django_db
+@pytest.mark.field_file
 def test_file_field_type_in_formulas(data_fixture, api_client):
     user, token = data_fixture.create_user_and_token()
     table = data_fixture.create_database_table(user=user)
@@ -489,6 +492,7 @@ def test_file_field_type_in_formulas(data_fixture, api_client):
 
 
 @pytest.mark.django_db
+@pytest.mark.field_file
 def test_file_field_type_in_double_formula(data_fixture, api_client):
     user, token = data_fixture.create_user_and_token()
     table = data_fixture.create_database_table(user=user)
@@ -538,6 +542,7 @@ def test_file_field_type_in_double_formula(data_fixture, api_client):
 
 
 @pytest.mark.django_db
+@pytest.mark.field_file
 def test_filtering_file_field_type(data_fixture, api_client, django_assert_num_queries):
     user, token = data_fixture.create_user_and_token()
     table = data_fixture.create_database_table(user=user)
@@ -549,7 +554,6 @@ def test_filtering_file_field_type(data_fixture, api_client, django_assert_num_q
         user_file_3 = data_fixture.create_user_file()
     grid_view = data_fixture.create_grid_view(user=user, table=table)
 
-    field_handler = FieldHandler()
     row_handler = RowHandler()
 
     file = FieldHandler().create_field(user, table, "file", name="file", primary=True)

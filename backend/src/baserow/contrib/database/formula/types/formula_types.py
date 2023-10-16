@@ -24,6 +24,7 @@ from baserow.contrib.database.formula.ast.tree import (
     BaserowBooleanLiteral,
     BaserowDecimalLiteral,
     BaserowExpression,
+    BaserowFieldReference,
     BaserowFunctionCall,
     BaserowIntegerLiteral,
     BaserowStringLiteral,
@@ -862,6 +863,8 @@ class BaserowFormulaArrayType(BaserowFormulaValidType):
             elif arg.function_def.type == double_unnest.type:
                 arg = arg.args[0]
                 sub_type = BaserowFormulaArrayType(sub_type)
+        elif isinstance(arg, BaserowFieldReference):
+            sub_type = BaserowFormulaArrayType(sub_type)
 
         return arg.with_valid_type(sub_type)
 
