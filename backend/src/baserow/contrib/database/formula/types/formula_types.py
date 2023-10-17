@@ -825,7 +825,10 @@ class BaserowFormulaArrayType(BaserowFormulaValidType):
         return self.__class__(new_sub_type)
 
     def collapse_many(self, expr: "BaserowExpression[BaserowFormulaType]"):
-        func = formula_function_registry.get("array_agg_unnesting")
+        if self.sub_type.type == "single_select":
+            func = formula_function_registry.get("aggregate_wrapper")
+        else:
+            func = formula_function_registry.get("array_agg_unnesting")
         return func(expr)
 
     def placeholder_empty_value(self):
@@ -855,12 +858,13 @@ class BaserowFormulaArrayType(BaserowFormulaValidType):
         # expression.
         single_unnest = formula_function_registry.get("array_agg")
         double_unnest = formula_function_registry.get("array_agg_unnesting")
+        aggregate_wrapper = formula_function_registry.get("aggregate_wrapper")
 
         sub_type = expr.expression_type.sub_type
         if isinstance(arg, BaserowFunctionCall):
             if arg.function_def.type == single_unnest.type:
                 arg = arg.args[0]
-            elif arg.function_def.type == double_unnest.type:
+            elif arg.function_def.type in (double_unnest.type, aggregate_wrapper.type):
                 arg = arg.args[0]
                 sub_type = BaserowFormulaArrayType(sub_type)
         elif isinstance(arg, BaserowFieldReference):

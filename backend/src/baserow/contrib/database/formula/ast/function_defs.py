@@ -204,6 +204,7 @@ def register_formula_functions(registry):
     # Array functions
     registry.register(BaserowArrayAgg())
     registry.register(Baserow2dArrayAgg())
+    registry.register(BaserowAggregateWrapper())
     registry.register(BaserowAny())
     registry.register(BaserowEvery())
     registry.register(BaserowMax())
@@ -1889,6 +1890,30 @@ class BaserowArrayAggNoNesting(BaserowArrayAgg):
         return array_agg_expression(args, context, nest_in_value=False)
 
 
+class BaserowAggregateWrapper(OneArgumentBaserowFunction):
+    type = "aggregate_wrapper"
+    arg_type = [MustBeManyExprChecker(BaserowFormulaArrayType)]
+    aggregate = True
+
+    def type_function(
+        self,
+        func_call: BaserowFunctionCall[UnTyped],
+        arg: BaserowExpression[BaserowFormulaValidType],
+    ) -> BaserowExpression[BaserowFormulaType]:
+        return func_call.with_valid_type(arg.expression_type)
+
+    def to_django_expression(self, arg: Expression) -> Expression:
+        return arg
+
+    def to_django_expression_given_args(
+        self,
+        args: List["WrappedExpressionWithMetadata"],
+        context: BaserowExpressionContext,
+    ) -> "WrappedExpressionWithMetadata":
+        subquery = super().to_django_expression_given_args(args, context)
+        return WrappedExpressionWithMetadata(subquery.expression)
+
+
 class Baserow2dArrayAgg(OneArgumentBaserowFunction):
     type = "array_agg_unnesting"
     arg_type = [MustBeManyExprChecker(BaserowFormulaArrayType)]
@@ -2009,7 +2034,7 @@ class BaserowFilter(TwoArgumentBaserowFunction):
 
 class BaserowAny(OneArgumentBaserowFunction):
     type = "any"
-    arg_type = [MustBeManyExprChecker(BaserowFormulaBooleanType)]
+    arg_type = [MustBeManyExprChecker(BaserowFormulaValidType)]
     aggregate = True
 
     def type_function(
