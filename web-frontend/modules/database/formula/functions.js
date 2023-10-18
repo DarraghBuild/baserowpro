@@ -300,6 +300,37 @@ export class BaserowEqual extends BaserowFunctionDefinition {
   }
 }
 
+export class BaserowHas extends BaserowFunctionDefinition {
+  static getType() {
+    return 'has'
+  }
+
+  getDescription() {
+    const { i18n } = this.app
+    return i18n.t('formulaFunctions.equalDescription')
+  }
+
+  getSyntaxUsage() {
+    return ['any = any', 'equal(any, any)']
+  }
+
+  getExamples() {
+    return ['1=1', "'a' = 'a'"]
+  }
+
+  getFormulaType() {
+    return 'boolean'
+  }
+
+  isOperator() {
+    return true
+  }
+
+  getOperator() {
+    return '='
+  }
+}
+
 export class BaserowIf extends BaserowFunctionDefinition {
   static getType() {
     return 'if'

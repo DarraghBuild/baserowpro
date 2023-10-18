@@ -71,6 +71,7 @@ from baserow.contrib.database.formula.ast.tree import (
 from baserow.contrib.database.formula.expression_generator.django_expressions import (
     AndExpr,
     BaserowStringAgg,
+    DataContains,
     EqualsExpr,
     GreaterThanExpr,
     GreaterThanOrEqualExpr,
@@ -170,6 +171,7 @@ def register_formula_functions(registry):
     # Boolean functions
     registry.register(BaserowIf())
     registry.register(BaserowEqual())
+    registry.register(BaserowHas())
     registry.register(BaserowIsBlank())
     registry.register(BaserowIsNull())
     registry.register(BaserowNot())
@@ -220,6 +222,7 @@ def register_formula_functions(registry):
     registry.register(BaserowSum())
     # Single Select functions
     registry.register(BaserowGetSingleSelectValue())
+    registry.register(BaserowGetMultipleSelectValues())
     # Link functions
     registry.register(BaserowLink())
     registry.register(BaserowButton())
@@ -1112,6 +1115,23 @@ class BaserowDivide(TwoArgumentBaserowFunction):
         )
 
 
+class BaserowHas(TwoArgumentBaserowFunction):
+    type = "has"
+    arg1_type = [BaserowFormulaValidType]
+    arg2_type = [BaserowFormulaTextType]
+
+    def type_function(
+        self,
+        func_call: BaserowFunctionCall[UnTyped],
+        arg1: BaserowExpression[BaserowFormulaValidType],
+        arg2: BaserowExpression[BaserowFormulaTextType],
+    ) -> BaserowExpression[BaserowFormulaType]:
+        return func_call.with_valid_type(BaserowFormulaBooleanType())
+
+    def to_django_expression(self, arg1: Expression, arg2: Expression) -> Expression:
+        return DataContains(arg1, Value("[{'value': %s}]" % arg2))
+
+
 class BaserowEqual(TwoArgumentBaserowFunction):
     type = "equal"
     operator = "="
@@ -1891,7 +1911,7 @@ class BaserowArrayAggNoNesting(BaserowArrayAgg):
 
 
 class BaserowAggregateWrapper(OneArgumentBaserowFunction):
-    type = "aggregate_wrapper"
+    type = "aggregate"
     arg_type = [MustBeManyExprChecker(BaserowFormulaArrayType)]
     aggregate = True
 
@@ -2273,6 +2293,28 @@ class BaserowGetSingleSelectValue(OneArgumentBaserowFunction):
     def to_django_expression(self, arg: Expression) -> Expression:
         return Func(
             arg,
+            Value("value"),
+            function="jsonb_extract_path_text",
+            output_field=fields.TextField(),
+        )
+
+
+class BaserowGetMultipleSelectValues(OneArgumentBaserowFunction):
+    type = "get_multiple_select_values"
+    arg_type = [BaserowFormulaSingleSelectType]
+
+    def type_function(
+        self,
+        func_call: BaserowFunctionCall[UnTyped],
+        arg: BaserowExpression[BaserowFormulaValidType],
+    ) -> BaserowExpression[BaserowFormulaType]:
+        return func_call.with_valid_type(
+            BaserowFormulaTextType(nullable=arg.expression_type.nullable)
+        )
+
+    def to_django_expression(self, arg: Expression) -> Expression:
+        return Func(
+            Func(arg, function="jsonb_array_elements"),
             Value("value"),
             function="jsonb_extract_path_text",
             output_field=fields.TextField(),

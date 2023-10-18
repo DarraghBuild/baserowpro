@@ -121,6 +121,7 @@ import {
   BaserowEncodeUri,
   BaserowEncodeUriComponent,
   BaserowEqual,
+  BaserowHas,
   BaserowField,
   BaserowSearch,
   BaserowGreaterThan,
@@ -486,6 +487,7 @@ export default (context) => {
   // Boolean functions
   app.$registry.register('formula_function', new BaserowIf(context))
   app.$registry.register('formula_function', new BaserowEqual(context))
+  app.$registry.register('formula_function', new BaserowHas(context))
   app.$registry.register('formula_function', new BaserowIsBlank(context))
   app.$registry.register('formula_function', new BaserowIsNull(context))
   app.$registry.register('formula_function', new BaserowNot(context))

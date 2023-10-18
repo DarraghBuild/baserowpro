@@ -805,6 +805,13 @@ class BaserowFormulaArrayType(BaserowFormulaValidType):
     def is_searchable(self, field):
         return True
 
+    def cast_to_text(
+        self,
+        to_text_func_call: "BaserowFunctionCall[UnTyped]",
+        arg: "BaserowExpression[BaserowFormulaValidType]",
+    ) -> "BaserowExpression[BaserowFormulaType]":
+        return super().cast_to_text(to_text_func_call, arg)
+
     @classmethod
     def construct_type_from_formula_field(cls, formula_field):
         sub_type_cls = _lookup_formula_type_from_string(
@@ -826,7 +833,7 @@ class BaserowFormulaArrayType(BaserowFormulaValidType):
 
     def collapse_many(self, expr: "BaserowExpression[BaserowFormulaType]"):
         if self.sub_type.type == "single_select":
-            func = formula_function_registry.get("aggregate_wrapper")
+            func = formula_function_registry.get("aggregate")
         else:
             func = formula_function_registry.get("array_agg_unnesting")
         return func(expr)
@@ -858,13 +865,13 @@ class BaserowFormulaArrayType(BaserowFormulaValidType):
         # expression.
         single_unnest = formula_function_registry.get("array_agg")
         double_unnest = formula_function_registry.get("array_agg_unnesting")
-        aggregate_wrapper = formula_function_registry.get("aggregate_wrapper")
+        aggregate = formula_function_registry.get("aggregate")
 
         sub_type = expr.expression_type.sub_type
         if isinstance(arg, BaserowFunctionCall):
             if arg.function_def.type == single_unnest.type:
                 arg = arg.args[0]
-            elif arg.function_def.type in (double_unnest.type, aggregate_wrapper.type):
+            elif arg.function_def.type in (double_unnest.type, aggregate.type):
                 arg = arg.args[0]
                 sub_type = BaserowFormulaArrayType(sub_type)
         elif isinstance(arg, BaserowFieldReference):

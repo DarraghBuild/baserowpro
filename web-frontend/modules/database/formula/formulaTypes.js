@@ -106,6 +106,10 @@ export class BaserowFormulaTypeDefinition extends Registerable {
     return FunctionalFormulaArrayItem
   }
 
+  getGridViewFieldArrayComponent() {
+    return null
+  }
+
   getCanSortInView(field) {
     return true
   }
@@ -470,25 +474,24 @@ export class BaserowFormulaArrayType extends BaserowFormulaTypeDefinition {
   }
 
   getFunctionalGridViewFieldComponent(field) {
+    const defaultComponent = super.getFunctionalGridViewFieldArrayComponent()
     const arrayOverride = this.app.$registry
       .get('formula_type', field.array_formula_type)
       ?.getFunctionalGridViewFieldArrayComponent()
-    if (arrayOverride) {
-      return arrayOverride
-    } else {
-      return FunctionalGridViewFieldArray
-    }
+
+    return arrayOverride !== defaultComponent
+      ? arrayOverride
+      : FunctionalGridViewFieldArray
   }
 
   getGridViewFieldComponent(field) {
+    const defaultComponent = super.getGridViewFieldArrayComponent()
     const arrayOverride = this.app.$registry
       .get('formula_type', field.array_formula_type)
-      ?.getGridViewArrayFieldComponent()
-    if (arrayOverride) {
-      return arrayOverride
-    } else {
-      return GridViewFieldArray
-    }
+      ?.getGridViewFieldArrayComponent()
+    return arrayOverride !== defaultComponent
+      ? arrayOverride
+      : GridViewFieldArray
   }
 
   getSortOrder() {
@@ -742,7 +745,7 @@ export class BaserowFormulaSingleSelectType extends BaserowFormulaTypeDefinition
     return FunctionalGridViewFieldMultipleSelect
   }
 
-  getGridViewArrayFieldComponent() {
+  getGridViewFieldArrayComponent() {
     return GridViewFieldMultipleSelect
   }
 
