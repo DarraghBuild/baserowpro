@@ -30,7 +30,7 @@ def test_row_comment_created(mock_broadcast_to_channel_group, premium_data_fixtu
     mock_broadcast_to_channel_group.delay.assert_called_once()
     args = mock_broadcast_to_channel_group.delay.call_args
 
-    assert args[0][0] == f"table-{table.id}"
+    assert args[0][0] == f"table-{table.id}-row-{rows[0].id}"
     assert args[0][1]["type"] == "row_comment_created"
     assert args[0][1]["row_comment"] == {
         "message": {
@@ -77,7 +77,7 @@ def test_row_comment_updated(premium_data_fixture):
         mock_broadcast_to_channel_group.delay.assert_called_once()
         args = mock_broadcast_to_channel_group.delay.call_args
 
-        assert args[0][0] == f"table-{table.id}"
+        assert args[0][0] == f"table-{table.id}-row-{rows[0].id}"
         assert args[0][1]["type"] == "row_comment_updated"
         assert args[0][1]["row_comment"] == {
             "message": {
@@ -124,7 +124,7 @@ def test_row_comment_deleted(premium_data_fixture):
         mock_broadcast_to_channel_group.delay.assert_called_once()
         args = mock_broadcast_to_channel_group.delay.call_args
 
-        assert args[0][0] == f"table-{table.id}"
+        assert args[0][0] == f"table-{table.id}-row-{rows[0].id}"
         assert args[0][1]["type"] == "row_comment_deleted"
         assert args[0][1]["row_comment"] == {
             "message": None,
@@ -169,7 +169,7 @@ def test_row_comment_restored(premium_data_fixture):
         mock_broadcast_to_channel_group.delay.assert_called_once()
         args = mock_broadcast_to_channel_group.delay.call_args
 
-        assert args[0][0] == f"table-{table.id}"
+        assert args[0][0] == f"table-{table.id}-row-{rows[0].id}"
         assert args[0][1]["type"] == "row_comment_restored"
         assert args[0][1]["row_comment"] == {
             "message": {
