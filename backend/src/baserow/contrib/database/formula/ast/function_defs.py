@@ -2,7 +2,7 @@ from abc import ABC
 from decimal import Decimal
 from typing import List, Union
 
-from django.contrib.postgres.aggregates import JSONBAgg
+from django.contrib.postgres.aggregates import JSONBAgg, BoolOr
 from django.db.models import (
     Avg,
     Case,
@@ -21,6 +21,7 @@ from django.db.models import (
     Variance,
     When,
     fields,
+    Subquery,
 )
 from django.db.models.functions import (
     Abs,
@@ -70,8 +71,8 @@ from baserow.contrib.database.formula.ast.tree import (
 )
 from baserow.contrib.database.formula.expression_generator.django_expressions import (
     AndExpr,
+    ArraySubquery,
     BaserowStringAgg,
-    DataContains,
     EqualsExpr,
     GreaterThanExpr,
     GreaterThanOrEqualExpr,
@@ -171,7 +172,7 @@ def register_formula_functions(registry):
     # Boolean functions
     registry.register(BaserowIf())
     registry.register(BaserowEqual())
-    registry.register(BaserowHas())
+    registry.register(BaserowHasOption())
     registry.register(BaserowIsBlank())
     registry.register(BaserowIsNull())
     registry.register(BaserowNot())
@@ -1115,10 +1116,16 @@ class BaserowDivide(TwoArgumentBaserowFunction):
         )
 
 
-class BaserowHas(TwoArgumentBaserowFunction):
-    type = "has"
-    arg1_type = [BaserowFormulaValidType]
+class BaserowHasOption(TwoArgumentBaserowFunction):
+    type = "has_option"
+    arg1_type = [BaserowFormulaArrayType]
     arg2_type = [BaserowFormulaTextType]
+    aggregate = True
+
+    def can_accept_arg(self, arg):
+        return isinstance(arg.expression_type, BaserowFormulaArrayType) and isinstance(
+            arg.expression_type.sub_type, BaserowFormulaSingleSelectType
+        )
 
     def type_function(
         self,
@@ -1126,10 +1133,35 @@ class BaserowHas(TwoArgumentBaserowFunction):
         arg1: BaserowExpression[BaserowFormulaValidType],
         arg2: BaserowExpression[BaserowFormulaTextType],
     ) -> BaserowExpression[BaserowFormulaType]:
+        if not self.can_accept_arg(arg1):
+            return func_call.with_invalid_type(
+                "First argument must be a single select array or a multiple select field"
+            )
         return func_call.with_valid_type(BaserowFormulaBooleanType())
 
     def to_django_expression(self, arg1: Expression, arg2: Expression) -> Expression:
-        return DataContains(arg1, Value("[{'value': %s}]" % arg2))
+        return EqualsExpr(
+            Func(
+                Func(arg1, function="jsonb_array_elements"),
+                Value("value"),
+                function="jsonb_extract_path_text",
+                output_field=fields.CharField(),
+            ),
+            arg2,
+            output_field=fields.BooleanField(),
+        )
+
+    def to_django_expression_given_args(
+        self,
+        args: List["WrappedExpressionWithMetadata"],
+        context: BaserowExpressionContext,
+    ) -> "WrappedExpressionWithMetadata":
+        expr = WrappedExpressionWithMetadata.from_args(
+            self.to_django_expression(args[0].expression, args[1].expression), args
+        )
+        result_key = "result"
+        subquery_opr = lambda q: Subquery(q.order_by(f"-{result_key}")[:1])
+        return aggregate_wrapper(expr, context.model, subquery_opr, result_key)
 
 
 class BaserowEqual(TwoArgumentBaserowFunction):
@@ -2309,7 +2341,9 @@ class BaserowGetMultipleSelectValues(OneArgumentBaserowFunction):
         arg: BaserowExpression[BaserowFormulaValidType],
     ) -> BaserowExpression[BaserowFormulaType]:
         return func_call.with_valid_type(
-            BaserowFormulaTextType(nullable=arg.expression_type.nullable)
+            BaserowFormulaArrayType(
+                BaserowFormulaTextType(nullable=arg.expression_type.nullable)
+            )
         )
 
     def to_django_expression(self, arg: Expression) -> Expression:
@@ -2388,7 +2422,7 @@ class BaserowJsonbExtractPathText(BaserowFunctionDefinition):
     def __call__(
         self,
         arg: BaserowExpression[BaserowJSONBObjectBaseType],
-        *path: BaserowExpression[BaserowFormulaTextType]
+        *path: BaserowExpression[BaserowFormulaTextType],
     ) -> BaserowFunctionCall[BaserowFormulaTextType]:
         return self.call_and_type_with_args([arg, *path])
 

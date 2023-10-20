@@ -1,6 +1,7 @@
 import abc
 from typing import List, Type
 
+from django.db.models.expressions import BaseExpression
 from django.db.models import (
     DecimalField,
     Expression,
@@ -21,6 +22,7 @@ from baserow.contrib.database.formula.ast.tree import (
 )
 from baserow.contrib.database.formula.expression_generator.django_expressions import (
     AndExpr,
+    ArraySubquery,
 )
 from baserow.contrib.database.formula.expression_generator.generator import (
     WrappedExpressionWithMetadata,
@@ -124,7 +126,8 @@ class ZeroArgumentBaserowFunction(BaserowFunctionDefinition):
     ) -> "WrappedExpressionWithMetadata":
         expr = WrappedExpressionWithMetadata(self.to_django_expression())
         if self.aggregate:
-            return aggregate_wrapper(expr, context.model)
+            subquery_opr = Subquery if not self.aggregate_array else ArraySubquery
+            return aggregate_wrapper(expr, context.model, subquery_opr)
         else:
             return expr
 
@@ -239,6 +242,8 @@ class OneArgumentBaserowFunction(BaserowFunctionDefinition):
 def aggregate_wrapper(
     expr_with_metadata: WrappedExpressionWithMetadata,
     model: Type[Model],
+    subquery_opr: Type[BaseExpression] = Subquery,
+    result_key="result",
 ) -> WrappedExpressionWithMetadata:
     aggregate_filters = expr_with_metadata.aggregate_filters
     pre_annotations = expr_with_metadata.pre_annotations
@@ -253,12 +258,13 @@ def aggregate_wrapper(
     not_null_filters_for_inner_join = {
         key + "__isnull": False for key in pre_annotations
     }
-    expr: Expression = Subquery(
+
+    expr: Expression = subquery_opr(
         model.objects_and_trash.annotate(**pre_annotations)
         .filter(id=OuterRef("id"), **not_null_filters_for_inner_join)
         .values("id")
-        .annotate(result=expr_with_metadata.expression)
-        .values("result"),
+        .annotate(**{result_key: expr_with_metadata.expression})
+        .values(result_key),
     )
 
     output_field = expr_with_metadata.expression.output_field

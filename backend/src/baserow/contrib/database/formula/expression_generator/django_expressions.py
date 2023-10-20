@@ -1,5 +1,5 @@
 from django.contrib.postgres.aggregates.mixins import OrderableAggMixin
-from django.db.models import Aggregate, Expression, F, Field, Transform, Value
+from django.db.models import Aggregate, Expression, F, Field, Transform, Value, Subquery
 
 
 # noinspection PyAbstractClass
@@ -66,8 +66,8 @@ class TimezoneExpr(BinaryOpExpr):
     arg_joiner = " at time zone "
 
 
-class DataContains(BinaryOpExpr):
-    arg_joiner = " @> "
+class ArraySubquery(Subquery):
+    template = "ARRAY(%(subquery)s)"
 
 
 class BaserowStringAgg(OrderableAggMixin, Aggregate):

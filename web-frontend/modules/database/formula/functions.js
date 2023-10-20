@@ -300,11 +300,11 @@ export class BaserowEqual extends BaserowFunctionDefinition {
   }
 }
 
-export class BaserowHas extends BaserowFunctionDefinition {
+export class BaserowHasOption extends BaserowFunctionDefinition {
   static getType() {
-    return 'has'
+    return 'has_option'
   }
-
+  // TODO: fix methods below
   getDescription() {
     const { i18n } = this.app
     return i18n.t('formulaFunctions.equalDescription')

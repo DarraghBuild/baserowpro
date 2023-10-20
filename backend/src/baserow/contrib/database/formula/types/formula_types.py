@@ -810,6 +810,8 @@ class BaserowFormulaArrayType(BaserowFormulaValidType):
         to_text_func_call: "BaserowFunctionCall[UnTyped]",
         arg: "BaserowExpression[BaserowFormulaValidType]",
     ) -> "BaserowExpression[BaserowFormulaType]":
+        if self.sub_type.type == "single_select":
+            return formula_function_registry.get("get_multiple_select_values")(arg)
         return super().cast_to_text(to_text_func_call, arg)
 
     @classmethod
