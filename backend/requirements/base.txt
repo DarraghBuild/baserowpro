@@ -461,7 +461,7 @@ uvicorn[standard]==0.21.1
     # via -r base.in
 uvloop==0.17.0
     # via uvicorn
-validators==0.20.0
+validators==0.21.0
     # via -r base.in
 vine==5.0.0
     # via
