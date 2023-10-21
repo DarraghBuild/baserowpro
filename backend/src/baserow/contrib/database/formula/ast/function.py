@@ -22,7 +22,6 @@ from baserow.contrib.database.formula.ast.tree import (
 )
 from baserow.contrib.database.formula.expression_generator.django_expressions import (
     AndExpr,
-    ArraySubquery,
 )
 from baserow.contrib.database.formula.expression_generator.generator import (
     WrappedExpressionWithMetadata,
@@ -126,8 +125,7 @@ class ZeroArgumentBaserowFunction(BaserowFunctionDefinition):
     ) -> "WrappedExpressionWithMetadata":
         expr = WrappedExpressionWithMetadata(self.to_django_expression())
         if self.aggregate:
-            subquery_opr = Subquery if not self.aggregate_array else ArraySubquery
-            return aggregate_wrapper(expr, context.model, subquery_opr)
+            return aggregate_wrapper(expr, context.model)
         else:
             return expr
 

@@ -1374,3 +1374,67 @@ def test_nullable_formulas(data_fixture, fields, formula, nullable):
     )
     assert formula_field.error is None
     assert formula_field.nullable == nullable
+
+
+@pytest.mark.django_db
+def test_can_reference_a_multiple_select_field(data_fixture):
+    user = data_fixture.create_user()
+    table = data_fixture.create_database_table(user=user)
+    multiple_select_field = data_fixture.create_multiple_select_field(
+        table=table, name="multiple_select"
+    )
+    option_1 = data_fixture.create_select_option(field=multiple_select_field, value="a")
+    option_2 = data_fixture.create_select_option(field=multiple_select_field, value="b")
+    formula_field = data_fixture.create_formula_field(
+        user=user, table=table, formula=f"field('{multiple_select_field.name}')"
+    )
+    model = table.get_model()
+
+    row_1, row_2, row_3 = RowHandler().create_rows(
+        user=user,
+        table=table,
+        rows_values=[
+            {f"field_{multiple_select_field.id}": [option_1.id, option_2.id]},
+            {f"field_{multiple_select_field.id}": [option_2.id]},
+            {f"field_{multiple_select_field.id}": []},
+        ],
+        model=model,
+    )
+
+    rows = data_fixture.get_rows(fields=[formula_field])
+    assert rows == [
+        [
+            [
+                {"id": option_1.id, "value": "a", "color": option_1.color},
+                {"id": option_2.id, "value": "b", "color": option_2.color},
+            ]
+        ],
+        [[{"id": option_2.id, "value": "b", "color": option_2.color}]],
+        [[]],
+    ]
+
+    RowHandler().update_rows(
+        user,
+        table,
+        rows_values=[
+            {"id": row_1.id, f"field_{multiple_select_field.id}": [option_2.id]},
+            {"id": row_2.id, f"field_{multiple_select_field.id}": []},
+            {
+                "id": row_3.id,
+                f"field_{multiple_select_field.id}": [option_1.id, option_2.id],
+            },
+        ],
+        model=model,
+    )
+
+    rows = data_fixture.get_rows(fields=[formula_field])
+    assert rows == [
+        [[{"id": option_2.id, "value": "b", "color": option_2.color}]],
+        [[]],
+        [
+            [
+                {"id": option_1.id, "value": "a", "color": option_1.color},
+                {"id": option_2.id, "value": "b", "color": option_2.color},
+            ]
+        ],
+    ]

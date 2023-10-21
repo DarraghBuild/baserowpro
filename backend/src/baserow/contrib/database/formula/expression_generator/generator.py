@@ -30,6 +30,9 @@ from baserow.contrib.database.formula.ast.tree import (
     BaserowStringLiteral,
 )
 from baserow.contrib.database.formula.ast.visitors import BaserowFormulaASTVisitor
+from baserow.contrib.database.formula.expression_generator.django_expressions import (
+    JSONArray,
+)
 from baserow.contrib.database.formula.types.formula_type import (
     BaserowFormulaInvalidType,
     BaserowFormulaType,
@@ -192,7 +195,7 @@ class BaserowExpressionToDjangoExpressionGenerator(
                     db_column, model_field, already_in_subquery=False
                 )
             )
-        elif not hasattr(self.model_instance, db_column):
+        elif self.model_instance.id and not hasattr(self.model_instance, db_column):
             raise UnknownFieldReference(db_column)
         else:
             return WrappedExpressionWithMetadata(
@@ -200,10 +203,37 @@ class BaserowExpressionToDjangoExpressionGenerator(
             )
 
     def _generate_insert_expression(self, db_column):
+        from baserow.contrib.database.fields.fields import (
+            SingleSelectForeignKey,
+            MultipleSelectManyToManyField,
+        )
+
         model_field = self.model._meta.get_field(db_column)
+
+        if isinstance(model_field, MultipleSelectManyToManyField):
+            from baserow.contrib.database.fields.models import SelectOption
+
+            instance_attr_ids = self.model_instance._row_relationships.get(
+                db_column, None
+            )
+            if instance_attr_ids is None:
+                options = []
+            else:
+                options = [
+                    JSONObject(
+                        **{
+                            "id": Value(option.id),
+                            "value": Value(option.value),
+                            "color": Value(option.color),
+                        }
+                    )
+                    for option in SelectOption.objects.filter(id__in=instance_attr_ids)
+                ]
+
+            return Cast(JSONArray(options), output_field=JSONField())
+
         instance_attr_value = getattr(self.model_instance, db_column)
         value = Value(instance_attr_value, output_field=model_field)
-        from baserow.contrib.database.fields.fields import SingleSelectForeignKey
 
         if isinstance(model_field, SingleSelectForeignKey):
             model_field = JSONField()
@@ -215,6 +245,7 @@ class BaserowExpressionToDjangoExpressionGenerator(
                         "color": Value(instance_attr_value.color),
                     }
                 )
+
         # We need to cast and be super explicit what type this raw value is so
         # postgres does not get angry and claim this is an unknown type.
         return Cast(

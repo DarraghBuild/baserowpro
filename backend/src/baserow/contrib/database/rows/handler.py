@@ -1082,6 +1082,7 @@ class RowHandler(metaclass=baserow_trace_methods(tracer)):
                 if value and len(value) > 0
             }
             rows_relationships.append((instance, relations))
+            instance._row_relationships = relations
 
         inserted_rows = model.objects.bulk_create(
             [row for (row, _) in rows_relationships]
@@ -1600,6 +1601,7 @@ class RowHandler(metaclass=baserow_trace_methods(tracer)):
                 if value or isinstance(value, list)
             }
             rows_relationships.append(relations)
+            obj._row_relationships = relations
 
             fields_with_pre_save = model.fields_requiring_refresh_after_update()
             for field_name in fields_with_pre_save:

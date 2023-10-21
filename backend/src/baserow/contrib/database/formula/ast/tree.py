@@ -423,15 +423,6 @@ class BaserowFunctionDefinition(Instance, abc.ABC):
         return False
 
     @property
-    def aggregate_array(self) -> bool:
-        """
-        :return: If this function is an aggregate that return multiple values that need
-            to be wrapper in an ArraySubquery.
-        """
-
-        return False
-
-    @property
     def operator(self) -> Optional[str]:
         """
         :return: If this function definition is used by an operator return the operators

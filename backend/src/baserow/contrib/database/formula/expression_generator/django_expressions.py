@@ -1,5 +1,15 @@
 from django.contrib.postgres.aggregates.mixins import OrderableAggMixin
-from django.db.models import Aggregate, Expression, F, Field, Transform, Value, Subquery
+from django.db import NotSupportedError
+from django.db.models import (
+    Aggregate,
+    Expression,
+    F,
+    Field,
+    Transform,
+    Value,
+    JSONField,
+    Func,
+)
 
 
 # noinspection PyAbstractClass
@@ -66,10 +76,6 @@ class TimezoneExpr(BinaryOpExpr):
     arg_joiner = " at time zone "
 
 
-class ArraySubquery(Subquery):
-    template = "ARRAY(%(subquery)s)"
-
-
 class BaserowStringAgg(OrderableAggMixin, Aggregate):
     function = "STRING_AGG"
     template = "%(function)s(%(distinct)s%(expressions)s %(ordering)s)"
@@ -82,6 +88,32 @@ class BaserowStringAgg(OrderableAggMixin, Aggregate):
         if not value:
             return ""
         return value
+
+
+class JSONArray(Func):
+    function = "JSON_ARRAY"
+    output_field = JSONField()
+
+    def __init__(self, *items):
+        expressions = []
+        for item in items:
+            expressions.extend(item)
+        super().__init__(*expressions)
+
+    def as_sql(self, compiler, connection, **extra_context):
+        if not connection.features.has_json_object_function:
+            raise NotSupportedError(
+                "JSONObject() is not supported on this database backend."
+            )
+        return super().as_sql(compiler, connection, **extra_context)
+
+    def as_postgresql(self, compiler, connection, **extra_context):
+        return self.as_sql(
+            compiler,
+            connection,
+            function="JSONB_BUILD_ARRAY",
+            **extra_context,
+        )
 
 
 class FileNameContainsExpr(Expression):

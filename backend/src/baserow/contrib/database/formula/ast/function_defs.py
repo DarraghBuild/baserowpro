@@ -71,7 +71,6 @@ from baserow.contrib.database.formula.ast.tree import (
 )
 from baserow.contrib.database.formula.expression_generator.django_expressions import (
     AndExpr,
-    ArraySubquery,
     BaserowStringAgg,
     EqualsExpr,
     GreaterThanExpr,
@@ -1118,13 +1117,16 @@ class BaserowDivide(TwoArgumentBaserowFunction):
 
 class BaserowHasOption(TwoArgumentBaserowFunction):
     type = "has_option"
-    arg1_type = [BaserowFormulaArrayType]
+    arg1_type = [BaserowFormulaArrayType, BaserowFormulaSingleSelectType]
     arg2_type = [BaserowFormulaTextType]
     aggregate = True
 
     def can_accept_arg(self, arg):
-        return isinstance(arg.expression_type, BaserowFormulaArrayType) and isinstance(
-            arg.expression_type.sub_type, BaserowFormulaSingleSelectType
+        return (
+            isinstance(arg.expression_type, BaserowFormulaArrayType)
+            and isinstance(arg.expression_type.sub_type, BaserowFormulaSingleSelectType)
+            or isinstance(arg.expression_type, BaserowFormulaSingleSelectType)
+            and arg.aggregate
         )
 
     def type_function(
@@ -1135,7 +1137,7 @@ class BaserowHasOption(TwoArgumentBaserowFunction):
     ) -> BaserowExpression[BaserowFormulaType]:
         if not self.can_accept_arg(arg1):
             return func_call.with_invalid_type(
-                "First argument must be a single select array or a multiple select field"
+                "First argument must be a lookup to a single select field or a multiple select field"
             )
         return func_call.with_valid_type(BaserowFormulaBooleanType())
 
