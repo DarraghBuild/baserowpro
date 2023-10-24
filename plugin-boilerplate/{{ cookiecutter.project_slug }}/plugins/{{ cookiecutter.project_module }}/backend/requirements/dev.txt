@@ -29,7 +29,7 @@ bandit==1.7.2
     # via -r dev.in
 black==21.7b0
     # via -r dev.in
-certifi==2021.10.8
+certifi==2023.7.22
     # via
     #   -c base.txt
     #   requests
@@ -48,7 +48,7 @@ coverage==6.2
     # via -r dev.in
 debugpy==1.5.1
     # via -r dev.in
-django==3.2.13
+django==3.2.22
     # via
     #   -c base.txt
     #   django-extensions
@@ -67,7 +67,7 @@ freezegun==1.1.0
     # via -r dev.in
 gitdb==4.0.9
     # via gitpython
-gitpython==3.1.27
+gitpython==3.1.35
     # via bandit
 gprof2dot==2021.2.21
     # via django-silk
@@ -138,7 +138,7 @@ pyfakefs==4.5.5
     # via -r dev.in
 pyflakes==2.3.1
     # via flake8
-pygments==2.11.2
+pygments==2.15.0
     # via
     #   django-silk
     #   snoop
@@ -210,7 +210,7 @@ regex==2021.8.3
     # via
     #   -c base.txt
     #   black
-requests==2.26.0
+requests==2.31.0
     # via
     #   -c base.txt
     #   django-silk
@@ -253,7 +253,7 @@ typing-extensions==4.1.1
     #   gitpython
     #   importlib-metadata
     #   jsonschema
-urllib3==1.26.8
+urllib3==1.26.18
     # via
     #   -c base.txt
     #   requests
@@ -272,3 +272,4 @@ zipp==3.5.0
 # The following packages are considered to be unsafe in a requirements file:
 # pip
 # setuptools
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
