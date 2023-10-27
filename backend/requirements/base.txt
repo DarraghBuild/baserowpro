@@ -92,7 +92,7 @@ constantly==15.1.0
     # via twisted
 cron-descriptor==1.2.35
     # via django-celery-beat
-cryptography==41.0.3
+cryptography==41.0.5
     # via
     #   autobahn
     #   azure-storage-blob
@@ -495,3 +495,4 @@ zope-interface==5.4.0
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
+twisted>=23.10.0rc1 # not directly required, pinned by Snyk to avoid a vulnerability
