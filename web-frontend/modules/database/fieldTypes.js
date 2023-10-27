@@ -2867,6 +2867,10 @@ export class MultipleSelectFieldType extends FieldType {
   getCanGroupByInView(field) {
     return true
   }
+
+  canBeReferencedByFormulaField() {
+    return true
+  }
 }
 
 export class PhoneNumberFieldType extends FieldType {
