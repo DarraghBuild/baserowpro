@@ -863,6 +863,16 @@ class LocalBaserowUpsertRowServiceType(LocalBaserowTableServiceType):
         ),
     }
 
+    allowed_fields = ["table"]
+    serializer_field_names = ["table_id"]
+    request_serializer_field_overrides = {
+        "table_id": serializers.IntegerField(
+            required=False,
+            allow_null=True,
+            help_text="The id of the Baserow table we want the data for.",
+        ),
+    }
+
     class SerializedDict(ServiceDict):
         table_id: int
 
