@@ -79,7 +79,6 @@ class DataSourceService:
             ListDataSourcesPageOperationType.type,
             DataSource.objects.filter(page=page),
             workspace=page.builder.workspace,
-            context=page,
         )
 
         return self.handler.get_data_sources(page, base_queryset=user_data_sources)
@@ -232,7 +231,7 @@ class DataSourceService:
 
         :param user: The current user.
         :param data_sources: The data sources to be dispatched.
-        :param runtime_formula_context: The context used to resolve formulas.
+        :param dispatch_context: The context used for the dispatch.
         :return: The result of dispatching the data source mapped by data_source ID.
         """
 
@@ -260,7 +259,7 @@ class DataSourceService:
 
         :param user: The current user.
         :param page: the page we want to dispatch the data_sources for.
-        :param runtime_formula_context: The context used to resolve formulas.
+        :param dispatch_context: The context used for the dispatch.
         :return: The result of dispatching all the data source dispatch mapped by ID.
         """
 
@@ -286,7 +285,7 @@ class DataSourceService:
 
         :param user: The current user.
         :param data_sources: The data source to be dispatched.
-        :param runtime_formula_context: The context used to resolve formulas.
+        :param dispatch_context: The context used for the dispatch.
         :return: return the dispatch result.
         """
 

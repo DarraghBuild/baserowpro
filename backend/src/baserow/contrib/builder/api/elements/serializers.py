@@ -7,7 +7,7 @@ from rest_framework import serializers
 from baserow.contrib.builder.api.workflow_actions.serializers import (
     BuilderWorkflowActionSerializer,
 )
-from baserow.contrib.builder.elements.models import CollectionElementField, Element
+from baserow.contrib.builder.elements.models import CollectionField, Element
 from baserow.contrib.builder.elements.registries import element_type_registry
 from baserow.contrib.builder.elements.types import ElementsAndWorkflowActions
 from baserow.contrib.builder.workflow_actions.registries import (
@@ -40,8 +40,15 @@ class ElementSerializer(serializers.ModelSerializer):
             "order",
             "parent_element_id",
             "place_in_container",
+            "style_border_top_color",
+            "style_border_top_size",
             "style_padding_top",
+            "style_border_bottom_color",
+            "style_border_bottom_size",
             "style_padding_bottom",
+            "style_background",
+            "style_background_color",
+            "style_width",
         )
         extra_kwargs = {
             "id": {"read_only": True},
@@ -82,8 +89,15 @@ class CreateElementSerializer(serializers.ModelSerializer):
             "type",
             "parent_element_id",
             "place_in_container",
+            "style_border_top_color",
+            "style_border_top_size",
             "style_padding_top",
+            "style_border_bottom_color",
+            "style_border_bottom_size",
             "style_padding_bottom",
+            "style_background",
+            "style_background_color",
+            "style_width",
         )
 
 
@@ -91,8 +105,15 @@ class UpdateElementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Element
         fields = (
+            "style_border_top_color",
+            "style_border_top_size",
             "style_padding_top",
+            "style_border_bottom_color",
+            "style_border_bottom_size",
             "style_padding_bottom",
+            "style_background",
+            "style_background_color",
+            "style_width",
         )
 
 
@@ -152,9 +173,10 @@ class CollectionElementFieldSerializer(serializers.ModelSerializer):
     value = FormulaSerializerField(allow_blank=True)
 
     class Meta:
-        model = CollectionElementField
+        model = CollectionField
         fields = (
             "id",
             "name",
+            "type",
             "value",
         )
