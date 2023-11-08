@@ -1,60 +1,77 @@
 .paginator {
-  display: flex;
-  align-items: center;
+  @include flex-align-items(25px);
+  font-size: 12px;
+  color: $palette-neutral-900;
 }
 
-.paginator__name {
-  margin-right: 14px;
-}
+// .paginator__group {
+//   display: flex;
+//   border: solid 1px $color-neutral-400;
+//   overflow: hidden;
+//   background-color: $white;
+//   @include rounded($rounded);
 
-.paginator__group {
-  display: flex;
-  border: solid 1px $color-neutral-400;
-  overflow: hidden;
-  background-color: $white;
-  @include rounded($rounded);
+//   > * {
+//     @include fixed-height(24px, 12px);
 
-  > * {
-    @include fixed-height(24px, 12px);
-
-    &:not(:last-child) {
-      border-right: solid 1px $color-neutral-400;
-    }
-  }
-}
+//     &:not(:last-child) {
+//       border-right: solid 1px $color-neutral-400;
+//     }
+//   }
+// }
 
 .paginator__button {
-  @include flex-align-items();
+  color: $palette-neutral-900;
+  width: 24px;
+  height: 24px;
+  justify-content: center;
+  background: $white;
+  border: 1px solid $palette-neutral-400;
+  font-size: 16px;
 
-  color: $color-neutral-900;
-  padding: 0 10px;
+  @include flex-align-items();
+  @include add-elevation($elevation-low);
+  @include rounded($rounded-md);
 
   &:hover {
-    background-color: $color-neutral-100;
+    color: $palette-neutral-1200;
   }
 
   &.paginator__button--disabled {
     cursor: initial;
-    background-color: $color-neutral-100;
+    background-color: $palette-neutral-100;
+    color: $palette-neutral-700;
   }
 }
 
-.paginator__page-input {
-  border: 0;
-  border-radius: 0;
-  width: 40px;
-  text-align: center;
-  -moz-appearance: textfield;
+// .paginator__page-input {
+//   border: 0;
+//   border-radius: 0;
+//   width: 40px;
+//   text-align: center;
+//   -moz-appearance: textfield;
 
-  &::-webkit-outer-spin-button,
-  &::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-}
+//   &::-webkit-outer-spin-button,
+//   &::-webkit-inner-spin-button {
+//     -webkit-appearance: none;
+//     margin: 0;
+//   }
+// }
 
 .paginator__count {
   padding: 0 10px;
   color: $color-neutral-500;
   border-right: solid 1px $color-neutral-400;
+}
+
+.paginator__current-page {
+  font-weight: bold;
+}
+
+.paginator__content-text {
+  text-transform: capitalize;
+}
+
+.paginator__content-current-page {
+  font-weight: bold;
 }

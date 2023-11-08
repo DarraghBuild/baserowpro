@@ -1,35 +1,32 @@
 <template>
   <div class="paginator">
-    <div class="paginator__name">{{ $t('paginator.page') }}</div>
-    <div class="paginator__group">
-      <a
-        class="paginator__button"
-        :class="{
-          'paginator__button--disabled': page === 1,
-        }"
-        @click="changePage(page - 1)"
-      >
-        <i class="iconoir-nav-arrow-left"></i>
-      </a>
-      <input
-        v-model.number="textInputPage"
-        class="input paginator__page-input"
-        type="number"
-        @keypress.enter="changePage(textInputPage)"
-      />
-      <div class="paginator__count">
-        {{ $t('paginator.of', { pages: totalPages }) }}
-      </div>
-      <a
-        class="paginator__button"
-        :class="{
-          'paginator__button--disabled': page === totalPages,
-        }"
-        @click="changePage(page + 1)"
-      >
-        <i class="iconoir-nav-arrow-right"></i>
-      </a>
+    <!-- <div class="paginator__name"></div> -->
+
+    <a
+      class="paginator__button"
+      :class="{
+        'paginator__button--disabled': page === 1,
+      }"
+      @click="changePage(page - 1)"
+    >
+      <i class="iconoir-nav-arrow-left"></i>
+    </a>
+
+    <div class="paginator__content">
+      <span class="paginator__content-text">{{ $t('paginator.page') }}</span>
+      <span class="paginator__content-current-page">{{ page }}</span>
+      <span>{{ $t('paginator.of', { pages: totalPages }) }}</span>
     </div>
+
+    <a
+      class="paginator__button"
+      :class="{
+        'paginator__button--disabled': page === totalPages,
+      }"
+      @click="changePage(page + 1)"
+    >
+      <i class="iconoir-nav-arrow-right"></i>
+    </a>
   </div>
 </template>
 <script>
@@ -56,11 +53,6 @@ export default {
       type: Number,
     },
   },
-  data() {
-    return {
-      textInputPage: 1,
-    }
-  },
   watch: {
     page(newPage) {
       this.textInputPage = newPage
@@ -76,11 +68,8 @@ export default {
       )
     },
     changePage(newPage) {
-      if (this.invalidNewPage(newPage)) {
-        this.textInputPage = this.page
-        return
-      }
-      this.$emit('change-page', newPage)
+      if (newPage <= this.totalPages && newPage > 0)
+        this.$emit('change-page', newPage)
     },
   },
 }
