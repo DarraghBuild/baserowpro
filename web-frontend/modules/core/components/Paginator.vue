@@ -43,6 +43,8 @@ export default {
      */
     totalPages: {
       required: true,
+      type: Number,
+      default: 0,
       validator: (prop) => typeof prop === 'number' || prop === null,
     },
     /**
@@ -51,6 +53,7 @@ export default {
     page: {
       required: true,
       type: Number,
+      default: 0,
     },
   },
   watch: {
