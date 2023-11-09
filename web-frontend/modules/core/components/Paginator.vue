@@ -30,11 +30,6 @@
   </div>
 </template>
 <script>
-/**
- * Shows pagination buttons and the current page. Emits a `change-page` event when the
- * user attempts to change the page. If this event is successfully completed it is up
- * the parent component to update the provided page prop to show the new current page.
- */
 export default {
   name: 'Paginator',
   props: {
@@ -62,14 +57,6 @@ export default {
     },
   },
   methods: {
-    invalidNewPage(newPage) {
-      return (
-        typeof newPage !== 'number' ||
-        (this.totalPages !== null &&
-          this.totalPages !== 0 &&
-          (newPage > this.totalPages || newPage < 1))
-      )
-    },
     changePage(newPage) {
       if (newPage <= this.totalPages && newPage > 0)
         this.$emit('change-page', newPage)

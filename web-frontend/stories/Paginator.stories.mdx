@@ -43,6 +43,10 @@ import Paginator from '@baserow/modules/core/components/Paginator'
 
 # Paginator
 
+Shows pagination buttons and the current page. Emits a `change-page` event when the
+user attempts to change the page. If this event is successfully completed it is up
+the parent component to update the provided page prop to show the new current page.
+
 export const Template = (args, { argTypes, updateArgs }) => ({
     components: { Paginator },
     props: Object.keys(argTypes),
