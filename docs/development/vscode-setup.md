@@ -71,13 +71,16 @@ You can use the VSC Export & Import to install what is inside `config/vscode/vsc
 Otherwise, you can manually install:
 
 1. Python
-1. Volar
-1. Eslint
-1. Gitlab Workflow
-1. Gitlens
-1. Jest
-1. SCSS Formatter
-1. Stylelint
-1. Mypy
-1. Docker
-1. Coverage Gutters
+2. pylint
+3. flake8
+4. Bandit
+5. Volar
+6. Eslint
+7. Gitlab Workflow
+8. Gitlens
+9. Jest
+10. SCSS Formatter
+11. Stylelint
+12. Mypy
+13. Docker
+14. Coverage Gutters

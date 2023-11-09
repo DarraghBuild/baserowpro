@@ -1,7 +1,6 @@
 {
-    "python.formatting.provider": "black",
-    "python.linting.flake8Args": [
-        "--config=backend/.flake8",
+    "flake8.args": [
+      "--config=backend/.flake8",
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
@@ -26,14 +25,10 @@
         }
     ],
     "editor.formatOnSave": true,
-    "python.linting.banditEnabled": true,
-    "python.linting.enabled": true,
-    "python.linting.flake8Enabled": true,
     "eslint.format.enable": true,
     "eslint.workingDirectories": [
         {"mode": "auto"}
     ],
-    "python.linting.pylintEnabled": false,
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,
@@ -44,17 +39,20 @@
         "**/__pycache__/": true,
         "**/.nuxt/": true
     },
-    "python.linting.mypyEnabled": true,
     "mypy.targets": [
         "backend/src/",
         "premium/backend/src/",
         "enterprise/backend/src/"
     ],
     "python.analysis.typeCheckingMode": "off",
-    "mypy.configFile": "backend/mypy.ini",
-    "python.linting.mypyCategorySeverity.note": "Error",
-    "python.linting.mypyCategorySeverity.error": "Error",
+    "mypy-type-checker.args": ["--config-file=backend/mypy.ini"],
+    "mypy-type-checker.severity": {
+        "error": "Error",
+        "note": "Error"
+    },
     "[python]": {
+        "editor.formatOnPaste": false,
+        "editor.defaultFormatter": "ms-python.black-formatter",
         "editor.codeActionsOnSave": {
             "source.organizeImports": false
         }
@@ -72,8 +70,6 @@
         "${workspaceFolder}/premium/backend/src",
         "${workspaceFolder}/enterprise/backend/src"
     ],
-    "python.linting.pycodestyleEnabled": false,
-    "python.linting.pydocstyleEnabled": false,
     "python.envFile": "${workspaceFolder}/.vscode/env",
     "stylelint.configFile": "${workspaceFolder}/web-frontend/.stylelintrc",
     "stylelint.validate": [
