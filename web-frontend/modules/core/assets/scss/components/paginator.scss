@@ -24,7 +24,6 @@
 }
 
 .paginator__content {
-  padding: 0 20px;
   min-width: 155px;
   text-align: center;
 }
@@ -51,4 +50,16 @@
 
 .paginator__content-current-page {
   font-weight: bold;
+}
+
+.paginator__content-input {
+  border: 1px solid $palette-neutral-400;
+  height: 24px;
+  padding: 2px 8px;
+  font-size: 12px;
+  text-align: center;
+  margin-right: 5px;
+
+  @include rounded($rounded-md);
+  @include add-elevation($elevation-low);
 }

@@ -13,8 +13,14 @@
     </a>
 
     <div class="paginator__content">
-      <span class="paginator__content-text">{{ $t('paginator.page') }}</span>
-      <span class="paginator__content-current-page">{{ page }}</span>
+      <input
+        type="text"
+        class="paginator__content-input"
+        required
+        :size="totalPages.toString().length"
+        :value="page"
+        @change="changePage(parseInt($event.target.value))"
+      />
       <span>{{ $t('paginator.of', { pages: totalPages }) }}</span>
     </div>
 

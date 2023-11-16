@@ -23,7 +23,7 @@ describe('Paginator.vue', () => {
   it('renders paginator correctly', async () => {
     const wrapper = await mountComponent()
 
-    expect(wrapper.find('.paginator__content-current-page').text()).toBe('1')
+    expect(wrapper.find('.paginator__content-input').element.value).toBe('1')
     expect(wrapper.find('.paginator__button--disabled').exists()).toBe(true)
   })
 
