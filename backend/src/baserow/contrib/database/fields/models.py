@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.functional import cached_property
+from django.utils.translation import gettext_lazy as _
 
 from baserow.contrib.database.fields.mixins import (
     DATE_FORMAT_CHOICES,
@@ -67,6 +68,29 @@ RATING_STYLE_CHOICES = [
     ("flag", "Flags"),
     ("smile", "Smile"),
 ]
+
+
+# TODO: "sql" part (if needed)
+DURATION_FORMAT = {
+    "h:mm": {"name": "hours:minutes", "format": "%H:%M", "sql": ""},
+    "h:mm:ss": {"name": "hours:minutes:seconds", "format": "%H:%M:%S", "sql": ""},
+    "h:mm:ss.s": {
+        "name": "hours:minutes:seconds:deciseconds",
+        "format": "%H:%M:%S.%f"[:-5],
+        "sql": "",
+    },
+    "h:mm:ss.ss": {
+        "name": "hours:minutes:seconds:centiseconds",
+        "format": "%H:%M:%S.%f"[:-4],
+        "sql": "",
+    },
+    "h:mm:ss.sss": {
+        "name": "hours:minutes:seconds:milliseconds",
+        "format": "%H:%M:%S.%f"[:-3],
+        "sql": "",
+    },
+}
+DURATION_FORMAT_CHOICES = [(k, v["name"]) for k, v in DURATION_FORMAT.items()]
 
 
 def get_default_field_content_type():
@@ -320,6 +344,15 @@ class LastModifiedField(Field, BaseDateMixin):
 
 class CreatedOnField(Field, BaseDateMixin):
     pass
+
+
+class DurationField(Field):
+    duration_format = models.CharField(
+        choices=DURATION_FORMAT_CHOICES,
+        default=DURATION_FORMAT_CHOICES[0][0],
+        max_length=32,
+        help_text=_("The format of the duration."),
+    )
 
 
 class LinkRowField(Field):
