@@ -4,6 +4,7 @@ from typing import (
     Any,
     Callable,
     Dict,
+    Iterable,
     List,
     Optional,
     Tuple,
@@ -350,6 +351,12 @@ def get_serializer_class(
 
     if not field_overrides:
         field_overrides = {}
+
+    # Verify that `base_mixins` is an iterable.
+    if base_mixins is not None and not isinstance(base_mixins, Iterable):
+        raise ValueError(
+            f"`base_mixins` is expected to be an iterable, received: {base_mixins}"
+        )
 
     if meta_ref_name is None:
         meta_ref_name = generate_meta_ref_name_based_on_model(model_, base_class)
