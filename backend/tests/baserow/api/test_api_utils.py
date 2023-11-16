@@ -384,6 +384,14 @@ def test_get_serializer_class(data_fixture):
     )(workspace)
     assert workspace_serializer_2.data == {"id": str(workspace.id), "name": "Group 1"}
 
+    class BaseMixin:
+        pass
+
+    with pytest.raises(ValueError):
+        get_serializer_class(Workspace, field_names=["name"], base_mixins=BaseMixin)(
+            workspace
+        )
+
 
 @override_settings(DEBUG=False)
 def test_api_error_if_url_trailing_slash_is_missing(api_client):
