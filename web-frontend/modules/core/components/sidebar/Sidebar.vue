@@ -19,9 +19,11 @@
           )
         "
       >
-        <div class="sidebar__user-initials">
-          {{ name | nameAbbreviation }}
-        </div>
+        <Avatar
+          rounded
+          :initials="name | nameAbbreviation"
+          size="x-large"
+        ></Avatar>
         <div class="sidebar__user-info">
           <div class="sidebar__user-info-top">
             <div class="sidebar__user-name">{{ name }}</div>
