@@ -19,21 +19,33 @@
 export default {
   name: 'Avatar',
   props: {
+    /**
+     * The URL of the image to display.
+     */
     image: {
       type: String,
       required: false,
       default: null,
     },
+    /**
+     * If true the avatar will be rounded.
+     */
     rounded: {
       type: Boolean,
       required: false,
       default: false,
     },
+    /**
+     * The initials to display if no image is provided
+     */
     initials: {
       type: String,
       required: false,
       default: null,
     },
+    /**
+     * The background color of the avatar
+     */
     color: {
       required: false,
       type: String,
@@ -51,6 +63,9 @@ export default {
         ].includes(value)
       },
     },
+    /**
+     * The size of the avatar
+     */
     size: {
       type: String,
       required: false,

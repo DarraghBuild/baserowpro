@@ -63,10 +63,12 @@ import Avatar from '@baserow/modules/core/components/Avatar'
 
 # Avatar
 
+The avatar component is used to display a user's avatar. It can either be a colored circle with initials or a photo.
+
 export const Template = (args, { argTypes }) => ({
     components: { Avatar },
     props: Object.keys(argTypes),
-    template: `<Avatar v-bind="$props">${args.default}</Avatar>`,
+    template: `<Avatar v-bind="$props"></Avatar>`,
 })
 
 export const designConfig = {
