@@ -3,7 +3,6 @@ import NotificationWorkflowActionForm from '@baserow/modules/builder/components/
 import OpenPageWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/OpenPageWorkflowActionForm'
 import CreateRowWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/CreateRowWorkflowActionForm'
 import UpdateRowWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/UpdateRowWorkflowActionForm'
-import UpsertRowWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/UpsertRowWorkflowActionForm.vue'
 
 export class NotificationWorkflowActionType extends WorkflowActionType {
   static getType() {
@@ -73,6 +72,12 @@ export class CreateRowWorkflowActionType extends WorkflowActionType {
   get label() {
     return this.app.i18n.t('workflowActionTypes.createRowLabel')
   }
+
+  execute({ workflowAction: { id }, resolveFormula }) {
+    return this.app.store.dispatch('workflowAction/dispatchAction', {
+      workflowActionId: id,
+    })
+  }
 }
 
 export class UpdateRowWorkflowActionType extends WorkflowActionType {
@@ -86,5 +91,11 @@ export class UpdateRowWorkflowActionType extends WorkflowActionType {
 
   get label() {
     return this.app.i18n.t('workflowActionTypes.updateRowLabel')
+  }
+
+  execute({ workflowAction: { id }, resolveFormula }) {
+    return this.app.store.dispatch('workflowAction/dispatchAction', {
+      workflowActionId: id,
+    })
   }
 }

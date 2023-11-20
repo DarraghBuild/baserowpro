@@ -180,6 +180,9 @@ const actions = {
       throw error
     }
   },
+  async dispatchAction({ dispatch }, { workflowActionId }) {
+    await WorkflowActionService(this.$client).dispatch(workflowActionId)
+  },
 }
 
 const getters = {
