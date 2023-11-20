@@ -88,6 +88,9 @@ class BuilderWorkflowServiceActionTypeSerializer(serializers.Serializer):
 
 
 class UpsertRowWorkflowActionTypeSerializer(BuilderWorkflowServiceActionTypeSerializer):
+    row_id = serializers.SerializerMethodField(
+        help_text="The Baserow row ID which we should use when updating rows.",
+    )
     table_id = serializers.SerializerMethodField(
         help_text="The Baserow table which we should use "
         "when inserting or updating rows.",
@@ -98,6 +101,9 @@ class UpsertRowWorkflowActionTypeSerializer(BuilderWorkflowServiceActionTypeSeri
     field_mappings = LocalBaserowTableServiceFieldMappingSerializer(
         required=False, many=True, source="service.field_mappings"
     )
+
+    def get_row_id(self, workflow_action):
+        return workflow_action.service.specific.row_id
 
     def get_integration_id(self, workflow_action):
         return workflow_action.service.specific.integration_id

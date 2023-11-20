@@ -833,6 +833,7 @@ class ButtonElementType(ElementType):
 
         return super().import_serialized(page, serialized_copy, id_mapping)
 
+
 class TableElementType(CollectionElementType):
     type = "table"
     model_class = TableElement

@@ -202,10 +202,12 @@ class UpsertRowWorkflowActionType(BuilderWorkflowServiceActionType):
                     code="invalid_table",
                 )
 
+        row_id = values.pop("row_id", "")
         if instance is None:
             service = ServiceHandler().create_service(
                 service_type_registry.get("local_baserow_upsert_row"),
                 table=table,
+                row_id=row_id,
                 integration=integration,
             )
             values["service_id"] = service.pk
@@ -239,10 +241,10 @@ class UpsertRowWorkflowActionType(BuilderWorkflowServiceActionType):
                         bulk_field_mappings
                     )
                 )
-                print(f"Created {mappings_created} mappings.")
 
-            if service.table_id != table_id:
+            if service.table_id != table_id or service.row_id != row_id:
                 service.table = table
+                service.row_id = row_id
                 service.save()
 
             if service.integration_id != integration_id:
@@ -268,3 +270,21 @@ class UpdateRowWorkflowActionType(UpsertRowWorkflowActionType):
     @property
     def allowed_fields(self):
         return super().allowed_fields + ["row_id", "field_mappings"]
+
+    @property
+    def serializer_field_names(self):
+        return super().serializer_field_names + ["row_id"]
+
+    @property
+    def request_serializer_field_names(self):
+        return super().request_serializer_field_names + ["row_id"]
+
+    @property
+    def request_serializer_field_overrides(self):
+        return super().request_serializer_field_overrides | {
+            "row_id": FormulaSerializerField(
+                required=False,
+                allow_blank=True,
+                help_text="A formula for defining the intended row.",
+            )
+        }
