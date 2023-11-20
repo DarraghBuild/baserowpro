@@ -12,6 +12,7 @@
 
     <Avatar
       v-for="(sample, index) in props.row[props.column.key]"
+      :key="index"
       class="subject_sample_field-list__avatar"
       rounded
       size="large"
