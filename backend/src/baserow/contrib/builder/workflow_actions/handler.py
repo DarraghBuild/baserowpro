@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, List, Optional
+from typing import Dict, Iterable, List, Optional, Any
 from zipfile import ZipFile
 
 from django.core.files.storage import Storage
@@ -6,15 +6,25 @@ from django.db.models import QuerySet
 
 from baserow.contrib.builder.elements.handler import ElementHandler
 from baserow.contrib.builder.elements.models import Element
+from baserow.contrib.builder.data_sources.builder_dispatch_context import (
+    BuilderDispatchContext,
+)
 from baserow.contrib.builder.pages.models import Page
 from baserow.contrib.builder.workflow_actions.exceptions import (
     WorkflowActionNotInElement,
 )
-from baserow.contrib.builder.workflow_actions.models import BuilderWorkflowAction
+from baserow.contrib.builder.workflow_actions.exceptions import (
+    BuilderWorkflowActionImproperlyConfigured,
+)
+from baserow.contrib.builder.workflow_actions.models import (
+    BuilderWorkflowAction,
+    BuilderWorkflowServiceAction,
+)
 from baserow.contrib.builder.workflow_actions.registries import (
     builder_workflow_action_type_registry,
 )
 from baserow.core.exceptions import IdDoesNotExist
+from baserow.core.services.handler import ServiceHandler
 from baserow.core.workflow_actions.handler import WorkflowActionHandler
 from baserow.core.workflow_actions.models import WorkflowAction
 from baserow.core.workflow_actions.registries import WorkflowActionType
@@ -124,3 +134,37 @@ class BuilderWorkflowActionHandler(WorkflowActionHandler):
                 )
 
         return super().create_workflow_action(workflow_action_type, **kwargs).specific
+
+    def dispatch_workflow_action(
+        self,
+        workflow_action: BuilderWorkflowServiceAction,
+        dispatch_context: BuilderDispatchContext,
+    ) -> Any:
+        """
+        Dispatch the service related to the workflow_action.
+
+        :param workflow_action: The workflow action to be dispatched.
+        :param dispatch_context: The context used for the dispatch.
+        :raises BuilderWorkflowActionImproperlyConfigured: If the workflow action is
+          not properly configured.
+        :return: The result of dispatching the workflow action.
+        """
+
+        if not workflow_action.service_id:
+            raise BuilderWorkflowActionImproperlyConfigured(
+                "The service type is missing."
+            )
+
+        if workflow_action.id not in dispatch_context.cache.setdefault(
+            "workflow_action_contents", {}
+        ):
+            service_dispatch = ServiceHandler().dispatch_service(
+                workflow_action.service.specific, dispatch_context
+            )
+            # Cache the dispatch in the formula cache if we have formulas that need
+            # it later
+            dispatch_context.cache["workflow_action_contents"][
+                workflow_action.id
+            ] = service_dispatch
+
+        return dispatch_context.cache["workflow_action_contents"][workflow_action.id]

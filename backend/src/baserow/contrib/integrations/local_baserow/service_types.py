@@ -36,6 +36,7 @@ from baserow.contrib.database.views.handler import ViewHandler
 from baserow.contrib.integrations.local_baserow.api.serializers import (
     LocalBaserowTableServiceFilterSerializer,
     LocalBaserowTableServiceSortSerializer,
+    LocalBaserowUpsertRowSerializer,
 )
 from baserow.contrib.integrations.local_baserow.integration_types import (
     LocalBaserowIntegrationType,
@@ -152,11 +153,11 @@ class LocalBaserowTableServiceType(LocalBaserowServiceType):
     The `ServiceType` for `LocalBaserowTableService` subclasses.
     """
 
-    def before_dispatch(
+    def resolve_service_formulas(
         self,
         service: ServiceSubClass,
         dispatch_context: DispatchContext,
-    ):
+    ) -> Dict[str, Any]:
         """
         A hook called before the `LocalBaserowTableServiceType` subclass dispatch
         calls. It ensures we check the service has a `Table` before execution.
@@ -170,6 +171,8 @@ class LocalBaserowTableServiceType(LocalBaserowServiceType):
 
         if service.table is None:
             raise ServiceImproperlyConfigured("The table property is missing.")
+
+        return super().resolve_service_formulas(service, dispatch_context)
 
     def serialize_property(self, service: LocalBaserowListRows, prop_name: str):
         """
@@ -574,12 +577,15 @@ class LocalBaserowListRowsUserServiceType(
     def dispatch_data(
         self,
         service: LocalBaserowListRows,
+        resolved_values: Dict[str, Any],
         dispatch_context: DispatchContext,
     ) -> Dict[str, Any]:
         """
         Returns a list of rows from the table stored in the service instance.
 
         :param service: the local baserow get row service.
+        :param resolved_values: If the service has any formulas, this dictionary will
+            contain their resolved values.
         :param dispatch_context: The context used for the dispatch.
         :return: The list of rows.
         """
@@ -777,28 +783,23 @@ class LocalBaserowGetRowUserServiceType(
 
         return serialized_row
 
-    def dispatch_data(
+    def resolve_service_formulas(
         self,
-        service: LocalBaserowGetRow,
+        service: ServiceSubClass,
         dispatch_context: DispatchContext,
     ) -> Dict[str, Any]:
         """
-        Returns the row targeted by the `row_id` formula from the table stored in the
-        service instance.
-
-        :param service: the local baserow get row service.
-        :param dispatch_context: The context used for the dispatch.
-        :raise ServiceImproperlyConfigured: if the table property is missing or if the
-            formula can't be resolved.
-        :raise DoesNotExist: if row id doesn't exist.
-        :return: The rows.
+        :param service: A `LocalBaserowTableService` instance.
+        :param dispatch_context: The dispatch_context instance used to
+            resolve formulas (if any).
+        :raises ServiceImproperlyConfigured: When we try and dispatch a service that
+            has no `Table` associated with it.
         """
 
-        table = service.table
-        integration = service.integration.specific
+        resolved_values = super().resolve_service_formulas(service, dispatch_context)
 
         try:
-            row_id = ensure_integer(
+            resolved_values["row_id"] = ensure_integer(
                 resolve_formula(
                     service.row_id,
                     formula_runtime_function_registry,
@@ -814,6 +815,28 @@ class LocalBaserowGetRowUserServiceType(
             raise ServiceImproperlyConfigured(
                 f"The `row_id` formula can't be resolved: {exc}"
             ) from exc
+
+        return resolved_values
+
+    def dispatch_data(
+        self,
+        service: LocalBaserowGetRow,
+        resolved_values: Dict[str, Any],
+        dispatch_context: DispatchContext,
+    ) -> Dict[str, Any]:
+        """
+        Returns the row targeted by the `row_id` formula from the table stored in the
+        service instance.
+
+        :param service: the local baserow get row service.
+        :param resolved_values: If the service has any formulas, this dictionary will
+            contain their resolved values.
+        :param dispatch_context: The context used for the dispatch.
+        :return: The rows.
+        """
+
+        table = service.table
+        integration = service.integration.specific
 
         CoreHandler().check_permissions(
             integration.authorized_user,
@@ -835,7 +858,7 @@ class LocalBaserowGetRowUserServiceType(
         queryset = self.get_dispatch_filters(service, queryset, model)
 
         try:
-            row = queryset.get(pk=row_id)
+            row = queryset.get(pk=resolved_values["row_id"])
             return {"data": row, "baserow_table_model": model}
         except model.DoesNotExist:
             raise DoesNotExist()
@@ -851,19 +874,10 @@ class LocalBaserowUpsertRowServiceType(LocalBaserowTableServiceType):
     integration_type = LocalBaserowIntegrationType.type
     type = "local_baserow_upsert_row"
     model_class = LocalBaserowUpsertRow
+    serializer_mixins = [LocalBaserowUpsertRowSerializer]
     dispatch_type = DispatchTypes.DISPATCH_WORKFLOW_ACTION
 
-    allowed_fields = ["table"]
-    serializer_field_names = ["table_id"]
-    request_serializer_field_overrides = {
-        "table_id": serializers.IntegerField(
-            required=False,
-            allow_null=True,
-            help_text="The id of the Baserow table we want the data for.",
-        ),
-    }
-
-    allowed_fields = ["table"]
+    allowed_fields = ["table_id"]
     serializer_field_names = ["table_id"]
     request_serializer_field_overrides = {
         "table_id": serializers.IntegerField(
@@ -874,10 +888,11 @@ class LocalBaserowUpsertRowServiceType(LocalBaserowTableServiceType):
     }
 
     class SerializedDict(ServiceDict):
+        row_id: str
         table_id: int
 
     def enhance_queryset(self, queryset):
-        return queryset.select_related("table")
+        return queryset.select_related("table").prefetch_related("field_mappings")
 
     def dispatch_transform(
         self,
@@ -897,9 +912,50 @@ class LocalBaserowUpsertRowServiceType(LocalBaserowTableServiceType):
 
         return serialized_row
 
+    def resolve_service_formulas(
+        self,
+        service: ServiceSubClass,
+        dispatch_context: DispatchContext,
+    ) -> Dict[str, Any]:
+        """
+        :param service: A `LocalBaserowTableService` instance.
+        :param dispatch_context: The dispatch_context instance used to
+            resolve formulas (if any).
+        :raises ServiceImproperlyConfigured: When we try and dispatch a service that
+            has no `Table` associated with it.
+        """
+
+        resolved_values = super().resolve_service_formulas(service, dispatch_context)
+
+        if not service.row_id:
+            # We've received no `row_id` as we're creating a new row.
+            resolved_values["row_id"] = service.row_id
+            return resolved_values
+
+        try:
+            resolved_values["row_id"] = ensure_integer(
+                resolve_formula(
+                    service.row_id,
+                    formula_runtime_function_registry,
+                    dispatch_context,
+                )
+            )
+        except ValidationError:
+            raise ServiceImproperlyConfigured(
+                "The result of the `row_id` formula must be an integer or convertible "
+                "to an integer."
+            )
+        except Exception as e:
+            raise ServiceImproperlyConfigured(
+                f"The `row_id` formula can't be resolved: {e}"
+            )
+
+        return resolved_values
+
     def dispatch_data(
         self,
         service: LocalBaserowUpsertRow,
+        resolved_values: Dict[str, Any],
         dispatch_context: DispatchContext,
     ) -> Dict[str, Any]:
         """
@@ -907,6 +963,8 @@ class LocalBaserowUpsertRowServiceType(LocalBaserowTableServiceType):
         been provided, in this `LocalBaserowUpsertRow` service's table.
 
         :param service: the local baserow upsert row service.
+        :param resolved_values: If the service has any formulas, this dictionary will
+            contain their resolved values.
         :param dispatch_context: the context used for formula resolution.
         :return: The created or updated rows.
         """
@@ -915,18 +973,39 @@ class LocalBaserowUpsertRowServiceType(LocalBaserowTableServiceType):
         integration = service.integration.specific
 
         field_values = {}
-        for field_mapping in service.field_mappings.all():
+        field_mappings = service.field_mappings.select_related("field").all()
+        for field_mapping in field_mappings:
             resolved_value = resolve_formula(
                 field_mapping.value,
                 formula_runtime_function_registry,
                 dispatch_context,
             )
-            field_values[field_mapping.field.db_column] = resolved_value
 
-        row = RowHandler().create_row(
-            user=integration.authorized_user,
-            table=table,
-            values=field_values,
-        )
+            field = field_mapping.field
+            field_type = field_type_registry.get_by_model(field.specific_class)
+
+            try:
+                field_values[field.db_column] = field_type.prepare_value_for_db(
+                    field.specific, resolved_value
+                )
+            except ValidationError:
+                raise ServiceImproperlyConfigured(
+                    f"The result of the `{field.db_column}` formula must be "
+                    f"compatible for the {field_type.type} field type."
+                )
+
+        if resolved_values["row_id"]:
+            row = RowHandler().update_row_by_id(
+                integration.authorized_user,
+                table,
+                row_id=resolved_values["row_id"],
+                values=field_values,
+            )
+        else:
+            row = RowHandler().create_row(
+                user=integration.authorized_user,
+                table=table,
+                values=field_values,
+            )
 
         return {"data": row, "baserow_table_model": table.get_model()}

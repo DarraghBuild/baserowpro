@@ -4,10 +4,14 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from baserow.api.services.serializers import ServiceSerializer
 from baserow.api.workflow_actions.serializers import WorkflowActionSerializer
 from baserow.contrib.builder.workflow_actions.models import BuilderWorkflowAction
 from baserow.contrib.builder.workflow_actions.registries import (
     builder_workflow_action_type_registry,
+)
+from baserow.contrib.integrations.local_baserow.api.serializers import (
+    LocalBaserowTableServiceFieldMappingSerializer,
 )
 
 
@@ -70,3 +74,33 @@ class OrderWorkflowActionsSerializer(serializers.Serializer):
     element_id = serializers.IntegerField(
         required=False, help_text="The element the workflow actions belong to"
     )
+
+
+class BuilderWorkflowServiceActionTypeSerializer(serializers.Serializer):
+    service = serializers.SerializerMethodField()
+
+    def get_service(self, workflow_action):
+        from baserow.core.services.registries import service_type_registry
+
+        return service_type_registry.get_serializer(
+            workflow_action.service, ServiceSerializer
+        ).data
+
+
+class UpsertRowWorkflowActionTypeSerializer(BuilderWorkflowServiceActionTypeSerializer):
+    table_id = serializers.SerializerMethodField(
+        help_text="The Baserow table which we should use "
+        "when inserting or updating rows.",
+    )
+    integration_id = serializers.SerializerMethodField(
+        help_text="The Baserow integration we should use.",
+    )
+    field_mappings = LocalBaserowTableServiceFieldMappingSerializer(
+        required=False, many=True, source="service.field_mappings"
+    )
+
+    def get_integration_id(self, workflow_action):
+        return workflow_action.service.specific.integration_id
+
+    def get_table_id(self, workflow_action):
+        return workflow_action.service.specific.table_id

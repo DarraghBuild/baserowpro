@@ -352,7 +352,9 @@
     },
     "workflowActionTypes": {
       "notificationLabel": "Show Notification",
-      "openPageLabel": "Open Page"
+      "openPageLabel": "Open Page",
+      "createRowLabel": "Create Row",
+      "updateRowLabel": "Update Row"
     },
     "notificationWorkflowActionForm": {
       "titleLabel": "Title",
@@ -393,5 +395,11 @@
       "nameFieldLabel": "Name",
       "nameFieldPlaceholder": "Enter a name...",
       "integrationFieldLabel": "Integration"
+    },
+    "upsertRowWorkflowActionForm": {
+        "integrationDropdownLabel": "Integration",
+        "rowIdLabel": "Row ID",
+        "rowIdPlaceholder": "Select a row ID",
+        "fieldMappingPlaceholder": "Choose a field value"
     }
 }

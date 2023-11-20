@@ -111,18 +111,21 @@ class WorkflowActionHandler(ABC):
         else:
             workflow_action_type = workflow_action.get_type()
 
-        allowed_updates = extract_allowed(kwargs, workflow_action_type.allowed_fields)
-
-        allowed_updates = workflow_action_type.prepare_value_for_db(
-            allowed_updates, instance=workflow_action
-        )
-
         if has_type_changed:
+            allowed_updates = extract_allowed(
+                kwargs, ["page_id", "element_id", "event", "service_id"]
+            )
             self.delete_workflow_action(workflow_action)
             workflow_action = self.create_workflow_action(
                 workflow_action_type, **allowed_updates
             )
         else:
+            allowed_updates = extract_allowed(
+                kwargs, workflow_action_type.allowed_fields
+            )
+            allowed_updates = workflow_action_type.prepare_value_for_db(
+                allowed_updates, instance=workflow_action
+            )
             for key, value in allowed_updates.items():
                 setattr(workflow_action, key, value)
 

@@ -12,13 +12,14 @@ from baserow.contrib.builder.workflow_actions.handler import (
     BuilderWorkflowActionHandler,
 )
 from baserow.contrib.builder.workflow_actions.workflow_action_types import (
+    CreateRowWorkflowActionType,
     NotificationWorkflowActionType,
 )
 from baserow.core.formula.serializers import FormulaSerializerField
 
 
 @pytest.mark.django_db
-def test_create_workflow_action(api_client, data_fixture):
+def test_create_notification_workflow_action(api_client, data_fixture):
     user, token = data_fixture.create_user_and_token()
     page = data_fixture.create_builder_page(user=user)
     element = data_fixture.create_builder_button_element(page=page)
@@ -305,3 +306,28 @@ def test_order_workflow_actions_workflow_action_not_in_element(
     )
 
     assert response.status_code == HTTP_404_NOT_FOUND
+
+
+@pytest.mark.django_db
+def test_create_create_row_workflow_action(api_client, data_fixture):
+    user, token = data_fixture.create_user_and_token()
+    page = data_fixture.create_builder_page(user=user)
+    element = data_fixture.create_builder_button_element(page=page)
+    workflow_action_type = CreateRowWorkflowActionType.type
+
+    url = reverse("api:builder:workflow_action:list", kwargs={"page_id": page.id})
+    response = api_client.post(
+        url,
+        {
+            "type": workflow_action_type,
+            "event": "click",
+            "element_id": element.id,
+        },
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+
+    response_json = response.json()
+    assert response.status_code == HTTP_200_OK
+    assert response_json["type"] == workflow_action_type
+    assert response_json["element_id"] == element.id

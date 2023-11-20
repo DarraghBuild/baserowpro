@@ -312,7 +312,7 @@ class ColumnElementType(ContainerElementType):
             "alignment",
         ]
 
-    def get_sample_params(self) -> Dict[str, Any]:
+    def get_pytest_params(self, pytest_data_fixture) -> Dict[str, Any]:
         return {
             "column_amount": 2,
             "column_gap": 10,
@@ -393,7 +393,7 @@ class HeadingElementType(ElementType):
 
         return overrides
 
-    def get_sample_params(self):
+    def get_pytest_params(self, pytest_data_fixture):
         return {
             "value": "'Corporis perspiciatis'",
             "level": 2,
@@ -422,7 +422,7 @@ class ParagraphElementType(ElementType):
     class SerializedDict(ElementDict):
         value: BaserowFormula
 
-    def get_sample_params(self):
+    def get_pytest_params(self, pytest_data_fixture):
         return {
             "value": "'Suscipit maxime eos ea vel commodi dolore. "
             "Eum dicta sit rerum animi. Sint sapiente eum cupiditate nobis vel. "
@@ -575,7 +575,7 @@ class LinkElementType(ElementType):
         }
         return overrides
 
-    def get_sample_params(self):
+    def get_pytest_params(self, pytest_data_fixture):
         return {
             "value": "'test'",
             "navigation_type": "custom",
@@ -666,7 +666,7 @@ class ImageElementType(ElementType):
         alt_text: str
         alignment: str
 
-    def get_sample_params(self):
+    def get_pytest_params(self, pytest_data_fixture):
         return {
             "image_source_type": ImageElement.IMAGE_SOURCE_TYPES.UPLOAD,
             "image_file_id": None,
@@ -776,7 +776,7 @@ class InputTextElementType(InputElementType):
 
         return super().import_serialized(page, serialized_copy, id_mapping)
 
-    def get_sample_params(self):
+    def get_pytest_params(self, pytest_data_fixture):
         return {
             "label": "",
             "required": False,
@@ -821,6 +821,9 @@ class ButtonElementType(ElementType):
 
         return overrides
 
+    def get_pytest_params(self, pytest_data_fixture) -> Dict[str, Any]:
+        return {"value": "'Some value'"}
+
     def import_serialized(self, page, serialized_values, id_mapping):
         serialized_copy = serialized_values.copy()
         if serialized_copy["value"]:
@@ -830,13 +833,9 @@ class ButtonElementType(ElementType):
 
         return super().import_serialized(page, serialized_copy, id_mapping)
 
-    def get_sample_params(self) -> Dict[str, Any]:
-        return {"value": "'Some value'"}
-
-
 class TableElementType(CollectionElementType):
     type = "table"
     model_class = TableElement
 
-    def get_sample_params(self) -> Dict[str, Any]:
+    def get_pytest_params(self, pytest_data_fixture) -> Dict[str, Any]:
         return {"data_source_id": None}

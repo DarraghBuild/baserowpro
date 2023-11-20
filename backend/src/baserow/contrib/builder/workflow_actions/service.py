@@ -1,19 +1,27 @@
-from typing import List
+from typing import Any, List
 
 from django.contrib.auth.models import AbstractUser
 
 from baserow.contrib.builder.elements.models import Element
+from baserow.contrib.builder.data_sources.builder_dispatch_context import (
+    BuilderDispatchContext,
+)
 from baserow.contrib.builder.pages.models import Page
+from baserow.contrib.builder.workflow_actions.exceptions import (
+    BuilderWorkflowActionCannotBeDispatched,
+)
 from baserow.contrib.builder.workflow_actions.handler import (
     BuilderWorkflowActionHandler,
 )
 from baserow.contrib.builder.workflow_actions.models import (
     BuilderWorkflowAction,
+    BuilderWorkflowServiceAction,
     WorkflowAction,
 )
 from baserow.contrib.builder.workflow_actions.operations import (
     CreateBuilderWorkflowActionOperationType,
     DeleteBuilderWorkflowActionOperationType,
+    DispatchBuilderWorkflowActionOperationType,
     ListBuilderWorkflowActionsPageOperationType,
     OrderBuilderWorkflowActionOperationType,
     ReadBuilderWorkflowActionOperationType,
@@ -218,3 +226,35 @@ class BuilderWorkflowActionService:
         workflow_actions_reordered.send(self, order=full_order, user=user)
 
         return full_order
+
+    def dispatch_action(
+        self,
+        user,
+        workflow_action: BuilderWorkflowServiceAction,
+        dispatch_context: BuilderDispatchContext,
+    ) -> Any:
+        """
+        Dispatch the service related to the given workflow_action if the user
+        has the permission.
+
+        :param user: The current user.
+        :param workflow_action: The workflow action's service to be dispatched.
+        :param dispatch_context: The context used for the dispatch.
+        :return: The result of dispatching the action mapped by workflow_action ID.
+        :raises BuilderWorkflowActionCannotBeDispatched: If a `workflow_action` is
+            provided that does not implement `BuilderWorkflowServiceAction`.
+        """
+
+        if not issubclass(workflow_action.__class__, BuilderWorkflowServiceAction):
+            raise BuilderWorkflowActionCannotBeDispatched(
+                f"WorkflowAction {workflow_action.id} has no Service to dispatch."
+            )
+
+        CoreHandler().check_permissions(
+            user,
+            DispatchBuilderWorkflowActionOperationType.type,
+            workspace=workflow_action.page.builder.workspace,
+            context=workflow_action,
+        )
+
+        return self.handler.dispatch_workflow_action(workflow_action, dispatch_context)

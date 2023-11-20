@@ -1,6 +1,9 @@
 import { WorkflowActionType } from '@baserow/modules/core/workflowActionTypes'
 import NotificationWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/NotificationWorkflowActionForm.vue'
 import OpenPageWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/OpenPageWorkflowActionForm'
+import CreateRowWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/CreateRowWorkflowActionForm'
+import UpdateRowWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/UpdateRowWorkflowActionForm'
+import UpsertRowWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/UpsertRowWorkflowActionForm.vue'
 
 export class NotificationWorkflowActionType extends WorkflowActionType {
   static getType() {
@@ -55,5 +58,33 @@ export class OpenPageWorkflowActionType extends WorkflowActionType {
     }
 
     window.location.replace(urlParsed)
+  }
+}
+
+export class CreateRowWorkflowActionType extends WorkflowActionType {
+  static getType() {
+    return 'create_row'
+  }
+
+  get form() {
+    return CreateRowWorkflowActionForm
+  }
+
+  get label() {
+    return this.app.i18n.t('workflowActionTypes.createRowLabel')
+  }
+}
+
+export class UpdateRowWorkflowActionType extends WorkflowActionType {
+  static getType() {
+    return 'update_row'
+  }
+
+  get form() {
+    return UpdateRowWorkflowActionForm
+  }
+
+  get label() {
+    return this.app.i18n.t('workflowActionTypes.updateRowLabel')
   }
 }

@@ -1,7 +1,19 @@
-from typing import Any, Dict
+from abc import abstractmethod
+from typing import TYPE_CHECKING, Any, Dict, Union
 
+from rest_framework import serializers
+from rest_framework.exceptions import ValidationError as DRFValidationError
+
+from baserow.contrib.builder.api.workflow_actions.serializers import (
+    BuilderWorkflowServiceActionTypeSerializer,
+    UpsertRowWorkflowActionTypeSerializer,
+)
+from baserow.contrib.builder.elements.handler import ElementHandler
 from baserow.contrib.builder.formula_importer import import_formula
 from baserow.contrib.builder.workflow_actions.models import (
+    BuilderWorkflowAction,
+    LocalBaserowCreateRowWorkflowAction,
+    LocalBaserowUpdateRowWorkflowAction,
     NotificationWorkflowAction,
     OpenPageWorkflowAction,
 )
@@ -9,8 +21,23 @@ from baserow.contrib.builder.workflow_actions.registries import (
     BuilderWorkflowActionType,
 )
 from baserow.contrib.builder.workflow_actions.types import BuilderWorkflowActionDict
+from baserow.contrib.database.fields.exceptions import FieldDoesNotExist
+from baserow.contrib.database.fields.handler import FieldHandler
+from baserow.contrib.database.table.exceptions import TableDoesNotExist
+from baserow.contrib.database.table.handler import TableHandler
+from baserow.contrib.integrations.local_baserow.api.serializers import (
+    LocalBaserowTableServiceFieldMappingSerializer,
+)
+from baserow.contrib.integrations.local_baserow.models import (
+    LocalBaserowTableServiceFieldMapping,
+)
 from baserow.core.formula.serializers import FormulaSerializerField
 from baserow.core.formula.types import BaserowFormula
+from baserow.core.integrations.exceptions import IntegrationDoesNotExist
+from baserow.core.integrations.handler import IntegrationHandler
+from baserow.core.services.handler import ServiceHandler
+from baserow.core.services.registries import service_type_registry
+from baserow.core.workflow_actions.registries import WorkflowActionType
 
 
 class NotificationWorkflowActionType(BuilderWorkflowActionType):
@@ -40,6 +67,9 @@ class NotificationWorkflowActionType(BuilderWorkflowActionType):
     def allowed_fields(self):
         return super().allowed_fields + ["title", "description"]
 
+    def get_pytest_params(self, pytest_data_fixture) -> Dict[str, Any]:
+        return {"title": "'hello'", "description": "'there'"}
+
     def deserialize_property(self, prop_name, value, id_mapping: Dict) -> Any:
         """
         Migrate the formulas.
@@ -52,9 +82,6 @@ class NotificationWorkflowActionType(BuilderWorkflowActionType):
             return import_formula(value, id_mapping)
 
         return super().deserialize_property(prop_name, value, id_mapping)
-
-    def get_sample_params(self) -> Dict[str, Any]:
-        return {"title": "'hello'", "description": "'there'"}
 
 
 class OpenPageWorkflowActionType(BuilderWorkflowActionType):
@@ -77,6 +104,9 @@ class OpenPageWorkflowActionType(BuilderWorkflowActionType):
     def allowed_fields(self):
         return super().allowed_fields + ["url"]
 
+    def get_pytest_params(self, pytest_data_fixture) -> Dict[str, Any]:
+        return {"url": "'hello'"}
+
     def deserialize_property(self, prop_name, value, id_mapping: Dict) -> Any:
         """
         Migrate the formulas.
@@ -90,5 +120,151 @@ class OpenPageWorkflowActionType(BuilderWorkflowActionType):
 
         return super().deserialize_property(prop_name, value, id_mapping)
 
-    def get_sample_params(self) -> Dict[str, Any]:
-        return {"url": "'hello'"}
+
+class BuilderWorkflowServiceActionType(BuilderWorkflowActionType):
+    serializer_field_names = ["service"]
+    serializer_mixins = [BuilderWorkflowServiceActionTypeSerializer]
+    serializer_field_overrides = {
+        "service": serializers.SerializerMethodField(help_text="", source="service"),
+    }
+
+    class SerializedDict(BuilderWorkflowActionDict):
+        service_id: int
+
+    @property
+    def allowed_fields(self):
+        return super().allowed_fields + ["service_id"]
+
+    def get_pytest_params(self, pytest_data_fixture) -> Dict[str, int]:
+        service = pytest_data_fixture.create_local_baserow_upsert_row_service()
+        return {"service_id": service.id}
+
+
+class UpsertRowWorkflowActionType(BuilderWorkflowServiceActionType):
+    type = "upsert_row"
+    serializer_mixins = [UpsertRowWorkflowActionTypeSerializer]
+    request_serializer_field_overrides = {
+        "table_id": serializers.IntegerField(
+            required=False,
+            allow_null=True,
+            help_text="The Baserow table which we should use "
+            "when inserting or updating rows.",
+        ),
+        "integration_id": serializers.IntegerField(
+            required=False,
+            allow_null=True,
+            help_text="The Baserow integration we should use.",
+        ),
+        "field_mappings": LocalBaserowTableServiceFieldMappingSerializer(
+            required=False, many=True, source="service.field_mappings"
+        ),
+    }
+    request_serializer_field_names = ["table_id", "integration_id", "field_mappings"]
+
+    @property
+    def serializer_field_names(self):
+        return super().serializer_field_names + [
+            "table_id",
+            "integration_id",
+            "field_mappings",
+        ]
+
+    @property
+    def allowed_fields(self):
+        return super().allowed_fields + ["table_id", "integration_id"]
+
+    def prepare_value_for_db(
+        self,
+        values: Dict,
+        instance: Union[
+            LocalBaserowCreateRowWorkflowAction, LocalBaserowUpdateRowWorkflowAction
+        ] = None,
+    ):
+        integration = None
+        integration_id = values.pop("integration_id", None)
+        if integration_id:
+            try:
+                integration = IntegrationHandler().get_integration(integration_id)
+            except IntegrationDoesNotExist:
+                raise DRFValidationError(
+                    detail=f"The integration with ID {integration_id} does not exist.",
+                    code="invalid_integration",
+                )
+
+        table = None
+        table_id = values.pop("table_id", None)
+        if table_id:
+            try:
+                table = TableHandler().get_table(table_id)
+            except TableDoesNotExist:
+                raise DRFValidationError(
+                    detail=f"The table with ID {table_id} does not exist.",
+                    code="invalid_table",
+                )
+
+        if instance is None:
+            service = ServiceHandler().create_service(
+                service_type_registry.get("local_baserow_upsert_row"),
+                table=table,
+                integration=integration,
+            )
+            values["service_id"] = service.pk
+        else:
+            service = instance.service.specific
+
+            # On a PATCH if no `service_id` value is provided, then `service_id`
+            # is given a `None` value by DRF, so here we set it properly.
+            values["service_id"] = service.id
+
+            if "field_mappings" in values:
+                bulk_field_mappings = []
+                service.field_mappings.all().delete()
+                for field_mapping in values["field_mappings"]:
+                    try:
+                        field = FieldHandler().get_field(field_mapping["field_id"])
+                    except KeyError:
+                        raise DRFValidationError(
+                            "A field mapping must have a `field_id`."
+                        )
+                    except FieldDoesNotExist as exc:
+                        raise DRFValidationError(str(exc))
+
+                    bulk_field_mappings.append(
+                        LocalBaserowTableServiceFieldMapping(
+                            field=field, service=service, value=field_mapping["value"]
+                        )
+                    )
+                mappings_created = (
+                    LocalBaserowTableServiceFieldMapping.objects.bulk_create(
+                        bulk_field_mappings
+                    )
+                )
+                print(f"Created {mappings_created} mappings.")
+
+            if service.table_id != table_id:
+                service.table = table
+                service.save()
+
+            if service.integration_id != integration_id:
+                service.integration = integration
+                service.save()
+
+        return super().prepare_value_for_db(values, instance=instance)
+
+
+class CreateRowWorkflowActionType(UpsertRowWorkflowActionType):
+    type = "create_row"
+    model_class = LocalBaserowCreateRowWorkflowAction
+
+    @property
+    def allowed_fields(self):
+        return super().allowed_fields + ["field_mappings"]
+
+
+class UpdateRowWorkflowActionType(UpsertRowWorkflowActionType):
+    type = "update_row"
+    model_class = LocalBaserowUpdateRowWorkflowAction
+
+    @property
+    def allowed_fields(self):
+        return super().allowed_fields + ["row_id", "field_mappings"]

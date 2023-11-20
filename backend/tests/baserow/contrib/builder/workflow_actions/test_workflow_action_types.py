@@ -20,9 +20,9 @@ def pytest_generate_tests(metafunc):
 @pytest.mark.django_db
 def test_export_workflow_action(data_fixture, workflow_action_type: WorkflowActionType):
     page = data_fixture.create_builder_page()
-    sample_params = workflow_action_type.get_sample_params()
+    pytest_params = workflow_action_type.get_pytest_params(data_fixture)
     workflow_action = data_fixture.create_workflow_action(
-        workflow_action_type.model_class, page=page, **sample_params
+        workflow_action_type.model_class, page=page, **pytest_params
     )
 
     exported = workflow_action_type.export_serialized(workflow_action)
@@ -30,14 +30,14 @@ def test_export_workflow_action(data_fixture, workflow_action_type: WorkflowActi
     assert exported["id"] == workflow_action.id
     assert exported["type"] == workflow_action_type.type
 
-    for key, value in sample_params.items():
+    for key, value in pytest_params.items():
         assert exported[key] == value
 
 
 @pytest.mark.django_db
 def test_import_workflow_action(data_fixture, workflow_action_type: WorkflowActionType):
     page = data_fixture.create_builder_page()
-    sample_params = workflow_action_type.get_sample_params()
+    pytest_params = workflow_action_type.get_pytest_params(data_fixture)
 
     page_after_import = data_fixture.create_builder_page()
 
@@ -47,7 +47,7 @@ def test_import_workflow_action(data_fixture, workflow_action_type: WorkflowActi
         "page_id": page.id,
         "order": 0,
     }
-    serialized.update(workflow_action_type.get_sample_params())
+    serialized.update(pytest_params)
 
     id_mapping = {"builder_pages": {page.id: page_after_import.id}}
     workflow_action = workflow_action_type.import_serialized(
@@ -57,5 +57,5 @@ def test_import_workflow_action(data_fixture, workflow_action_type: WorkflowActi
     assert workflow_action.id != 9999
     assert isinstance(workflow_action, workflow_action_type.model_class)
 
-    for key, value in sample_params.items():
+    for key, value in pytest_params.items():
         assert getattr(workflow_action, key) == value
