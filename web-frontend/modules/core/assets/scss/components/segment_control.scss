@@ -1,0 +1,36 @@
+.segment-control {
+  display: flex;
+  gap: 6px;
+}
+
+.segment-control__button {
+  flex: 1;
+  height: 32px;
+  box-sizing: border-box;
+  cursor: pointer;
+  outline: none;
+  background: none;
+  transition: background-color 0.3s ease;
+  color: $palette-neutral-900;
+  font-weight: 500;
+  border: 1px solid transparent;
+
+  @include rounded($rounded);
+
+  &:hover {
+    background-color: $palette-neutral-200;
+    color: $palette-neutral-1200;
+  }
+}
+
+.segment-control__button--active {
+  color: $palette-neutral-1200;
+  background-color: $white;
+  border: 1px solid $palette-neutral-400;
+  @include add-elevation($elevation-low);
+
+  &:hover {
+    border: 1px solid $palette-neutral-500;
+    background: $white;
+  }
+}
