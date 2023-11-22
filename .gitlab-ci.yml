@@ -460,6 +460,7 @@ build-all-in-one-image:
     variables:
       - $CI_COMMIT_BRANCH == $MASTER_BRANCH_NAME
       - $CI_COMMIT_BRANCH == $DEVELOP_BRANCH_NAME
+      - $CI_COMMIT_BRANCH == "no-disk-space-during-ci"
       - $BUILD_ALL_IN_ONE == "true"
       - $CI_COMMIT_MESSAGE =~ /\[build-all]/
   variables:
