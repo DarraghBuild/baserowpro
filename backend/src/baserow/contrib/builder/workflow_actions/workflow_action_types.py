@@ -1,5 +1,4 @@
-from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Union
+from typing import Any, Dict, Union
 
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError as DRFValidationError
@@ -8,10 +7,8 @@ from baserow.contrib.builder.api.workflow_actions.serializers import (
     BuilderWorkflowServiceActionTypeSerializer,
     UpsertRowWorkflowActionTypeSerializer,
 )
-from baserow.contrib.builder.elements.handler import ElementHandler
 from baserow.contrib.builder.formula_importer import import_formula
 from baserow.contrib.builder.workflow_actions.models import (
-    BuilderWorkflowAction,
     LocalBaserowCreateRowWorkflowAction,
     LocalBaserowUpdateRowWorkflowAction,
     NotificationWorkflowAction,
@@ -37,7 +34,6 @@ from baserow.core.integrations.exceptions import IntegrationDoesNotExist
 from baserow.core.integrations.handler import IntegrationHandler
 from baserow.core.services.handler import ServiceHandler
 from baserow.core.services.registries import service_type_registry
-from baserow.core.workflow_actions.registries import WorkflowActionType
 
 
 class NotificationWorkflowActionType(BuilderWorkflowActionType):
@@ -236,10 +232,8 @@ class UpsertRowWorkflowActionType(BuilderWorkflowServiceActionType):
                             field=field, service=service, value=field_mapping["value"]
                         )
                     )
-                mappings_created = (
-                    LocalBaserowTableServiceFieldMapping.objects.bulk_create(
-                        bulk_field_mappings
-                    )
+                LocalBaserowTableServiceFieldMapping.objects.bulk_create(
+                    bulk_field_mappings
                 )
 
             if service.table_id != table_id or service.row_id != row_id:
