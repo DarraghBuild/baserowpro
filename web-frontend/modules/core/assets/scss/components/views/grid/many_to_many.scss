@@ -65,6 +65,11 @@
       display: flex;
     }
   }
+  
+  &.grid-field-many-to-many__item--multiple-select {
+    padding: 0 2px;
+    background-color: $color-neutral-50;
+  }
 }
 
 .grid-field-many-to-many__name {

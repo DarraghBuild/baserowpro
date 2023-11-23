@@ -1,9 +1,11 @@
 <template functional>
-  <div class="grid-field-many-to-many__list">
+  <div
+    class="grid-field-many-to-many__item grid-field-many-to-many__item--multiple-select"
+  >
     <div
       v-for="item in props.value"
       :key="item.id"
-      class="array-field__single-select-option"
+      class="array-field__multiple-select-option"
       :class="'background-color--' + item.color"
     >
       <div v-if="item.value" class="array-field__name">

@@ -771,11 +771,11 @@ export class BaserowFormulaMultipleSelectType extends BaserowFormulaTypeDefiniti
   }
 
   getCanSortInView(field) {
-    return true
+    return false
   }
 
   canBeSortedWhenInArray(field) {
-    return true
+    return false
   }
 
   mapToSortableArray(element) {
@@ -783,7 +783,7 @@ export class BaserowFormulaMultipleSelectType extends BaserowFormulaTypeDefiniti
   }
 
   canGroupByInView() {
-    return true
+    return false
   }
 }
 

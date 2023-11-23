@@ -46,6 +46,16 @@
   @include select-option-style(flex, true);
 }
 
+.array-field__multiple-select-option {
+  white-space: nowrap;
+  margin: 1px 4px 4px 4px;
+  overflow: unset;
+
+  @include select-option-style(flex, true);
+}
+
+
+
 .array-field__file {
   white-space: nowrap;
   margin: 5px 3px;
