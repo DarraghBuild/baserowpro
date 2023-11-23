@@ -139,8 +139,8 @@ export const isDuration = (value, durationFormat) => {
     'h:mm': /^\d+:\d+$/,
     'h:mm:ss': /^\d+:\d+:\d+$/,
     'h:mm:ss.s': /^\d+:\d+:\d+\.\d$/,
-    'h:mm:ss.ss': /^\d+:\d+:\d+\.\d{2}$/,
-    'h:mm:ss.sss': /^\d+:\d+:\d+\.\d{3}$/,
+    'h:mm:ss.ss': /^\d+:\d+:\d+\.\d{1,2}$/,
+    'h:mm:ss.sss': /^\d+:\d+:\d+\.\d{1,3}$/,
   }
 
   const pattern = formatRegexMap[durationFormat]
@@ -157,8 +157,7 @@ export const isDuration = (value, durationFormat) => {
 }
 
 export const formatDuration = (value, durationFormat) => {
-  const numberPattern =
-    /^(\d+)(?::(\d{1,2})(?::(\d{1,2})(?:\.(\d{1,3}))?)?)?(.*?)$/
+  const numberPattern = /^(\d+)(?::(\d{1,2})(?::(\d{1,2})(?:\.(\d+))?)?)?(.*?)$/
   const match = value.match(numberPattern)
 
   // No match found (value couldn't be guessed):
@@ -166,26 +165,27 @@ export const formatDuration = (value, durationFormat) => {
     return null
   }
 
-  const [, hours, minutes, seconds, deciseconds, centiseconds, milliseconds] =
-    match
+  const [, hours, minutes, seconds, secondParts] = match
 
   switch (durationFormat) {
     case 'h:mm':
-      return `${hours || 0}:${minutes || 0}`
+      return `${hours || 0}:${minutes || '00'}`
     case 'h:mm:ss':
-      return `${hours || 0}:${minutes || 0}:${seconds || 0}`
+      return `${hours || 0}:${minutes || '00'}:${seconds || '00'}`
     case 'h:mm:ss.s':
-      return `${hours || 0}:${minutes || 0}:${seconds || 0}.${deciseconds || 0}`
+      return `${hours || 0}:${minutes || '00'}:${seconds || '00'}.${
+        secondParts ? Math.round(Number(`0.${secondParts}`) * 10) : '0'
+      }`
     case 'h:mm:ss.ss':
-      return `${hours || 0}:${minutes || 0}:${seconds || 0}.${
-        deciseconds || 0
-      }.${centiseconds || 0}`
+      return `${hours || 0}:${minutes || '00'}:${seconds || '00'}.${
+        secondParts ? Math.round(Number(`0.${secondParts}`) * 100) : '00'
+      }`
     case 'h:mm:ss.sss':
-      return `${hours || 0}:${minutes || 0}:${seconds || 0}.${
-        deciseconds || 0
-      }.${centiseconds || 0}.${milliseconds || 0}`
+      return `${hours || 0}:${minutes || '00'}:${seconds || '00'}.${
+        secondParts ? Math.round(Number(`0.${secondParts}`) * 1000) : '000'
+      }`
     default:
-      return `${hours || 0}:${minutes || 0}`
+      return `${hours || 0}:${minutes || '00'}`
   }
 }
 

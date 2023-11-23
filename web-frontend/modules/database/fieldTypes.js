@@ -1905,7 +1905,7 @@ export class DurationFieldType extends FieldType {
 
   // TODO: fix this:
   getGridViewFieldComponent() {
-    return GridViewFieldPhoneNumber
+    return GridViewFieldDuration
   }
 
   // TODO: fix this:
