@@ -10,7 +10,7 @@
 .grid-field-duration-placeholder {
   @extend .grid-field-duration;
 
-  color: #9c9c9f;
+  color: $palette-neutral-700;
 }
 
 .grid-field-duration__input {
