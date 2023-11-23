@@ -41,6 +41,7 @@ import GridViewFieldMultipleCollaborators from '@baserow/modules/database/compon
 import GridViewFieldUUID from '@baserow/modules/database/components/view/grid/fields/GridViewFieldUUID'
 
 import FunctionalGridViewFieldText from '@baserow/modules/database/components/view/grid/fields/FunctionalGridViewFieldText'
+import FunctionalGridViewFieldDuration from '@baserow/modules/database/components/view/grid/fields/FunctionalGridViewFieldDuration'
 import FunctionalGridViewFieldLongText from '@baserow/modules/database/components/view/grid/fields/FunctionalGridViewFieldLongText'
 import FunctionalGridViewFieldLinkRow from '@baserow/modules/database/components/view/grid/fields/FunctionalGridViewFieldLinkRow'
 import FunctionalGridViewFieldNumber from '@baserow/modules/database/components/view/grid/fields/FunctionalGridViewFieldNumber'
@@ -1909,7 +1910,7 @@ export class DurationFieldType extends FieldType {
 
   // TODO: fix this:
   getFunctionalGridViewFieldComponent() {
-    return FunctionalGridViewFieldText
+    return FunctionalGridViewFieldDuration
   }
 
   prepareValueForUpdate(field, value) {
