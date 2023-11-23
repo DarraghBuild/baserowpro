@@ -148,6 +148,7 @@ from .models import (
     CountField,
     CreatedOnField,
     DateField,
+    DurationField,
     EmailField,
     Field,
     FileField,
@@ -1224,6 +1225,57 @@ class CreatedOnFieldType(CreatedOnLastModifiedBaseFieldType):
     source_field_name = "created_on"
     model_field_kwargs = {"sync_with_add": "created_on"}
 
+
+class DurationFieldType(CharFieldMatchingRegexFieldType):
+    type = "duration"
+    model_class = DurationField
+    allowed_fields = ["duration_format"]
+    serializer_field_names = ["duration_format"]
+
+    MAX_DURATION_LENGTH = 100
+
+    @property
+    def max_length(self):
+        # TODO: fix this:
+        """
+        """
+        return self.MAX_DURATION_LENGTH
+
+    # TODO: fix this:
+    @property
+    def regex(self):
+        """
+        Allow common punctuation used in phone numbers and spaces to allow formatting,
+        but otherwise don't allow text as the phone number should work as a link on
+        mobile devices.
+        Duplicated in the frontend code at, please keep in sync:
+        web-frontend/modules/core/utils/string.js#isSimplePhoneNumber
+        """
+
+        return rf"^[0-9NnXx,+._*()#=;/ -]{{1,{self.max_length}}}$"
+
+    def get_model_field(self, instance, **kwargs):
+        return models.DurationField(
+            null=True,
+            blank=True,
+            **kwargs,
+        )
+
+    def get_serializer_field(self, instance, **kwargs):
+        return serializers.DurationField(
+            **{
+                "required": False,
+                "allow_null": True,
+                **kwargs,
+            }
+        )
+
+    def prepare_value_for_db(self, instance, value):
+        return value or None
+
+    # TODO fix this:
+    def random_value(self, instance, fake, cache):
+        pass
 
 class LinkRowFieldType(FieldType):
     """

@@ -134,6 +134,61 @@ export const isNumeric = (value) => {
   return /^-?\d+$/.test(value)
 }
 
+export const isDuration = (value, durationFormat) => {
+  const formatRegexMap = {
+    'h:mm': /^\d+:\d+$/,
+    'h:mm:ss': /^\d+:\d+:\d+$/,
+    'h:mm:ss.s': /^\d+:\d+:\d+\.\d$/,
+    'h:mm:ss.ss': /^\d+:\d+:\d+\.\d{2}$/,
+    'h:mm:ss.sss': /^\d+:\d+:\d+\.\d{3}$/,
+  }
+
+  const pattern = formatRegexMap[durationFormat]
+  // Dynamically format (attempt to extract) the value based on the provided
+  // durationFormat:
+  const formattedValue = formatDuration(value, durationFormat)
+
+  // Value couldn't be guessed:
+  if (!formattedValue) {
+    return false
+  }
+
+  return pattern.test(formattedValue)
+}
+
+export const formatDuration = (value, durationFormat) => {
+  const numberPattern =
+    /^(\d+)(?::(\d{1,2})(?::(\d{1,2})(?:\.(\d{1,3}))?)?)?(.*?)$/
+  const match = value.match(numberPattern)
+
+  // No match found (value couldn't be guessed):
+  if (!match) {
+    return null
+  }
+
+  const [, hours, minutes, seconds, deciseconds, centiseconds, milliseconds] =
+    match
+
+  switch (durationFormat) {
+    case 'h:mm':
+      return `${hours || 0}:${minutes || 0}`
+    case 'h:mm:ss':
+      return `${hours || 0}:${minutes || 0}:${seconds || 0}`
+    case 'h:mm:ss.s':
+      return `${hours || 0}:${minutes || 0}:${seconds || 0}.${deciseconds || 0}`
+    case 'h:mm:ss.ss':
+      return `${hours || 0}:${minutes || 0}:${seconds || 0}.${
+        deciseconds || 0
+      }.${centiseconds || 0}`
+    case 'h:mm:ss.sss':
+      return `${hours || 0}:${minutes || 0}:${seconds || 0}.${
+        deciseconds || 0
+      }.${centiseconds || 0}.${milliseconds || 0}`
+    default:
+      return `${hours || 0}:${minutes || 0}`
+  }
+}
+
 /**
  * Allow to find the next unused name excluding a list of names.
  * This is the frontend equivalent of backend ".find_unused_name()" method.

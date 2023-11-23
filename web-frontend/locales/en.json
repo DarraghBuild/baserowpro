@@ -90,6 +90,7 @@
         "date": "Date",
         "lastModified": "Last modified",
         "createdOn": "Created on",
+        "duration": "Duration",
         "url": "URL",
         "email": "Email",
         "file": "File",
@@ -116,7 +117,8 @@
         "invalidUrl": "Invalid URL",
         "max254Chars": "Max 254 chars",
         "invalidEmail": "Invalid email",
-        "invalidPhoneNumber": "Invalid Phone Number"
+        "invalidPhoneNumber": "Invalid Phone Number",
+        "invalidDuration": "Invalid duration ({durationFormat})"
     },
     "fieldDocs": {
         "readOnly": "This is a read only field.",
@@ -135,6 +137,7 @@
         "dateTimeResponse": "The response will be a date in ISO format.",
         "lastModifiedReadOnly": "The last modified field is a read only field.",
         "createdOnReadOnly": "The created on field is a read only field.",
+        "duration": "Duration fields that accepts time-based duration in a specified format",
         "url": "Accepts a string that must be a URL.",
         "email": "Accepts a string that must be an email address.",
         "file": "Accepts an array of objects containing at least the name of the user file. You can use the \"File uploads\" endpoints to upload the file. The response of those calls can be provided directly as object here. The endpoints can be found in the left sidebar.",

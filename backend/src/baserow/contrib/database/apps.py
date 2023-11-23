@@ -202,6 +202,7 @@ class DatabaseConfig(AppConfig):
             CountFieldType,
             CreatedOnFieldType,
             DateFieldType,
+            DurationFieldType,
             EmailFieldType,
             FileFieldType,
             FormulaFieldType,
@@ -231,6 +232,7 @@ class DatabaseConfig(AppConfig):
         field_type_registry.register(DateFieldType())
         field_type_registry.register(LastModifiedFieldType())
         field_type_registry.register(CreatedOnFieldType())
+        field_type_registry.register(DurationFieldType())
         field_type_registry.register(LinkRowFieldType())
         field_type_registry.register(FileFieldType())
         field_type_registry.register(SingleSelectFieldType())

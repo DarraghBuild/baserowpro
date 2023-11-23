@@ -7,6 +7,8 @@ import {
   isSimplePhoneNumber,
   isValidEmail,
   isValidURL,
+  isDuration,
+  formatDuration,
 } from '@baserow/modules/core/utils/string'
 
 import moment from '@baserow/modules/core/moment'
@@ -1876,6 +1878,61 @@ export class CreatedOnFieldType extends CreatedOnLastModifiedBaseFieldType {
   getName() {
     const { i18n } = this.app
     return i18n.t('fieldType.createdOn')
+  }
+}
+
+export class DurationFieldType extends FieldType {
+  static getType() {
+    return 'duration'
+  }
+
+  getIconClass() {
+    return 'iconoir-clock-rotate-right'
+  }
+
+  getName() {
+    const { i18n } = this.app
+    return i18n.t('fieldType.duration')
+  }
+
+  getDocsDescription(field) {
+    return super.getDocsDescription(
+      field,
+      this.app.i18n.t('fieldDocs.duration')
+    )
+  }
+
+  // TODO: fix this:
+  getGridViewFieldComponent() {
+    return GridViewFieldPhoneNumber
+  }
+
+  // TODO: fix this:
+  getFunctionalGridViewFieldComponent() {
+    return FunctionalGridViewFieldText
+  }
+
+  prepareValueForUpdate(field, value) {
+    if (value) {
+      const durationFormat = field.duration_format
+      return formatDuration(value, durationFormat)
+    }
+    return value
+  }
+
+  getValidationError(field, value) {
+    if (value === null || value === '') {
+      return null
+    }
+
+    const durationFormat = field.duration_format
+
+    if (!isDuration(value, durationFormat)) {
+      return this.app.i18n.t('fieldErrors.invalidDuration', {
+        durationFormat,
+      })
+    }
+    return null
   }
 }
 
