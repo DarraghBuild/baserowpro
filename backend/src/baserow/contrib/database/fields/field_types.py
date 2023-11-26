@@ -708,9 +708,25 @@ class BooleanFieldType(FieldType):
     model_class = BooleanField
     _can_group_by = True
 
-    # lowercase serializers.BooleanField.TRUE_VALUES + "checked" keyword
     # WARNING: these values are prone to SQL injection
+    # lowercase serializers.BooleanField.TRUE_VALUES + "checked" keyword
     TRUE_VALUES = ["t", "true", "on", "y", "yes", 1, "checked"]
+    # lowercase serializers.BooleanField.FALSE_VALUES + "unchecked" keyword
+    FALSE_VALUES = ["f", "false", "off", "n", "no", 0, "unchecked"]
+
+    def prepare_value_for_db(self, instance: Field, value: bool) -> Any:
+        """
+        :param instance: The `Field` instance we want to prepare with.
+        :param value: The bool value we wish to use for this `field`.
+        :return: The bool value, prepared.
+        """
+
+        if str(value).lower() not in self.TRUE_VALUES + self.FALSE_VALUES:
+            raise ValidationError(
+                "A BooleanFieldType expects a truthy or falsy value, "
+                f"but it received: {value}."
+            )
+        return value
 
     def get_alter_column_prepare_new_value(self, connection, from_field, to_field):
         """

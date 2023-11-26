@@ -1,5 +1,13 @@
+from unittest.mock import Mock
+
 import pytest
 
+from baserow.contrib.builder.data_sources.builder_dispatch_context import (
+    BuilderDispatchContext,
+)
+from baserow.contrib.builder.workflow_actions.exceptions import (
+    BuilderWorkflowActionCannotBeDispatched,
+)
 from baserow.contrib.builder.workflow_actions.models import (
     BuilderWorkflowAction,
     EventTypes,
@@ -227,4 +235,35 @@ def test_order_workflow_actions_user_not_in_workspace(data_fixture):
             element.page,
             [workflow_action_two.id, workflow_action_one.id],
             element=element,
+        )
+
+
+@pytest.mark.django_db
+def test_dispatch_action_with_incompatible_action(data_fixture):
+    user = data_fixture.create_user()
+    page = data_fixture.create_builder_page()
+    element = data_fixture.create_builder_button_element(page=page)
+    workflow_action = data_fixture.create_notification_workflow_action(
+        page=page, element=element, event=EventTypes.CLICK
+    )
+    dispatch_context = BuilderDispatchContext(Mock(), None)
+    with pytest.raises(BuilderWorkflowActionCannotBeDispatched):
+        BuilderWorkflowActionService().dispatch_action(
+            user, workflow_action, dispatch_context
+        )
+
+
+@pytest.mark.django_db
+def test_dispatch_workflow_action_no_permissions(data_fixture):
+    user = data_fixture.create_user()
+    page = data_fixture.create_builder_page()
+    element = data_fixture.create_builder_button_element(page=page)
+    workflow_action = data_fixture.create_local_baserow_create_row_workflow_action(
+        page=page, element=element, event=EventTypes.CLICK, user=user
+    )
+
+    dispatch_context = BuilderDispatchContext(Mock(), None)
+    with pytest.raises(UserNotInWorkspace):
+        BuilderWorkflowActionService().dispatch_action(
+            user, workflow_action, dispatch_context
         )

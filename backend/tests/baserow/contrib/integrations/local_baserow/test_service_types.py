@@ -1738,3 +1738,94 @@ def test_local_baserow_upsert_row_service_dispatch_transform(
         "order": "1.00000000000000000000",
         ingredient.db_column: str(fake_request.data["page_parameter"]["id"]),
     }
+
+
+@pytest.mark.django_db
+def test_local_baserow_upsert_row_service_dispatch_data_incompatible_value(
+    data_fixture,
+):
+    user = data_fixture.create_user()
+    page = data_fixture.create_builder_page(user=user)
+    integration = data_fixture.create_local_baserow_integration(
+        application=page.builder, user=user
+    )
+    database = data_fixture.create_database_application(
+        workspace=page.builder.workspace
+    )
+    table = TableHandler().create_table_and_fields(
+        user=user,
+        database=database,
+        name=data_fixture.fake.name(),
+        fields=[
+            ("Active", "boolean", {}),
+        ],
+    )
+    field = table.field_set.get()
+
+    service = data_fixture.create_local_baserow_upsert_row_service(
+        table=table,
+        integration=integration,
+    )
+    service_type = service.get_type()
+    service.field_mappings.create(field=field, value="'Horse'")
+
+    dispatch_context = BuilderDispatchContext(Mock(), page)
+    with pytest.raises(ServiceImproperlyConfigured) as exc:
+        service_type.dispatch_data(service, {}, dispatch_context)
+
+    assert exc.value.args[0] == (
+        f"The result of the `{field.db_column}` formula "
+        "must be compatible for the boolean field type."
+    )
+
+
+@pytest.mark.django_db
+def test_local_baserow_upsert_row_service_resolve_service_formulas(
+    data_fixture,
+):
+    user = data_fixture.create_user()
+    page = data_fixture.create_builder_page(user=user)
+    integration = data_fixture.create_local_baserow_integration(
+        application=page.builder, user=user
+    )
+    database = data_fixture.create_database_application(
+        workspace=page.builder.workspace
+    )
+    table = TableHandler().create_table_and_fields(
+        user=user,
+        database=database,
+        name=data_fixture.fake.name(),
+        fields=[
+            ("Name", "text", {}),
+        ],
+    )
+    service = data_fixture.create_local_baserow_upsert_row_service(
+        table=table,
+        integration=integration,
+    )
+    service_type = service.get_type()
+
+    dispatch_context = BuilderDispatchContext(Mock(), page)
+
+    # We're creating a row.
+    assert service.row_id == ""
+    assert service_type.resolve_service_formulas(service, dispatch_context) == {
+        "row_id": ""
+    }
+
+    # We're updating a row, but the ID isn't an integer
+    service.row_id = "'horse'"
+    with pytest.raises(ServiceImproperlyConfigured) as exc:
+        service_type.resolve_service_formulas(service, dispatch_context)
+
+    assert exc.value.args[0] == (
+        "The result of the `row_id` formula must "
+        "be an integer or convertible to an integer."
+    )
+
+    # We're updating a row, but the ID formula can't be resolved
+    service.row_id = "'horse"
+    with pytest.raises(ServiceImproperlyConfigured) as exc:
+        service_type.resolve_service_formulas(service, dispatch_context)
+
+    assert exc.value.args[0].startswith("The `row_id` formula can't be resolved")
