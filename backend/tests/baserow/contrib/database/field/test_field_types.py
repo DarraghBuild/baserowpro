@@ -567,7 +567,7 @@ def test_human_readable_values(data_fixture):
         "url": "",
         "formula_bool": "True",
         "formula_date": "2020-01-01",
-        "formula_dateinterval": "1 day, 0:00:00",
+        "formula_dateinterval": "1 day",
         "formula_decimal": "33.3333333333",
         "formula_email": "",
         "formula_int": "1",
@@ -576,6 +576,7 @@ def test_human_readable_values(data_fixture):
         "formula_link_url_only": "https://google.com",
         "formula_link_with_label": "label (https://google.com)",
         "lookup": "",
+        "autonumber": "1",
     }
 
     for key, value in blank_expected.items():
@@ -629,6 +630,7 @@ def test_human_readable_values(data_fixture):
         "formula_link_url_only": "https://google.com",
         "formula_link_with_label": "label (https://google.com)",
         "lookup": "linked_row_1, linked_row_2, ",
+        "autonumber": "2",
     }
 
     for key, value in expected.items():

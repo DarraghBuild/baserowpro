@@ -217,6 +217,7 @@ def setup_interesting_test_table(
         "formula_link_url_only": "",
         "formula_link_with_label": "",
         "uuid": "00000000-0000-0000-0000-000000000000",
+        "autonumber": 2,
     }
 
     with freeze_time("2020-02-01 01:23"):
@@ -252,6 +253,7 @@ def setup_interesting_test_table(
     with freeze_time("2021-01-02 12:00"):
         blank_row = row_handler.create_row(user, table, {})
         row = model.objects.create(**row_values)
+        blank_row, row = model.objects.all()
 
     # Setup the link rows
     linked_row_1 = row_handler.create_row(

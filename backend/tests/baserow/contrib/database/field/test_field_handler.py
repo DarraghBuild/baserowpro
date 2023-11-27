@@ -26,6 +26,7 @@ from baserow.contrib.database.fields.field_helpers import (
     construct_all_possible_field_kwargs,
 )
 from baserow.contrib.database.fields.field_types import (
+    AutonumberFieldType,
     BooleanFieldType,
     CountFieldType,
     CreatedOnFieldType,
@@ -134,7 +135,7 @@ def _test_can_convert_between_fields(data_fixture, field_type_to_test):
             table=table,
             type_name=from_field_type_name,
             name=new_name,
-            **from_field_kwargs,
+            **{k: v for k, v in from_field_kwargs.items() if k != "name"},
         )
         if not field_type.read_only:
             random_field_value = field_type.random_value(from_field, fake, cache)
@@ -174,6 +175,7 @@ def _test_can_convert_between_fields(data_fixture, field_type_to_test):
         field_name = from_field_kwargs.pop("name")
         for to_field_type_name, all_kwargs in all_possible_kwargs_per_type.items():
             for to_field_kwargs in all_kwargs:
+                # from field_type_to_test to other types
                 test_field_conversion(
                     field_name,
                     field_type_to_test,
@@ -181,6 +183,15 @@ def _test_can_convert_between_fields(data_fixture, field_type_to_test):
                     to_field_type_name,
                     to_field_kwargs,
                 )
+                if field_type_to_test != to_field_type_name:
+                    # from other types to field_type_to_test
+                    test_field_conversion(
+                        field_name,
+                        to_field_type_name,
+                        to_field_kwargs,
+                        field_type_to_test,
+                        from_field_kwargs,
+                    )
 
 
 @pytest.mark.field_text
@@ -335,6 +346,13 @@ def test_field_conversion_multiple_collaborators(data_fixture):
 @pytest.mark.django_db
 def test_field_conversion_last_modified_by(data_fixture):
     _test_can_convert_between_fields(data_fixture, LastModifiedByFieldType.type)
+
+
+@pytest.mark.field_autonumber
+@pytest.mark.disabled_in_ci
+@pytest.mark.django_db
+def test_field_conversion_autonumber(data_fixture):
+    _test_can_convert_between_fields(data_fixture, AutonumberFieldType.type)
 
 
 @pytest.mark.django_db
