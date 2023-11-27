@@ -157,7 +157,10 @@ export const isDuration = (value, durationFormat) => {
 }
 
 export const formatDuration = (value, durationFormat) => {
-  const numberPattern = /^(\d+)(?::(\d{1,2})(?::(\d{1,2})(?:\.(\d+))?)?)?(.*?)$/
+  const numberPattern =
+    /^(\d+)(?::(\d{1,2})(?::(\d{1,2}(?:\.\d{1,3})?)?)?)?(.*?)$/
+
+  // Extract matched values using the regular expression
   const match = value.match(numberPattern)
 
   // No match found (value couldn't be guessed):
@@ -165,25 +168,37 @@ export const formatDuration = (value, durationFormat) => {
     return null
   }
 
-  const [, hours, minutes, seconds, secondParts] = match
+  const [, hours, minutes, seconds] = match
 
   switch (durationFormat) {
     case 'h:mm':
       return `${hours || 0}:${minutes || '00'}`
     case 'h:mm:ss':
       return `${hours || 0}:${minutes || '00'}:${seconds || '00'}`
-    case 'h:mm:ss.s':
-      return `${hours || 0}:${minutes || '00'}:${seconds || '00'}.${
-        secondParts ? Math.round(Number(`0.${secondParts}`) * 10) : '0'
-      }`
-    case 'h:mm:ss.ss':
-      return `${hours || 0}:${minutes || '00'}:${seconds || '00'}.${
-        secondParts ? Math.round(Number(`0.${secondParts}`) * 100) : '00'
-      }`
-    case 'h:mm:ss.sss':
-      return `${hours || 0}:${minutes || '00'}:${seconds || '00'}.${
-        secondParts ? Math.round(Number(`0.${secondParts}`) * 1000) : '000'
-      }`
+    case 'h:mm:ss.s': {
+      const formattedDeciseconds = seconds
+        ? seconds.includes('.')
+          ? Number(seconds).toFixed(1)
+          : `${seconds}.0`
+        : '00.0'
+      return `${hours || 0}:${minutes || '00'}:${formattedDeciseconds}`
+    }
+    case 'h:mm:ss.ss': {
+      const formattedCentiseconds = seconds
+        ? seconds.includes('.')
+          ? Number(seconds).toFixed(2)
+          : `${seconds}.00`
+        : '00.00'
+      return `${hours || 0}:${minutes || '00'}:${formattedCentiseconds}`
+    }
+    case 'h:mm:ss.sss': {
+      const formattedMilliseconds = seconds
+        ? seconds.includes('.')
+          ? Number(seconds).toFixed(3)
+          : `${seconds}.000`
+        : '00.000'
+      return `${hours || 0}:${minutes || '00'}:${formattedMilliseconds}`
+    }
     default:
       return `${hours || 0}:${minutes || '00'}`
   }
