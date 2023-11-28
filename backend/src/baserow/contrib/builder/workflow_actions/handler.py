@@ -13,9 +13,6 @@ from baserow.contrib.builder.pages.models import Page
 from baserow.contrib.builder.workflow_actions.exceptions import (
     WorkflowActionNotInElement,
 )
-from baserow.contrib.builder.workflow_actions.exceptions import (
-    BuilderWorkflowActionImproperlyConfigured,
-)
 from baserow.contrib.builder.workflow_actions.models import (
     BuilderWorkflowAction,
     BuilderWorkflowServiceAction,
