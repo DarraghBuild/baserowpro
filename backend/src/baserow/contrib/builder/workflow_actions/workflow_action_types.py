@@ -223,7 +223,7 @@ class UpsertRowWorkflowActionType(BuilderWorkflowServiceActionType):
                 service.integration = integration
                 service.save()
 
-        if "field_mappings" in values:
+        if "field_mappings" in values and service.table_id:
             bulk_field_mappings = []
             service.field_mappings.all().delete()
             base_field_qs = service.table.field_set.all()
