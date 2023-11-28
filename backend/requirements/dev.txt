@@ -63,7 +63,7 @@ decorator==5.1.1
     #   -c base.txt
     #   ipdb
     #   ipython
-django==3.2.21
+django==4.0.10
     # via
     #   -c base.txt
     #   django-extensions
@@ -268,10 +268,6 @@ python-dateutil==2.8.2
     # via
     #   -c base.txt
     #   freezegun
-pytz==2022.4
-    # via
-    #   -c base.txt
-    #   django
 pyyaml==6.0
     # via
     #   -c base.txt
