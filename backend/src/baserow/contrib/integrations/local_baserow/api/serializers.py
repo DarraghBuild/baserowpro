@@ -28,9 +28,3 @@ class LocalBaserowTableServiceFieldMappingSerializer(serializers.Serializer):
         help_text="The primary key of the associated database table field."
     )
     value = FormulaSerializerField(allow_blank=True)
-
-
-class LocalBaserowUpsertRowSerializer(serializers.Serializer):
-    field_mappings = LocalBaserowTableServiceFieldMappingSerializer(
-        many=True, required=False
-    )

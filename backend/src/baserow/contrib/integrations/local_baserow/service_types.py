@@ -36,7 +36,6 @@ from baserow.contrib.database.views.handler import ViewHandler
 from baserow.contrib.integrations.local_baserow.api.serializers import (
     LocalBaserowTableServiceFilterSerializer,
     LocalBaserowTableServiceSortSerializer,
-    LocalBaserowUpsertRowSerializer,
 )
 from baserow.contrib.integrations.local_baserow.integration_types import (
     LocalBaserowIntegrationType,
@@ -874,7 +873,6 @@ class LocalBaserowUpsertRowServiceType(LocalBaserowTableServiceType):
     integration_type = LocalBaserowIntegrationType.type
     type = "local_baserow_upsert_row"
     model_class = LocalBaserowUpsertRow
-    serializer_mixins = [LocalBaserowUpsertRowSerializer]
     dispatch_type = DispatchTypes.DISPATCH_WORKFLOW_ACTION
 
     allowed_fields = ["table", "row_id"]
