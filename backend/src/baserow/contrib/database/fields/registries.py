@@ -1,7 +1,8 @@
-from typing import TYPE_CHECKING, Any, Dict, List, NoReturn, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, NoReturn, Optional, Tuple, Union
 from zipfile import ZipFile
 
 from django.contrib.auth.models import AbstractUser
+from django.contrib.postgres.aggregates import StringAgg
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.fields import JSONField as PostgresJSONField
 from django.core.exceptions import ValidationError
@@ -14,11 +15,14 @@ from django.db.models import (
     Expression,
     JSONField,
     Model,
+    OuterRef,
     Q,
     QuerySet,
+    Subquery,
+    Value,
 )
 from django.db.models.fields.related import ForeignKey, ManyToManyField
-from django.db.models.functions import Cast
+from django.db.models.functions import Cast, Coalesce
 
 from baserow.contrib.database.fields.constants import UPSERT_OPTION_DICT_KEY
 from baserow.contrib.database.fields.field_sortings import OptionallyAnnotatedOrderBy
@@ -1477,6 +1481,40 @@ class FieldType(
 
         return self._can_group_by
 
+    def get_group_by_field_unique_value_string(
+        self, field: Field, field_name: str, value: Any
+    ) -> Any:
+        """
+        Should return a unique hashable value that can be set as key of a dict. In
+        almost all cases, it's fine to just return the actual value, but for example
+        with a more complex structure like a ManyToOneDescription, something
+        compatible can be returned.
+
+        :param field: The field for which to generate the unique value.
+        :param field_name: The name of that field in the table.
+        :param value: The unique value that must be converted.
+        :return: The converted unique value.
+        """
+
+        return value
+
+    def get_group_by_field_filters_and_annotations(
+        self, field: Field, field_name: str, base_queryset: QuerySet, value: Any
+    ) -> Tuple[Dict, Dict]:
+        """
+        The filters that must be applied to match the provided value to the queryset
+        when grouping. By default, a `field_name=value` lookup will suffice for most
+        use cases, but for some other a more complicated lookup must be done.
+
+        :param field: The field that must be looked up.
+        :param field_name: The name of the field in the table that must be looked up.
+        :param base_queryset: The base queryset of the items the grouped rows.
+        :param value: The unique value that must be looked up.
+        :return: A tuple containing the filters and annotations as dict.
+        """
+
+        return {field_name: value}, {}
+
     def before_field_options_update(
         self,
         field: Field,
@@ -1672,6 +1710,39 @@ class ReadOnlyFieldType(FieldType):
             return super().set_import_serialized_value(
                 row, field_name, value, id_mapping, cache, files_zip, storage
             )
+
+
+class ManyToManyGroupByMixin:
+    def get_group_by_field_unique_value_string(
+        self, field: Field, field_name: str, value: Any
+    ) -> Any:
+        return ",".join([str(v.id) for v in value.all()])
+
+    def get_group_by_field_filters_and_annotations(
+        self, field, field_name, base_queryset, value
+    ):
+        filters = {
+            field_name: value,
+        }
+        annotations = {
+            field_name: Subquery(
+                base_queryset.filter(id=OuterRef("id"))
+                .annotate(
+                    res=Coalesce(
+                        StringAgg(
+                            Cast(
+                                f"{field_name}__id",
+                                output_field=CharField(),
+                            ),
+                            ",",
+                        ),
+                        Value(""),
+                    )
+                )
+                .values("res")
+            )
+        }
+        return filters, annotations
 
 
 class FieldTypeRegistry(

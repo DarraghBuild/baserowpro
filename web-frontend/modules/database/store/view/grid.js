@@ -127,6 +127,7 @@ export const state = () => ({
   hideRowsNotMatchingSearch: true,
   fieldAggregationData: {},
   activeGroupBys: [],
+  groupMetaData: {},
 })
 
 export const mutations = {
@@ -480,6 +481,57 @@ export const mutations = {
       [fieldId]: { ...current, loading: newLoadingValue },
     }
   },
+  SET_GROUP_META_DATA(state, metaData) {
+    state.groupMetaData = metaData
+  },
+  UPDATE_GROUP_META_DATA(state, metaData) {
+    Object.keys(metaData).forEach((groupField) => {
+      metaData[groupField].forEach((data) => {
+        const existingIndex = state.groupMetaData[groupField].findIndex(
+          (existingGroup) => existingGroup[groupField] === data[groupField]
+        )
+
+        console.log(existingIndex)
+
+        if (existingIndex !== -1) {
+          Vue.set(state.groupMetaData[groupField], existingIndex, data)
+        } else {
+          state.groupMetaData[groupField].push(data)
+        }
+      })
+    })
+  },
+
+  // @TODO figure out how to handle the scenario of adding a specific number
+  //  of rows limit=40&offset=80
+  //
+  // SET_GROUPS(state, newGroups) {
+  //   if (!newGroups) {
+  //     return
+  //   }
+  //   // For each level in newGroups
+  //   Object.keys(newGroups).forEach((level) => {
+  //     // If this level does not exist in state.groups, create it
+  //     if (!state.groups[level]) {
+  //       Vue.set(state.groups, level, [])
+  //     }
+  //
+  //     newGroups[level].forEach((newGroup) => {
+  //       const existingGroupIndex = state.groups[level].findIndex(
+  //         (group) => JSON.stringify(group.key) === JSON.stringify(newGroup.key)
+  //       )
+  //
+  //       // If this group already exists in state.groups, override it
+  //       if (existingGroupIndex !== -1) {
+  //         Vue.set(state.groups[level], existingGroupIndex, newGroup)
+  //       } else {
+  //         // Otherwise, add it to state.groups
+  //         state.groups[level].push(newGroup)
+  //       }
+  //     })
+  //   })
+  // },
+  //
 }
 
 // Contains the info needed for the delayed scroll top action.
@@ -635,6 +687,7 @@ export const actions = {
             bufferStartIndex,
             bufferLimit,
           })
+          commit('UPDATE_GROUP_META_DATA', data.group_meta_data || {})
           dispatch('visibleByScrollTop')
           dispatch('updateSearch', { fields })
           lastRequest = null
@@ -805,6 +858,7 @@ export const actions = {
       top: 0,
     })
     commit('REPLACE_ALL_FIELD_OPTIONS', data.field_options)
+    commit('SET_GROUP_META_DATA', data.group_meta_data || {})
     dispatch('updateSearch', { fields })
   },
   /**
@@ -879,6 +933,7 @@ export const actions = {
           bufferStartIndex: offset,
           bufferLimit: data.results.length,
         })
+        commit('SET_GROUP_META_DATA', data.group_meta_data || {})
         dispatch('updateSearch', { fields })
         if (includeFieldOptions) {
           if (rootGetters['page/view/public/getIsPublic']) {
@@ -2923,6 +2978,9 @@ export const getters = {
   },
   getActiveGroupBys(state) {
     return state.activeGroupBys
+  },
+  getGroupMetaData(state) {
+    return state.groupMetaData
   },
 }
 

@@ -603,7 +603,7 @@ export class BaserowFormulaArrayType extends BaserowFormulaTypeDefinition {
   }
 
   canGroupByInView() {
-    return true
+    return false
   }
 }
 
@@ -657,6 +657,10 @@ export class BaserowFormulaFileType extends BaserowFormulaTypeDefinition {
   }
 
   canBeSortedWhenInArray(field) {
+    return false
+  }
+
+  canGroupByInView() {
     return false
   }
 
@@ -739,7 +743,7 @@ export class BaserowFormulaSingleSelectType extends BaserowFormulaTypeDefinition
   }
 
   canGroupByInView() {
-    return true
+    return false
   }
 }
 
@@ -797,6 +801,6 @@ export class BaserowFormulaLinkType extends BaserowFormulaTypeDefinition {
   }
 
   canGroupByInView() {
-    return true
+    return false
   }
 }

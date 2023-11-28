@@ -1,3 +1,4 @@
+import datetime
 from decimal import Decimal
 from unittest.mock import patch
 
@@ -5,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.test import override_settings
 
 import pytest
+from pytz import UTC
 
 from baserow.contrib.database.fields.exceptions import (
     FieldNotInTable,
@@ -12,6 +14,7 @@ from baserow.contrib.database.fields.exceptions import (
 )
 from baserow.contrib.database.fields.handler import FieldHandler
 from baserow.contrib.database.fields.models import Field
+from baserow.contrib.database.fields.registries import field_type_registry
 from baserow.contrib.database.rows.handler import RowHandler
 from baserow.contrib.database.search.handler import ALL_SEARCH_MODES, SearchHandler
 from baserow.contrib.database.table.handler import TableHandler
@@ -66,6 +69,7 @@ from baserow.contrib.database.views.view_types import GridViewType
 from baserow.core.db import get_collation_name
 from baserow.core.exceptions import PermissionDenied, UserNotInWorkspace
 from baserow.core.trash.handler import TrashHandler
+from baserow.test_utils.helpers import setup_interesting_test_table
 
 
 @pytest.fixture(autouse=True)
@@ -3799,3 +3803,247 @@ def test_filter_builder_is_created_correctly_with_filter_groups(data_fixture):
     rows = view_handler.apply_filters(grid_view, model.objects.all())
     row_ids = [row.id for row in rows]
     assert row_ids == [row_1.id, row_5.id, row_6.id]
+
+
+@pytest.mark.django_db
+def test_get_group_by_meta_data_in_rows(data_fixture):
+    table = data_fixture.create_database_table()
+    text_field = data_fixture.create_text_field(
+        table=table, order=0, name="Color", text_default="white"
+    )
+    number_field = data_fixture.create_number_field(
+        table=table, order=1, name="Horsepower"
+    )
+    boolean_field = data_fixture.create_boolean_field(
+        table=table, order=2, name="For sale"
+    )
+
+    model = table.get_model()
+    model.objects.create(
+        **{
+            f"field_{text_field.id}": "Green",
+            f"field_{number_field.id}": 10,
+            f"field_{boolean_field.id}": False,
+        }
+    )
+    model.objects.create(
+        **{
+            f"field_{text_field.id}": "Green",
+            f"field_{number_field.id}": 10,
+            f"field_{boolean_field.id}": False,
+        }
+    )
+    model.objects.create(
+        **{
+            f"field_{text_field.id}": "Green",
+            f"field_{number_field.id}": 10,
+            f"field_{boolean_field.id}": True,
+        }
+    )
+    model.objects.create(
+        **{
+            f"field_{text_field.id}": "Green",
+            f"field_{number_field.id}": 20,
+            f"field_{boolean_field.id}": True,
+        }
+    )
+    model.objects.create(
+        **{
+            f"field_{text_field.id}": "Green",
+            f"field_{number_field.id}": 20,
+            f"field_{boolean_field.id}": True,
+        }
+    )
+    model.objects.create(
+        **{
+            f"field_{text_field.id}": "Green",
+            f"field_{number_field.id}": 20,
+            f"field_{boolean_field.id}": True,
+        }
+    )
+    model.objects.create(
+        **{
+            f"field_{text_field.id}": "Orange",
+            f"field_{number_field.id}": 10,
+            f"field_{boolean_field.id}": True,
+        }
+    )
+    model.objects.create(
+        **{
+            f"field_{text_field.id}": "Orange",
+            f"field_{number_field.id}": 30,
+            f"field_{boolean_field.id}": True,
+        }
+    )
+    model.objects.create(
+        **{
+            f"field_{text_field.id}": "Orange",
+            f"field_{number_field.id}": 40,
+            f"field_{boolean_field.id}": True,
+        }
+    )
+
+    queryset = model.objects.all()
+    rows = list(queryset)
+
+    handler = ViewHandler()
+    counts = handler.get_group_by_meta_data_in_rows(
+        [text_field, number_field], rows, queryset
+    )
+
+    # Resolve the queryset, so that we can do a comparison.
+    for c in counts.keys():
+        counts[c] = list(counts[c])
+
+    assert counts == {
+        text_field: [
+            {"field_1": "Green", "count": 6},
+            {"field_1": "Orange", "count": 3},
+        ],
+        number_field: [
+            {"field_1": "Green", "field_2": Decimal("10"), "count": 3},
+            {"field_1": "Green", "field_2": Decimal("20"), "count": 3},
+            {"field_1": "Orange", "field_2": Decimal("10"), "count": 1},
+            {"field_1": "Orange", "field_2": Decimal("30"), "count": 1},
+            {"field_1": "Orange", "field_2": Decimal("40"), "count": 1},
+        ],
+    }
+
+
+@pytest.mark.django_db
+def test_get_group_by_on_all_fields_in_interesting_table(data_fixture):
+    table, user, row, _, context = setup_interesting_test_table(data_fixture)
+    model = table.get_model()
+    queryset = model.objects.all()
+    rows = list(queryset)
+    handler = ViewHandler()
+    all_fields = list(table.field_set.all())
+    fields_to_group_by = [
+        field
+        for field in all_fields
+        if field_type_registry.get_by_model(field.specific).check_can_group_by(field)
+    ]
+
+    actual_result_per_field_name = {}
+
+    for field in fields_to_group_by:
+        counts = handler.get_group_by_meta_data_in_rows([field], rows, queryset)
+        actual_result_per_field_name[field.name] = list(counts[field])
+
+    assert actual_result_per_field_name == {
+        "text": [{"field_4": "text", "count": 1}, {"field_4": None, "count": 1}],
+        "long_text": [
+            {"field_5": "long_text", "count": 1},
+            {"field_5": None, "count": 1},
+        ],
+        "url": [
+            {"field_6": "", "count": 1},
+            {"field_6": "https://www.google.com", "count": 1},
+        ],
+        "email": [
+            {"field_7": "", "count": 1},
+            {"field_7": "test@example.com", "count": 1},
+        ],
+        "negative_int": [
+            {"field_8": Decimal("-1"), "count": 1},
+            {"field_8": None, "count": 1},
+        ],
+        "positive_int": [
+            {"field_9": Decimal("1"), "count": 1},
+            {"field_9": None, "count": 1},
+        ],
+        "negative_decimal": [
+            {"field_10": Decimal("-1.2"), "count": 1},
+            {"field_10": None, "count": 1},
+        ],
+        "positive_decimal": [
+            {"field_11": Decimal("1.2"), "count": 1},
+            {"field_11": None, "count": 1},
+        ],
+        "rating": [{"field_12": 0, "count": 1}, {"field_12": 3, "count": 1}],
+        "boolean": [{"field_13": False, "count": 1}, {"field_13": True, "count": 1}],
+        "datetime_us": [
+            {"field_14": datetime.datetime(2020, 2, 1, 1, 23, tzinfo=UTC), "count": 1},
+            {"field_14": None, "count": 1},
+        ],
+        "date_us": [
+            {"field_15": datetime.date(2020, 2, 1), "count": 1},
+            {"field_15": None, "count": 1},
+        ],
+        "datetime_eu": [
+            {"field_16": datetime.datetime(2020, 2, 1, 1, 23, tzinfo=UTC), "count": 1},
+            {"field_16": None, "count": 1},
+        ],
+        "date_eu": [
+            {"field_17": datetime.date(2020, 2, 1), "count": 1},
+            {"field_17": None, "count": 1},
+        ],
+        "datetime_eu_tzone_visible": [
+            {"field_18": datetime.datetime(2020, 2, 1, 1, 23, tzinfo=UTC), "count": 1},
+            {"field_18": None, "count": 1},
+        ],
+        "datetime_eu_tzone_hidden": [
+            {"field_19": datetime.datetime(2020, 2, 1, 1, 23, tzinfo=UTC), "count": 1},
+            {"field_19": None, "count": 1},
+        ],
+        "last_modified_datetime_us": [
+            {"field_20": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+        ],
+        "last_modified_date_us": [
+            {"field_21": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+        ],
+        "last_modified_datetime_eu": [
+            {"field_22": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+        ],
+        "last_modified_date_eu": [
+            {"field_23": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+        ],
+        "last_modified_datetime_eu_tzone": [
+            {"field_24": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+        ],
+        "created_on_datetime_us": [
+            {"field_25": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+        ],
+        "created_on_date_us": [
+            {"field_26": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+        ],
+        "created_on_datetime_eu": [
+            {"field_27": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+        ],
+        "created_on_date_eu": [
+            {"field_28": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+        ],
+        "created_on_datetime_eu_tzone": [
+            {"field_29": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+        ],
+        "single_select": [
+            {"field_40": 1, "count": 1},
+            {"field_40": None, "count": 1},
+        ],
+        "multiple_select": [
+            {"field_41": "", "count": 1},
+            {"field_41": "4,3,5", "count": 1},
+        ],
+        "phone_number": [
+            {"field_43": "", "count": 1},
+            {"field_43": "+4412345678", "count": 1},
+        ],
+        "formula_text": [{"field_44": "test FORMULA", "count": 2}],
+        "formula_int": [{"field_45": Decimal("1"), "count": 2}],
+        "formula_bool": [{"field_46": True, "count": 2}],
+        "formula_decimal": [{"field_47": Decimal("33.3333333333"), "count": 2}],
+        "formula_dateinterval": [{"field_48": "1 day", "count": 2}],
+        "formula_date": [{"field_49": datetime.date(2020, 1, 1), "count": 2}],
+        "formula_email": [
+            {"field_51": "", "count": 1},
+            {"field_51": "test@example.com", "count": 1},
+        ],
+        "count": [
+            {"field_54": Decimal("0"), "count": 1},
+            {"field_54": Decimal("3"), "count": 1},
+        ],
+        "rollup": [
+            {"field_55": Decimal("-122.222"), "count": 1},
+            {"field_55": Decimal("0.000"), "count": 1},
+        ],
+    }

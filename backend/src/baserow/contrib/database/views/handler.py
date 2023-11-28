@@ -3314,6 +3314,66 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
 
         return queryset, field_ids, publicly_visible_field_options
 
+    def get_group_by_meta_data_in_rows(self, fields, rows, base_queryset):
+        qs_per_level = defaultdict(lambda: Q())
+        unique_value_per_level = defaultdict(set)
+        annotations = {}
+
+        for row in rows:
+            all_values = tuple()
+            all_filters = {}
+
+            for level, field in enumerate(fields):
+                field_name = field.db_column
+                field_type = field_type_registry.get_by_model(field.specific_class)
+
+                if not field_type.check_can_group_by(field):
+                    raise ValueError(f"Can't group by {field_name}.")
+
+                value = getattr(row, field_name)
+
+                unique_value_string = field_type.get_group_by_field_unique_value_string(
+                    field, field_name, value
+                )
+                all_values += (unique_value_string,)
+
+                if all_values not in unique_value_per_level[level]:
+                    (
+                        filters,
+                        annotations,
+                    ) = field_type.get_group_by_field_filters_and_annotations(
+                        field, field_name, base_queryset, unique_value_string
+                    )
+
+                    all_filters.update(**filters)
+                    annotations.update(**annotations)
+                    qs_per_level[level] |= Q(**all_filters)
+                    unique_value_per_level[level].add(all_values)
+
+        by_level = {}
+        for level, q in qs_per_level.items():
+            field_names = []
+
+            for field in fields[: level + 1]:
+                field_name = field.db_column
+                field_names.append(field_name)
+
+            queryset = base_queryset.clear_multi_field_prefetch().values()
+
+            if len(annotations) > 0:
+                queryset = queryset.annotate(**annotations)
+
+            queryset = (
+                queryset.filter(q)
+                .values(*field_names)
+                .annotate(count=Count("id"))
+                .order_by()
+            )
+
+            by_level[fields[level]] = queryset
+
+        return by_level
+
     def _get_prepared_values_for_data(
         self, view_type: ViewType, view: View, changed_allowed_keys: Iterable[str]
     ) -> Dict[str, Any]:

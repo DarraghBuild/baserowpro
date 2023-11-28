@@ -839,15 +839,6 @@ class Table(
         :rtype: Model
         """
 
-        logger.debug(
-            "Generating model for table {} with fields {}, manytomany_models {}, add_dependencies {}, use_cache {}",
-            str(self.pk),
-            fields,
-            manytomany_models,
-            add_dependencies,
-            use_cache,
-        )
-
         filtered = field_names is not None or field_ids is not None
         model_name = f"Table{self.pk}Model"
 
@@ -920,14 +911,12 @@ class Table(
         )
 
         if use_cache:
-            logger.debug("Using cached model for table {}", self.pk)
             self.refresh_from_db(fields=["version"])
             field_attrs = get_cached_model_field_attrs(self)
         else:
             field_attrs = None
 
         if field_attrs is None:
-            logger.debug("Generating model field attrs for table {}", self.pk)
             field_attrs = self._fetch_and_generate_field_attrs(
                 add_dependencies,
                 attribute_names,

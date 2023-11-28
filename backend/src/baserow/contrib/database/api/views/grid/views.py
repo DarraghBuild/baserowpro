@@ -302,6 +302,18 @@ class GridViewView(APIView):
 
         response = paginator.get_paginated_response(serializer.data)
 
+        # @TODO serialize the field values.
+        if view_type.can_group_by and view.viewgroupby_set:
+            group_bys = view.viewgroupby_set.all()
+            group_by_fields = [gb.field.specific for gb in group_bys]
+            group_meta_data = view_handler.get_group_by_meta_data_in_rows(
+                group_by_fields, page, queryset
+            )
+            group_meta_data = {
+                f"field_{field.id}": values for field, values in group_meta_data.items()
+            }
+            response.data.update(group_meta_data=group_meta_data)
+
         if field_options:
             context = {"fields": [o["field"] for o in model._field_objects.values()]}
             serializer_class = view_type.get_field_options_serializer_class(

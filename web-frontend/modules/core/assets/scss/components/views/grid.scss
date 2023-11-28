@@ -370,6 +370,16 @@
   margin-left: 8px;
 }
 
+.grid-view__group-count {
+  font-size: 11px;
+  line-height: 18px;
+  font-weight: 600;
+  padding: 0 5px;
+  background-color: $color-neutral-200;
+
+  @include rounded($rounded);
+}
+
 .grid-view__row-info {
   display: flex;
   align-items: center;

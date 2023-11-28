@@ -10,14 +10,20 @@
       "
     >
       <div class="grid-view__group-name">
-        {{ field.name }}
+        {{ field.id }}
       </div>
       <div class="grid-view__group-value">
+        {{ props.value }}
+        <!--
         <component
           :is="$options.methods.getCardComponent(field, parent)"
           :field="field"
           :value="props.value"
         />
+        -->
+      </div>
+      <div class="grid-view__group-count">
+        {{ props.count }}
       </div>
     </div>
   </div>
@@ -37,6 +43,10 @@ export default {
     },
     value: {
       validator: () => true,
+      required: true,
+    },
+    count: {
+      type: Number,
       required: true,
     },
   },

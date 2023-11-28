@@ -332,6 +332,7 @@ export default {
      */
     groupBySetsAndRowsAtEndOfGroups() {
       const groupBys = this.activeGroupBys
+      const metaData = this.groupMetaData
       const rows = this.allRows
       const rowsAtEndOfGroups = new Set()
 
@@ -365,10 +366,31 @@ export default {
           }
 
           if (!checkIfInSameGroup(previousRow, row)) {
+            // @TODO make this nicer
+            const count =
+              metaData[`field_${groupBy.field}`].find((entry) => {
+                return groupBys.slice(0, groupByIndex + 1).every((g) => {
+                  const f = this.allFieldsInTable.find((f) => f.id === g.field)
+                  const tp = this.$registry.get('field', f.type)
+                  return (
+                    entry[`field_${g.field}`] ===
+                    tp.prepareValueForUpdate(f, row[`field_${g.field}`])
+                  )
+                })
+              })?.count || -1
+
+            if (count === -1) {
+              console.log(`field_${groupBy.field}`)
+              console.log(groupBys.slice(0, groupByIndex + 1))
+              console.log(metaData[`field_${groupBy.field}`])
+              console.log('---')
+            }
+
             // If the start of a group, then create a new span object in the last.
             lastGroup = {
               rowSpan: 1,
               value: row[`field_${groupBy.field}`],
+              count,
             }
           } else {
             // If the value hasn't changed, it means that this row falls within the
@@ -425,6 +447,8 @@ export default {
           'view/grid/isMultiSelectHolding',
         count: this.$options.propsData.storePrefix + 'view/grid/getCount',
         allRows: this.$options.propsData.storePrefix + 'view/grid/getAllRows',
+        groupMetaData:
+          this.$options.propsData.storePrefix + 'view/grid/getGroupMetaData',
       }),
     }
   },
