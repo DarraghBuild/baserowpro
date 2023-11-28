@@ -150,11 +150,6 @@ class BuilderWorkflowActionHandler(WorkflowActionHandler):
         :return: The result of dispatching the workflow action.
         """
 
-        if not workflow_action.service_id:
-            raise BuilderWorkflowActionImproperlyConfigured(
-                "The service type is missing."
-            )
-
         if workflow_action.id not in dispatch_context.cache.setdefault(
             "workflow_action_contents", {}
         ):
