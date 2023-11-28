@@ -877,7 +877,7 @@ class LocalBaserowUpsertRowServiceType(LocalBaserowTableServiceType):
     serializer_mixins = [LocalBaserowUpsertRowSerializer]
     dispatch_type = DispatchTypes.DISPATCH_WORKFLOW_ACTION
 
-    allowed_fields = ["table_id"]
+    allowed_fields = ["table", "row_id"]
     serializer_field_names = ["table_id"]
     request_serializer_field_overrides = {
         "table_id": serializers.IntegerField(

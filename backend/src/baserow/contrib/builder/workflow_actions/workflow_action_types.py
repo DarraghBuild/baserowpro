@@ -214,28 +214,6 @@ class UpsertRowWorkflowActionType(BuilderWorkflowServiceActionType):
             # is given a `None` value by DRF, so here we set it properly.
             values["service_id"] = service.id
 
-            if "field_mappings" in values:
-                bulk_field_mappings = []
-                service.field_mappings.all().delete()
-                for field_mapping in values["field_mappings"]:
-                    try:
-                        field = FieldHandler().get_field(field_mapping["field_id"])
-                    except KeyError:
-                        raise DRFValidationError(
-                            "A field mapping must have a `field_id`."
-                        )
-                    except FieldDoesNotExist as exc:
-                        raise DRFValidationError(str(exc))
-
-                    bulk_field_mappings.append(
-                        LocalBaserowTableServiceFieldMapping(
-                            field=field, service=service, value=field_mapping["value"]
-                        )
-                    )
-                LocalBaserowTableServiceFieldMapping.objects.bulk_create(
-                    bulk_field_mappings
-                )
-
             if service.table_id != table_id or service.row_id != row_id:
                 service.table = table
                 service.row_id = row_id
@@ -244,6 +222,29 @@ class UpsertRowWorkflowActionType(BuilderWorkflowServiceActionType):
             if service.integration_id != integration_id:
                 service.integration = integration
                 service.save()
+
+        if "field_mappings" in values:
+            bulk_field_mappings = []
+            service.field_mappings.all().delete()
+            base_field_qs = service.table.field_set.all()
+            for field_mapping in values["field_mappings"]:
+                try:
+                    field = FieldHandler().get_field(
+                        field_mapping["field_id"], base_queryset=base_field_qs
+                    )
+                except KeyError:
+                    raise DRFValidationError("A field mapping must have a `field_id`.")
+                except FieldDoesNotExist as exc:
+                    raise DRFValidationError(str(exc))
+
+                bulk_field_mappings.append(
+                    LocalBaserowTableServiceFieldMapping(
+                        field=field, service=service, value=field_mapping["value"]
+                    )
+                )
+            LocalBaserowTableServiceFieldMapping.objects.bulk_create(
+                bulk_field_mappings
+            )
 
         return super().prepare_value_for_db(values, instance=instance)
 
