@@ -11,8 +11,8 @@
       :style="{ width: groupWidth + 'px' }"
     >
       <div
-        v-for="(groupSpan, index) in groupSpans"
-        :key="'group-by-span-' + index"
+        v-for="(groupSpan, groupSpanIndex) in groupSpans"
+        :key="'group-by-span-' + groupSpanIndex"
         class="grid-view__group-span"
         :style="{
           height: `${rowHeight * groupSpan.rowSpan}px`,

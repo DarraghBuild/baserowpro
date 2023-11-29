@@ -376,6 +376,7 @@
   font-weight: 600;
   padding: 0 5px;
   background-color: $color-neutral-200;
+  margin-left: 8px;
 
   @include rounded($rounded);
 }

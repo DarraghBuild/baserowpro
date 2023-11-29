@@ -13,14 +13,11 @@
         {{ field.id }}
       </div>
       <div class="grid-view__group-value">
-        {{ props.value }}
-        <!--
         <component
           :is="$options.methods.getCardComponent(field, parent)"
           :field="field"
           :value="props.value"
         />
-        -->
       </div>
       <div class="grid-view__group-count">
         {{ props.count }}

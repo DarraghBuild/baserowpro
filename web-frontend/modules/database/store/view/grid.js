@@ -484,54 +484,37 @@ export const mutations = {
   SET_GROUP_META_DATA(state, metaData) {
     state.groupMetaData = metaData
   },
-  UPDATE_GROUP_META_DATA(state, metaData) {
-    Object.keys(metaData).forEach((groupField) => {
-      metaData[groupField].forEach((data) => {
-        const existingIndex = state.groupMetaData[groupField].findIndex(
-          (existingGroup) => existingGroup[groupField] === data[groupField]
+  UPDATE_GROUP_META_DATA(state, newMetaData) {
+    const existingMetaData = state.groupMetaData
+
+    const getFields = (object) => {
+      const newObject = {}
+      Object.keys(object)
+        .filter((key) => key.startsWith('field_'))
+        .forEach((key) => {
+          newObject[key] = object[key]
+        })
+      return JSON.stringify(newObject)
+    }
+
+    Object.keys(newMetaData).forEach((newGroupField) => {
+      newMetaData[newGroupField].forEach((newGroupEntry) => {
+        const newGroupEntryValues = getFields(newGroupEntry)
+        const existingIndex = existingMetaData[newGroupField].findIndex(
+          (existingGroupEntry) => {
+            const existingGroupEntryValues = getFields(existingGroupEntry)
+            return newGroupEntryValues === existingGroupEntryValues
+          }
         )
 
-        console.log(existingIndex)
-
         if (existingIndex !== -1) {
-          Vue.set(state.groupMetaData[groupField], existingIndex, data)
+          Vue.set(existingMetaData[newGroupField], existingIndex, newGroupEntry)
         } else {
-          state.groupMetaData[groupField].push(data)
+          existingMetaData[newGroupField].push(newGroupEntry)
         }
       })
     })
   },
-
-  // @TODO figure out how to handle the scenario of adding a specific number
-  //  of rows limit=40&offset=80
-  //
-  // SET_GROUPS(state, newGroups) {
-  //   if (!newGroups) {
-  //     return
-  //   }
-  //   // For each level in newGroups
-  //   Object.keys(newGroups).forEach((level) => {
-  //     // If this level does not exist in state.groups, create it
-  //     if (!state.groups[level]) {
-  //       Vue.set(state.groups, level, [])
-  //     }
-  //
-  //     newGroups[level].forEach((newGroup) => {
-  //       const existingGroupIndex = state.groups[level].findIndex(
-  //         (group) => JSON.stringify(group.key) === JSON.stringify(newGroup.key)
-  //       )
-  //
-  //       // If this group already exists in state.groups, override it
-  //       if (existingGroupIndex !== -1) {
-  //         Vue.set(state.groups[level], existingGroupIndex, newGroup)
-  //       } else {
-  //         // Otherwise, add it to state.groups
-  //         state.groups[level].push(newGroup)
-  //       }
-  //     })
-  //   })
-  // },
-  //
 }
 
 // Contains the info needed for the delayed scroll top action.
