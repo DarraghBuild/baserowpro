@@ -24,6 +24,7 @@ import { compile } from 'path-to-regexp'
 import ButtonElement from '@baserow/modules/builder/components/elements/components/ButtonElement'
 import ButtonElementForm from '@baserow/modules/builder/components/elements/components/forms/general/ButtonElementForm'
 import { ClickEvent } from '@baserow/modules/builder/eventTypes'
+import FormElement from '@baserow/modules/builder/components/elements/components/FormElement.vue'
 
 export class ElementType extends Registerable {
   get name() {
@@ -478,7 +479,7 @@ export class FormElementType extends ContainerElementType {
   }
 
   get component() {
-    return null // TODO
+    return FormElement
   }
 
   get generalFormComponent() {
