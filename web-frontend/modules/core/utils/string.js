@@ -135,73 +135,39 @@ export const isNumeric = (value) => {
 }
 
 export const isDuration = (value, durationFormat) => {
-  const formatRegexMap = {
-    'h:mm': /^\d+:\d+$/,
-    'h:mm:ss': /^\d+:\d+:\d+$/,
-    'h:mm:ss.s': /^\d+:\d+:\d+\.\d$/,
-    'h:mm:ss.ss': /^\d+:\d+:\d+\.\d{1,2}$/,
-    'h:mm:ss.sss': /^\d+:\d+:\d+\.\d{1,3}$/,
-  }
-
-  const pattern = formatRegexMap[durationFormat]
-  // Dynamically format (attempt to extract) the value based on the provided
+  // Dynamically attempt to guess the value based on the provided
   // durationFormat:
-  const formattedValue = formatDuration(value, durationFormat)
+  const formattedValue = guessDurationValue(value, durationFormat)
 
-  // Value couldn't be guessed:
   if (!formattedValue) {
     return false
   }
 
-  return pattern.test(formattedValue)
+  return true
 }
 
-export const formatDuration = (value, durationFormat) => {
+export const guessDurationValue = (value, durationFormat) => {
   const numberPattern =
     /^(\d+)(?::(\d{1,2})(?::(\d{1,2}(?:\.\d{1,3})?)?)?)?(.*?)$/
 
-  // Extract matched values using the regular expression
   const match = value.match(numberPattern)
 
-  // No match found (value couldn't be guessed):
+  // Value couldn't be guessed:
   if (!match) {
     return null
   }
 
   const [, hours, minutes, seconds] = match
 
-  switch (durationFormat) {
-    case 'h:mm':
-      return `${hours || 0}:${minutes || '00'}`
-    case 'h:mm:ss':
-      return `${hours || 0}:${minutes || '00'}:${seconds || '00'}`
-    case 'h:mm:ss.s': {
-      const formattedDeciseconds = seconds
-        ? seconds.includes('.')
-          ? Number(seconds).toFixed(1)
-          : `${seconds}.0`
-        : '00.0'
-      return `${hours || 0}:${minutes || '00'}:${formattedDeciseconds}`
-    }
-    case 'h:mm:ss.ss': {
-      const formattedCentiseconds = seconds
-        ? seconds.includes('.')
-          ? Number(seconds).toFixed(2)
-          : `${seconds}.00`
-        : '00.00'
-      return `${hours || 0}:${minutes || '00'}:${formattedCentiseconds}`
-    }
-    case 'h:mm:ss.sss': {
-      const formattedMilliseconds = seconds
-        ? seconds.includes('.')
-          ? Number(seconds).toFixed(3)
-          : `${seconds}.000`
-        : '00.000'
-      return `${hours || 0}:${minutes || '00'}:${formattedMilliseconds}`
-    }
-    default:
-      return `${hours || 0}:${minutes || '00'}`
-  }
+  console.log('Hours: ', hours, ' Minutes: ', minutes, ' Seconds: ', seconds)
+
+  // Always use the most granular format ("h:mm:ss.sss") from user input:
+  const formattedMilliseconds = seconds
+    ? seconds.includes('.')
+      ? Number(seconds).toFixed(3)
+      : `${seconds}.000`
+    : '00.000'
+  return `${hours || 0}:${minutes || '00'}:${formattedMilliseconds}`
 }
 
 /**

@@ -66,6 +66,7 @@ from baserow.contrib.database.api.fields.serializers import (
 from baserow.contrib.database.db.functions import RandomUUID
 from baserow.contrib.database.export_serialized import DatabaseExportSerializedStructure
 from baserow.contrib.database.fields.field_cache import FieldCache
+from baserow.contrib.database.fields.models import DURATION_FORMAT
 from baserow.contrib.database.formula import (
     BASEROW_FORMULA_TYPE_ALLOWED_FIELDS,
     BaserowExpression,
@@ -1226,6 +1227,42 @@ class CreatedOnFieldType(CreatedOnLastModifiedBaseFieldType):
     model_field_kwargs = {"sync_with_add": "created_on"}
 
 
+# TODO: move this somwewhere else:
+class DurationSerializer(serializers.DurationField):
+    def __init__(self, duration_format=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.duration_format = duration_format
+
+    def format_timedelta(self, td, format_str):
+        """Makes sure that 49 hours are displayed as 49 instead of 1 day 1 hour."""
+
+        total_seconds = int(td.total_seconds())
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        milliseconds = int(td.microseconds / 1000)
+        centiseconds = milliseconds // 10
+        deciseconds = milliseconds // 100
+
+        format_info = DURATION_FORMAT.get(format_str)
+
+        formatted_str = format_info["format"].format(
+            hours=hours,
+            minutes=minutes,
+            seconds=seconds,
+            milliseconds=milliseconds,
+            centiseconds=centiseconds,
+            deciseconds=deciseconds,
+        )
+        return formatted_str
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        formatted_str = self.format_timedelta(instance, self.duration_format)
+
+        return formatted_str
+
+
 class DurationFieldType(CharFieldMatchingRegexFieldType):
     type = "duration"
     model_class = DurationField
@@ -1237,8 +1274,7 @@ class DurationFieldType(CharFieldMatchingRegexFieldType):
     @property
     def max_length(self):
         # TODO: fix this:
-        """
-        """
+        """ """
         return self.MAX_DURATION_LENGTH
 
     # TODO: fix this:
@@ -1262,8 +1298,9 @@ class DurationFieldType(CharFieldMatchingRegexFieldType):
         )
 
     def get_serializer_field(self, instance, **kwargs):
-        return serializers.DurationField(
+        return DurationSerializer(
             **{
+                "duration_format": instance.duration_format,
                 "required": False,
                 "allow_null": True,
                 **kwargs,
@@ -1276,6 +1313,7 @@ class DurationFieldType(CharFieldMatchingRegexFieldType):
     # TODO fix this:
     def random_value(self, instance, fake, cache):
         pass
+
 
 class LinkRowFieldType(FieldType):
     """

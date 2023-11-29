@@ -8,7 +8,7 @@ import {
   isValidEmail,
   isValidURL,
   isDuration,
-  formatDuration,
+  guessDurationValue,
 } from '@baserow/modules/core/utils/string'
 
 import moment from '@baserow/modules/core/moment'
@@ -37,6 +37,7 @@ import GridViewFieldFile from '@baserow/modules/database/components/view/grid/fi
 import GridViewFieldSingleSelect from '@baserow/modules/database/components/view/grid/fields/GridViewFieldSingleSelect'
 import GridViewFieldMultipleSelect from '@baserow/modules/database/components/view/grid/fields/GridViewFieldMultipleSelect'
 import GridViewFieldPhoneNumber from '@baserow/modules/database/components/view/grid/fields/GridViewFieldPhoneNumber'
+import GridViewFieldDuration from '@baserow/modules/database/components/view/grid/fields/GridViewFieldDuration'
 import GridViewFieldMultipleCollaborators from '@baserow/modules/database/components/view/grid/fields/GridViewFieldMultipleCollaborators'
 import GridViewFieldUUID from '@baserow/modules/database/components/view/grid/fields/GridViewFieldUUID'
 
@@ -1904,6 +1905,8 @@ export class DurationFieldType extends FieldType {
   }
 
   // TODO: fix this:
+  // TODO: when this is changed to GridViewFieldText, the invalid format error
+  // is not shown anymore:
   getGridViewFieldComponent() {
     return GridViewFieldDuration
   }
@@ -1916,7 +1919,7 @@ export class DurationFieldType extends FieldType {
   prepareValueForUpdate(field, value) {
     if (value) {
       const durationFormat = field.duration_format
-      return formatDuration(value, durationFormat)
+      return guessDurationValue(value, durationFormat)
     }
     return value
   }

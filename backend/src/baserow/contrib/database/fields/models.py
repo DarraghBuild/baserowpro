@@ -1,4 +1,5 @@
 import typing
+from datetime import datetime
 from typing import NewType
 
 from django.contrib.contenttypes.models import ContentType
@@ -69,25 +70,27 @@ RATING_STYLE_CHOICES = [
     ("smile", "Smile"),
 ]
 
-
 # TODO: "sql" part (if needed)
 DURATION_FORMAT = {
-    "h:mm": {"name": "hours:minutes", "format": "%H:%M", "sql": ""},
-    "h:mm:ss": {"name": "hours:minutes:seconds", "format": "%H:%M:%S", "sql": ""},
+    "h:mm": {
+        "name": "hours:minutes",
+        "format": "{hours}:{minutes:02d}",
+    },
+    "h:mm:ss": {
+        "name": "hours:minutes:seconds",
+        "format": "{hours}:{minutes:02d}:{seconds:02d}",
+    },
     "h:mm:ss.s": {
         "name": "hours:minutes:seconds:deciseconds",
-        "format": "%H:%M:%S.%f"[:-5],
-        "sql": "",
+        "format": "{hours}:{minutes:02d}:{seconds:02d}.{deciseconds:01d}",
     },
     "h:mm:ss.ss": {
         "name": "hours:minutes:seconds:centiseconds",
-        "format": "%H:%M:%S.%f"[:-4],
-        "sql": "",
+        "format": "{hours}:{minutes:02d}:{seconds:02d}.{centiseconds:02d}",
     },
     "h:mm:ss.sss": {
         "name": "hours:minutes:seconds:milliseconds",
-        "format": "%H:%M:%S.%f"[:-3],
-        "sql": "",
+        "format": "{hours}:{minutes:02d}:{seconds:02d}.{milliseconds:03d}",
     },
 }
 DURATION_FORMAT_CHOICES = [(k, v["name"]) for k, v in DURATION_FORMAT.items()]
