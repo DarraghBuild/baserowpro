@@ -1,9 +1,9 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.db import OperationalError
 from django.utils import timezone
 
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from rest_framework import serializers, status
 from rest_framework.exceptions import APIException
 
@@ -376,7 +376,7 @@ def accept_timezone():
                 exc = APIException(
                     {
                         "error": "UNKNOWN_TIME_ZONE_ERROR",
-                        "detail": f"The timezone {timezone_string} is not supported."
+                        "detail": f"The timezone {timezone_string} is not supported.",
                     }
                 )
                 exc.status_code = status.HTTP_400_BAD_REQUEST

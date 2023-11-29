@@ -1,11 +1,11 @@
 import json
+import zoneinfo
+from datetime import timezone
 from unittest.mock import MagicMock
 
 from django.db import OperationalError
 
 import pytest
-import zoneinfo
-from datetime import timezone
 from rest_framework import serializers, status
 from rest_framework.exceptions import APIException
 from rest_framework.parsers import JSONParser
