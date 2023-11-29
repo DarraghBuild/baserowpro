@@ -23,14 +23,9 @@
     &.chips--active {
       border-width: 1.5px;
     }
-
-    .chips__icon {
-      color: #4653e5;
-    }
   }
 
   &:active:not(.chips--disabled) {
-    background: rgba(78, 92, 254, 0.06);
     border: 1px solid $palette-blue-500;
     background: $palette-blue-50;
   }
@@ -46,6 +41,10 @@
   font-size: 18px;
 
   .chips--active:not(.chips--disabled) & {
+    color: #4653e5;
+  }
+
+  .chips:hover:not(.chips--disabled) & {
     color: #4653e5;
   }
 }
