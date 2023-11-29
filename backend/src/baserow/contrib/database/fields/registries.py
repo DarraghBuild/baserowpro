@@ -24,6 +24,8 @@ from django.db.models import (
 from django.db.models.fields.related import ForeignKey, ManyToManyField
 from django.db.models.functions import Cast, Coalesce
 
+from rest_framework.serializers import CharField as SerializerCharField
+
 from baserow.contrib.database.fields.constants import UPSERT_OPTION_DICT_KEY
 from baserow.contrib.database.fields.field_sortings import OptionallyAnnotatedOrderBy
 from baserow.contrib.database.types import SerializedRowHistoryFieldMetadata
@@ -380,7 +382,7 @@ class FieldType(
         doesn't have to update the field each time another field in the same row
         changes.
 
-        :param instance: The field instance for which to get the model field for.
+        :param instance: The field instance for which to get the serializer field for.
         :type instance: Field
         :param kwargs: The kwargs that will be passed to the field.
         :type kwargs: dict
@@ -1515,6 +1517,22 @@ class FieldType(
 
         return {field_name: value}, {}
 
+    def get_group_by_serializer_field(self, instance: Field, **kwargs: dict):
+        """
+        Returns the serializer that is used in the `serialize_group_by_meta_data`. By
+        default, we're returning the normal serializer, because that will be fine in
+        most casus, but if a different value is returned in the
+        `get_group_by_field_unique_value_string` method, then we might need a
+        different serializer field.
+
+        :param instance: The field instance for which to get the serializer field for.
+        :param kwargs: The kwargs that will be passed to the field.
+        :return: The serializer field that represents the field instance attributes.
+        :rtype: serializer.Field
+        """
+
+        return self.get_serializer_field(instance, **kwargs)
+
     def before_field_options_update(
         self,
         field: Field,
@@ -1743,6 +1761,16 @@ class ManyToManyGroupByMixin:
             )
         }
         return filters, annotations
+
+    def get_group_by_serializer_field(self, field, **kwargs):
+        return SerializerCharField(
+            **{
+                "required": False,
+                "allow_null": True,
+                "allow_blank": True,
+                **kwargs,
+            }
+        )
 
 
 class FieldTypeRegistry(

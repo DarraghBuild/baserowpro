@@ -216,7 +216,7 @@ def test_list_rows_with_group_by(api_client, data_fixture):
         table=table, order=0, name="Color", text_default="white"
     )
     number_field = data_fixture.create_number_field(
-        table=table, order=1, name="Horsepower"
+        table=table, order=1, name="Horsepower", number_decimal_places=1
     )
     boolean_field = data_fixture.create_boolean_field(
         table=table, order=2, name="For sale"
@@ -303,64 +303,64 @@ def test_list_rows_with_group_by(api_client, data_fixture):
         f"field_{number_field.id}": [
             {
                 f"field_{text_field.id}": "Green",
-                f"field_{number_field.id}": 10.0,
+                f"field_{number_field.id}": "10.0",
                 f"count": 3,
             },
             {
                 f"field_{text_field.id}": "Green",
-                f"field_{number_field.id}": 20.0,
+                f"field_{number_field.id}": "20.0",
                 f"count": 3,
             },
             {
                 f"field_{text_field.id}": "Orange",
-                f"field_{number_field.id}": 10.0,
+                f"field_{number_field.id}": "10.0",
                 f"count": 1,
             },
             {
                 f"field_{text_field.id}": "Orange",
-                f"field_{number_field.id}": 30.0,
+                f"field_{number_field.id}": "30.0",
                 f"count": 1,
             },
             {
                 f"field_{text_field.id}": "Orange",
-                f"field_{number_field.id}": 40.0,
+                f"field_{number_field.id}": "40.0",
                 f"count": 1,
             },
         ],
         f"field_{boolean_field.id}": [
             {
                 f"field_{text_field.id}": "Orange",
-                f"field_{number_field.id}": 10.0,
+                f"field_{number_field.id}": "10.0",
                 f"field_{boolean_field.id}": True,
                 f"count": 1,
             },
             {
                 f"field_{text_field.id}": "Green",
-                f"field_{number_field.id}": 10.0,
+                f"field_{number_field.id}": "10.0",
                 f"field_{boolean_field.id}": True,
                 f"count": 1,
             },
             {
                 f"field_{text_field.id}": "Green",
-                f"field_{number_field.id}": 20.0,
+                f"field_{number_field.id}": "20.0",
                 f"field_{boolean_field.id}": True,
                 f"count": 3,
             },
             {
                 f"field_{text_field.id}": "Green",
-                f"field_{number_field.id}": 10.0,
+                f"field_{number_field.id}": "10.0",
                 f"field_{boolean_field.id}": False,
                 f"count": 2,
             },
             {
                 f"field_{text_field.id}": "Orange",
-                f"field_{number_field.id}": 30.0,
+                f"field_{number_field.id}": "30.0",
                 f"field_{boolean_field.id}": True,
                 f"count": 1,
             },
             {
                 f"field_{text_field.id}": "Orange",
-                f"field_{number_field.id}": 40.0,
+                f"field_{number_field.id}": "40.0",
                 f"field_{boolean_field.id}": True,
                 f"count": 1,
             },

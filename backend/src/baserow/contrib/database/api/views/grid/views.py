@@ -45,6 +45,7 @@ from baserow.contrib.database.api.views.grid.serializers import (
 )
 from baserow.contrib.database.api.views.serializers import (
     FieldOptionsField,
+    serialize_group_by_meta_data,
     validate_api_grouped_filters,
 )
 from baserow.contrib.database.api.views.utils import get_public_view_authorization_token
@@ -60,6 +61,7 @@ from baserow.contrib.database.fields.field_filters import (
     FILTER_TYPE_OR,
 )
 from baserow.contrib.database.fields.handler import FieldHandler
+from baserow.contrib.database.fields.models import Field
 from baserow.contrib.database.rows.registries import row_metadata_registry
 from baserow.contrib.database.table.operations import ListRowsDatabaseTableOperationType
 from baserow.contrib.database.views.exceptions import (
@@ -77,6 +79,7 @@ from baserow.contrib.database.views.registries import (
     view_type_registry,
 )
 from baserow.contrib.database.views.signals import view_loaded
+from baserow.core.db import specific_iterator
 from baserow.core.exceptions import UserNotInWorkspace
 from baserow.core.handler import CoreHandler
 
@@ -302,17 +305,18 @@ class GridViewView(APIView):
 
         response = paginator.get_paginated_response(serializer.data)
 
-        # @TODO serialize the field values.
         if view_type.can_group_by and view.viewgroupby_set:
             group_bys = view.viewgroupby_set.all()
-            group_by_fields = [gb.field.specific for gb in group_bys]
+            group_by_fields = specific_iterator(
+                [gb.field for gb in group_bys], base_model=Field
+            )
             group_meta_data = view_handler.get_group_by_meta_data_in_rows(
                 group_by_fields, page, queryset
             )
-            group_meta_data = {
-                f"field_{field.id}": values for field, values in group_meta_data.items()
-            }
-            response.data.update(group_meta_data=group_meta_data)
+            serialized_group_by_meta_data = serialize_group_by_meta_data(
+                group_meta_data
+            )
+            response.data.update(group_meta_data=serialized_group_by_meta_data)
 
         if field_options:
             context = {"fields": [o["field"] for o in model._field_objects.values()]}

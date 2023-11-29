@@ -486,17 +486,10 @@ class MultiFieldPrefetchQuerysetMixin(Generic[ModelInstance]):
         self, custom_prefetch_function: Callable[[QuerySet, List[ModelInstance]], None]
     ):
         clone = self._chain()
-        # @TODO maybe also store to which field this was applied to, and on resolve
-        #  check if that's still the same field.
         clone._multi_field_prefetch_related_funcs.append(custom_prefetch_function)
         return clone
 
     def clear_multi_field_prefetch(self):
-        """
-        @TODO add docs and test
-        :return:
-        """
-
         clone = self._chain()
         clone._multi_field_prefetch_related_funcs = []
         return clone
