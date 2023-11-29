@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZipFile
 
@@ -14,7 +14,6 @@ from baserow_premium.views.handler import (
 )
 from baserow_premium.views.models import CalendarViewFieldOptions
 from dateutil.tz import gettz
-from pytz import utc
 
 from baserow.contrib.database.action.scopes import ViewActionScopeType
 from baserow.contrib.database.fields.exceptions import FieldNotInTable
@@ -668,11 +667,11 @@ def test_to_midnight_with_tz():
 
     # The time we are converting to midnight
     assert str(tz_in_amsterdam_tz) == "2022-01-09 23:00:00+01:00"
-    assert str(tz_in_amsterdam_tz.astimezone(utc)) == "2022-01-09 22:00:00+00:00"
+    assert str(tz_in_amsterdam_tz.astimezone(timezone.utc)) == "2022-01-09 22:00:00+00:00"
 
     midnight_amsterdam = to_midnight(tz_in_amsterdam_tz)
     assert str(midnight_amsterdam) == "2022-01-09 00:00:00+01:00"
-    assert str(midnight_amsterdam.astimezone(utc)) == "2022-01-08 23:00:00+00:00"
+    assert str(midnight_amsterdam.astimezone(timezone.utc)) == "2022-01-08 23:00:00+00:00"
 
 
 @pytest.mark.view_calendar
@@ -681,11 +680,11 @@ def test_to_midnight_with_tz_on_dst_boundary():
     dt = datetime(2012, 4, 1, 3, 0, 0, 0, tzinfo=melbourne_tz)
 
     assert str(dt) == "2012-04-01 03:00:00+10:00"
-    assert str(dt.astimezone(utc)) == "2012-03-31 17:00:00+00:00"
+    assert str(dt.astimezone(timezone.utc)) == "2012-03-31 17:00:00+00:00"
 
     midnight_amsterdam = to_midnight(dt)
     assert str(midnight_amsterdam) == "2012-04-01 00:00:00+11:00"
-    assert str(midnight_amsterdam.astimezone(utc)) == "2012-03-31 13:00:00+00:00"
+    assert str(midnight_amsterdam.astimezone(timezone.utc)) == "2012-03-31 13:00:00+00:00"
 
 
 @pytest.mark.view_calendar

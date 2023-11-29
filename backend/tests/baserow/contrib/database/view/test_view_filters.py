@@ -1901,18 +1901,21 @@ def test_last_modified_date_equal_filter_type(data_fixture):
         table=table, date_include_time=False
     )
     last_modified_field_datetime = data_fixture.create_last_modified_field(
-        table=table, date_include_time=True
+        table=table, date_include_time=True, date_force_timezone="Europe/Athens"
     )
     model = table.get_model()
 
-    with freeze_time("2021-08-04 21:59", tz_offset=+2):
-        row = model.objects.create(**{})
-
-    with freeze_time("2021-08-04 22:01", tz_offset=+2):
+    # 2021-08-04 in Athens
+    with freeze_time("2021-08-04 12:00"):
         row_1 = model.objects.create(**{})
 
-    with freeze_time("2021-08-05 00:01", tz_offset=+2):
-        model.objects.create(**{})
+    # 2021-08-05 in Athens
+    with freeze_time("2021-08-04 22:01"):
+        row_2 = model.objects.create(**{})
+
+    # 2021-08-05 in Athens
+    with freeze_time("2021-08-05 00:01"):
+        row_3 = model.objects.create(**{})
 
     handler = ViewHandler()
     model = table.get_model()
@@ -1921,15 +1924,15 @@ def test_last_modified_date_equal_filter_type(data_fixture):
         view=grid_view,
         field=last_modified_field_datetime,
         type="date_equal",
-        value="2021-08-04",
+        value="2021-08-05",
     )
     ids = [r.id for r in handler.apply_filters(grid_view, model.objects.all()).all()]
-    assert ids == unordered([row.id, row_1.id])
+    assert ids == unordered([row_2.id, row_3.id])
 
     filter.field = last_modified_field_date
     filter.save()
     ids = [r.id for r in handler.apply_filters(grid_view, model.objects.all()).all()]
-    assert ids == unordered([row.id, row_1.id])
+    assert ids == unordered([row_3.id])
 
 
 @pytest.mark.django_db
