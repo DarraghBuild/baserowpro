@@ -11,6 +11,7 @@ from baserow.contrib.database.fields.actions import (
 from baserow.contrib.database.fields.handler import FieldHandler
 from baserow.contrib.database.rows.handler import RowHandler
 from baserow.contrib.database.table.handler import TableHandler
+from baserow.contrib.database.views.handler import ViewHandler
 from baserow.core.action.handler import ActionHandler
 from baserow.core.action.registries import action_type_registry
 from baserow.core.trash.handler import TrashHandler
@@ -459,3 +460,80 @@ def test_autonumber_field_values_cannot_be_updated_manually(data_fixture):
             model,
             rows_to_update=[row],
         )
+
+
+@pytest.mark.field_autonumber
+@pytest.mark.django_db
+def test_autonumber_field_view_filters(data_fixture):
+    user = data_fixture.create_user()
+    table = data_fixture.create_database_table(user=user)
+    autonumber_field = data_fixture.create_autonumber_field(table=table)
+
+    model = table.get_model()
+    model.objects.create()
+    model.objects.create()
+
+    # Add a filter and a sort to the view and number rows based on that
+    view = data_fixture.create_grid_view(table=table)
+    view_filter = data_fixture.create_view_filter(
+        view=view, field=autonumber_field, type="equal", value=1
+    )
+
+    qs = ViewHandler().get_queryset(view, model=model)
+    assert list(qs.values_list("id", flat=True)) == [1]
+
+    view_filter.type = "not_equal"
+    view_filter.save(update_fields=["type"])
+
+    qs = ViewHandler().get_queryset(view, model=model)
+    assert list(qs.values_list("id", flat=True)) == [2]
+
+    view_filter.type = "lower_than"
+    view_filter.save(update_fields=["type"])
+
+    qs = ViewHandler().get_queryset(view, model=model)
+    assert list(qs.values_list("id", flat=True)) == []
+
+    view_filter.type = "higher_than"
+    view_filter.save(update_fields=["type"])
+
+    qs = ViewHandler().get_queryset(view, model=model)
+    assert list(qs.values_list("id", flat=True)) == [2]
+
+    view_filter.type = "contains"
+    view_filter.save(update_fields=["type"])
+
+    qs = ViewHandler().get_queryset(view, model=model)
+    assert list(qs.values_list("id", flat=True)) == [1]
+
+    view_filter.type = "contains_not"
+    view_filter.save(update_fields=["type"])
+
+    qs = ViewHandler().get_queryset(view, model=model)
+    assert list(qs.values_list("id", flat=True)) == [2]
+
+
+@pytest.mark.field_autonumber
+@pytest.mark.django_db
+def test_autonumber_field_view_aggregations(data_fixture):
+    user = data_fixture.create_user()
+    table = data_fixture.create_database_table(user=user)
+    autonumber_field = data_fixture.create_autonumber_field(table=table)
+
+    model = table.get_model()
+    model.objects.create()
+    model.objects.create()
+
+    view = data_fixture.create_grid_view(table=table)
+    result = ViewHandler().get_field_aggregations(
+        user, view, [(autonumber_field, "max")]
+    )
+    assert result[autonumber_field.db_column] == 2
+
+    model.objects.create()
+    model.objects.create()
+
+    result = ViewHandler().get_field_aggregations(
+        user, view, [(autonumber_field, "max")]
+    )
+    assert result[autonumber_field.db_column] == 4
