@@ -26,6 +26,7 @@ from baserow.contrib.builder.elements.models import (
     ParagraphElement,
     TableElement,
     VerticalAlignments,
+    FormElement,
 )
 from baserow.contrib.builder.elements.registries import ElementType
 from baserow.contrib.builder.elements.signals import elements_moved
@@ -39,10 +40,9 @@ from .registries import collection_field_type_registry
 
 
 class ContainerElementType(ElementType, ABC):
-    @abc.abstractmethod
     def get_new_place_in_container(
         self, container_element: ContainerElement, places_removed: List[str]
-    ) -> str:
+    ) -> Optional[str]:
         """
         Provides an alternative place that elements can move to when places in the
         container are removed.
@@ -52,7 +52,8 @@ class ContainerElementType(ElementType, ABC):
         :return: The new place in the container the elements can be moved to
         """
 
-    @abc.abstractmethod
+        return None
+
     def get_places_in_container_removed(
         self, values: Dict, instance: ContainerElement
     ) -> List[str]:
@@ -64,6 +65,8 @@ class ContainerElementType(ElementType, ABC):
         :param instance: The current state of the element
         :return: The places in the container that have been removed
         """
+
+        return []
 
     def apply_order_by_children(self, queryset: QuerySet[Element]) -> QuerySet[Element]:
         """
@@ -824,3 +827,11 @@ class TableElementType(CollectionElementType):
 
     def get_sample_params(self) -> Dict[str, Any]:
         return {"data_source_id": None}
+
+
+class FormElementType(ContainerElementType):
+    type = "form"
+    model_class = FormElement
+
+    def get_sample_params(self) -> Dict[str, Any]:
+        return {}  # TODO

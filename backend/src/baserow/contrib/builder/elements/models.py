@@ -537,3 +537,9 @@ class TableElement(CollectionElement):
     """
     A table element
     """
+
+
+class FormElement(ContainerElement):
+    """
+    A form element
+    """

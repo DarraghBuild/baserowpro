@@ -459,3 +459,29 @@ export class TableElementType extends ElementType {
     }
   }
 }
+
+export class FormElementType extends ContainerElementType {
+  static getType() {
+    return 'form'
+  }
+
+  get name() {
+    return this.app.i18n.t('elementType.form')
+  }
+
+  get description() {
+    return this.app.i18n.t('elementType.formDescription')
+  }
+
+  get iconClass() {
+    return 'iconoir-frame'
+  }
+
+  get component() {
+    return null // TODO
+  }
+
+  get generalFormComponent() {
+    return null // TODO
+  }
+}

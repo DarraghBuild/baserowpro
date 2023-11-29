@@ -76,7 +76,9 @@
         "button": "Button",
         "buttonDescription": "A button element",
         "table": "Table",
-        "tableDescription": "A table element"
+        "tableDescription": "A table element",
+        "form": "Form",
+        "formDescription": "A form element"
     },
     "addElementButton": {
         "label": "Element"
