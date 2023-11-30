@@ -836,8 +836,8 @@ class TableElementType(CollectionElementType):
         return {"data_source_id": None}
 
 
-class FormElementType(ContainerElementType):
-    type = "form"
+class FormContainerElementType(ContainerElementType):
+    type = "form_container"
     model_class = FormElement
 
     def get_sample_params(self) -> Dict[str, Any]:

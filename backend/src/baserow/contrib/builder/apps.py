@@ -161,7 +161,7 @@ class BuilderConfig(AppConfig):
             LinkElementType,
             ParagraphElementType,
             TableElementType,
-            FormElementType,
+            FormContainerElementType,
         )
         from .elements.registries import element_type_registry
 
@@ -173,7 +173,7 @@ class BuilderConfig(AppConfig):
         element_type_registry.register(ColumnElementType())
         element_type_registry.register(ButtonElementType())
         element_type_registry.register(TableElementType())
-        element_type_registry.register(FormElementType())
+        element_type_registry.register(FormContainerElementType())
 
         from .domains.domain_types import CustomDomainType, SubDomainType
         from .domains.registries import domain_type_registry
