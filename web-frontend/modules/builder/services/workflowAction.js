@@ -33,9 +33,10 @@ export default (client) => {
         payload
       )
     },
-    dispatch(workflowActionId) {
+    dispatch(workflowActionId, data) {
       return client.post(
-        `builder/workflow_action/${workflowActionId}/dispatch/`
+        `builder/workflow_action/${workflowActionId}/dispatch/`,
+        data
       )
     },
   }

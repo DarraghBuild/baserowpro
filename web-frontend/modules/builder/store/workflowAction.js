@@ -159,6 +159,9 @@ const actions = {
       updateContext.promiseResolve = resolve
     })
   },
+  async dispatchAction({ dispatch }, { workflowActionId, data }) {
+    await WorkflowActionService(this.$client).dispatch(workflowActionId, data)
+  },
   async order({ commit, getters }, { page, order, element = null }) {
     const workflowActions =
       element !== null
@@ -179,9 +182,6 @@ const actions = {
       commit('ORDER_ITEMS', { page, order: oldOrder })
       throw error
     }
-  },
-  async dispatchAction({ dispatch }, { workflowActionId }) {
-    await WorkflowActionService(this.$client).dispatch(workflowActionId)
   },
 }
 

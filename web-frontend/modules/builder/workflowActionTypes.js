@@ -3,6 +3,7 @@ import NotificationWorkflowActionForm from '@baserow/modules/builder/components/
 import OpenPageWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/OpenPageWorkflowActionForm'
 import CreateRowWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/CreateRowWorkflowActionForm'
 import UpdateRowWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/UpdateRowWorkflowActionForm'
+import { DataProviderType } from '@baserow/modules/core/dataProviderTypes'
 
 export class NotificationWorkflowActionType extends WorkflowActionType {
   static getType() {
@@ -73,9 +74,13 @@ export class CreateRowWorkflowActionType extends WorkflowActionType {
     return this.app.i18n.t('workflowActionTypes.createRowLabel')
   }
 
-  execute({ workflowAction: { id }, resolveFormula }) {
+  execute({ workflowAction: { id }, applicationContext, resolveFormula }) {
     return this.app.store.dispatch('workflowAction/dispatchAction', {
       workflowActionId: id,
+      data: DataProviderType.getAllDispatchContext(
+        this.app.$registry.getAll('builderDataProvider'),
+        applicationContext
+      ),
     })
   }
 }
@@ -93,9 +98,13 @@ export class UpdateRowWorkflowActionType extends WorkflowActionType {
     return this.app.i18n.t('workflowActionTypes.updateRowLabel')
   }
 
-  execute({ workflowAction: { id }, resolveFormula }) {
+  execute({ workflowAction: { id }, applicationContext, resolveFormula }) {
     return this.app.store.dispatch('workflowAction/dispatchAction', {
       workflowActionId: id,
+      data: DataProviderType.getAllDispatchContext(
+        this.app.$registry.getAll('builderDataProvider'),
+        applicationContext
+      ),
     })
   }
 }
