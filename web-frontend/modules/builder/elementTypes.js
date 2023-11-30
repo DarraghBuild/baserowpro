@@ -27,6 +27,7 @@ import { ClickEvent } from '@baserow/modules/builder/eventTypes'
 import RuntimeFormulaContext from '@baserow/modules/core/runtimeFormulaContext'
 import { resolveFormula } from '@baserow/modules/core/formula'
 import FormElement from '@baserow/modules/builder/components/elements/components/FormElement.vue'
+import FormElementForm from '@baserow/modules/builder/components/elements/components/forms/general/FormElementForm.vue'
 
 export class ElementType extends Registerable {
   get name() {
@@ -604,7 +605,7 @@ export class FormContainerElementType extends ContainerElementType {
   }
 
   get generalFormComponent() {
-    return null // TODO
+    return FormElementForm
   }
 
   get childElementTypesForbidden() {
