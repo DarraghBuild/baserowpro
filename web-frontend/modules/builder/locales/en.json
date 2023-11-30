@@ -380,5 +380,8 @@
     },
     "linkField": {
       "details": "Details"
+    },
+    "formContainerElementForm": {
+        "submitButtonLabel": "Submit button"
     }
 }
