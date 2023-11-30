@@ -7,7 +7,7 @@ from rest_framework import serializers
 
 from baserow.api.user_files.serializers import UserFileURLAndThumbnailsSerializerMixin
 from baserow.api.user_files.validators import user_file_name_validator
-from baserow.contrib.database.fields.models import Field
+from baserow.contrib.database.fields.models import DURATION_FORMAT, Field
 from baserow.contrib.database.fields.registries import field_type_registry
 
 
@@ -251,3 +251,38 @@ class IntegerOrStringField(serializers.Field):
 
     def to_representation(self, value):
         return value
+
+
+class DurationSerializer(serializers.DurationField):
+    def __init__(self, duration_format=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.duration_format = duration_format
+
+    def format_timedelta(self, td, format_str):
+        """Makes sure that 49 hours are displayed as 49 instead of 1 day 1 hour."""
+
+        total_seconds = int(td.total_seconds())
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        milliseconds = int(td.microseconds / 1000)
+        centiseconds = milliseconds // 10
+        deciseconds = milliseconds // 100
+
+        format_info = DURATION_FORMAT.get(format_str)
+
+        formatted_str = format_info["format"].format(
+            hours=hours,
+            minutes=minutes,
+            seconds=seconds,
+            milliseconds=milliseconds,
+            centiseconds=centiseconds,
+            deciseconds=deciseconds,
+        )
+        return formatted_str
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        formatted_str = self.format_timedelta(instance, self.duration_format)
+
+        return formatted_str
