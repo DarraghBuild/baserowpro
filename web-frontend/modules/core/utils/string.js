@@ -135,8 +135,6 @@ export const isNumeric = (value) => {
 }
 
 export const isDuration = (value, durationFormat) => {
-  // Dynamically attempt to guess the value based on the provided
-  // durationFormat:
   const formattedValue = guessDurationValue(value, durationFormat)
 
   if (!formattedValue) {
@@ -158,8 +156,6 @@ export const guessDurationValue = (value, durationFormat) => {
   }
 
   const [, hours, minutes, seconds] = match
-
-  console.log('Hours: ', hours, ' Minutes: ', minutes, ' Seconds: ', seconds)
 
   // Always use the most granular format ("h:mm:ss.sss") from user input:
   const formattedMilliseconds = seconds

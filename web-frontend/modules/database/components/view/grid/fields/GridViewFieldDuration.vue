@@ -32,9 +32,10 @@
 <script>
 import gridField from '@baserow/modules/database/mixins/gridField'
 import gridFieldInput from '@baserow/modules/database/mixins/gridFieldInput'
+import durationField from '@baserow/modules/database/mixins/durationField'
 
 export default {
-  mixins: [gridField, gridFieldInput],
+  mixins: [gridField, gridFieldInput, durationField],
   methods: {
     afterEdit() {
       this.$nextTick(() => {

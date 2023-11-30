@@ -8,7 +8,6 @@ import {
   isValidEmail,
   isValidURL,
   isDuration,
-  guessDurationValue,
 } from '@baserow/modules/core/utils/string'
 
 import moment from '@baserow/modules/core/moment'
@@ -64,6 +63,7 @@ import RowEditFieldURL from '@baserow/modules/database/components/row/RowEditFie
 import RowEditFieldEmail from '@baserow/modules/database/components/row/RowEditFieldEmail'
 import RowEditFieldLinkRow from '@baserow/modules/database/components/row/RowEditFieldLinkRow'
 import RowEditFieldNumber from '@baserow/modules/database/components/row/RowEditFieldNumber'
+import RowEditFieldDuration from '@baserow/modules/database/components/row/RowEditFieldDuration'
 import RowEditFieldRating from '@baserow/modules/database/components/row/RowEditFieldRating'
 import RowEditFieldBoolean from '@baserow/modules/database/components/row/RowEditFieldBoolean'
 import RowEditFieldDate from '@baserow/modules/database/components/row/RowEditFieldDate'
@@ -1909,24 +1909,16 @@ export class DurationFieldType extends FieldType {
     return FieldDurationSubForm
   }
 
-  // TODO: fix this:
-  // TODO: when this is changed to GridViewFieldText, the invalid format error
-  // is not shown anymore:
+  getRowEditFieldComponent(field) {
+    return RowEditFieldDuration
+  }
+
   getGridViewFieldComponent() {
     return GridViewFieldDuration
   }
 
-  // TODO: fix this:
   getFunctionalGridViewFieldComponent() {
     return FunctionalGridViewFieldDuration
-  }
-
-  prepareValueForUpdate(field, value) {
-    if (value) {
-      const durationFormat = field.duration_format
-      return guessDurationValue(value, durationFormat)
-    }
-    return value
   }
 
   getValidationError(field, value) {
