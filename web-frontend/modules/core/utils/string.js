@@ -145,8 +145,7 @@ export const isDuration = (value, durationFormat) => {
 }
 
 export const guessDurationValue = (value, durationFormat) => {
-  const numberPattern =
-    /^(\d+)(?::(\d{1,2})(?::(\d{1,2}(?:\.\d{1,3})?)?)?)?(.*?)$/
+  const numberPattern = /^(\d+)(?::(\d+)(?::(\d+(?:\.\d{1,3})?)?)?)?(.*?)$/
 
   const match = value.match(numberPattern)
 

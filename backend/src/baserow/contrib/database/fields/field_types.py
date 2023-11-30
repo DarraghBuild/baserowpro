@@ -1251,7 +1251,7 @@ class DurationFieldType(CharFieldMatchingRegexFieldType):
         web-frontend/modules/core/utils/string.js#guessDurationValue
         """
 
-        return "/^(\d+)(?::(\d{1,2})(?::(\d{1,2}(?:\.\d{1,3})?)?)?)?(.*?)$/"
+        return "/^(\d+)(?::(\d+)(?::(\d+(?:\.\d{1,3})?)?)?)?(.*?)$/"
 
     def get_model_field(self, instance, **kwargs):
         return models.DurationField(
