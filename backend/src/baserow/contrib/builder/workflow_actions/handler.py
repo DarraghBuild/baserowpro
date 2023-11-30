@@ -59,6 +59,11 @@ class BuilderWorkflowActionHandler(WorkflowActionHandler):
             kwargs["element_id"] = workflow_action.element_id
             kwargs["event"] = workflow_action.event
             kwargs["order"] = workflow_action.order
+            # If we're changing types, and the WorkflowAction has a relation
+            # to a Service, then pop off the PATCH's `field_mappings`, as they're
+            # on the service, not the action.
+            if issubclass(workflow_action.__class__, BuilderWorkflowServiceAction):
+                kwargs.pop("field_mappings", None)
 
         return super().update_workflow_action(workflow_action, **kwargs)
 
