@@ -183,8 +183,7 @@ class UpsertRowWorkflowActionType(BuilderWorkflowServiceActionType):
                 integration = IntegrationHandler().get_integration(integration_id)
             except IntegrationDoesNotExist:
                 raise DRFValidationError(
-                    detail=f"The integration with ID {integration_id} does not exist.",
-                    code="invalid_integration",
+                    f"The integration with ID {integration_id} does not exist."
                 )
 
         table = None
@@ -194,8 +193,7 @@ class UpsertRowWorkflowActionType(BuilderWorkflowServiceActionType):
                 table = TableHandler().get_table(table_id)
             except TableDoesNotExist:
                 raise DRFValidationError(
-                    detail=f"The table with ID {table_id} does not exist.",
-                    code="invalid_table",
+                    f"The table with ID {table_id} does not exist."
                 )
 
         row_id = values.pop("row_id", "")

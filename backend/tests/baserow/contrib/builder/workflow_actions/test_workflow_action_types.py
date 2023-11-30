@@ -69,14 +69,18 @@ def test_import_workflow_action(data_fixture, workflow_action_type: WorkflowActi
 
 @pytest.mark.django_db
 def test_upsert_row_workflow_action_type_prepare_value_for_db(data_fixture):
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError) as exc:
         UpsertRowWorkflowActionType().prepare_value_for_db(
             {"table_id": 9999999999999999}
         )
-    with pytest.raises(ValidationError):
+    assert exc.value.args[0] == f"The table with ID 9999999999999999 does not exist."
+    with pytest.raises(ValidationError) as exc:
         UpsertRowWorkflowActionType().prepare_value_for_db(
             {"integration_id": 9999999999999999}
         )
+    assert (
+        exc.value.args[0] == f"The integration with ID 9999999999999999 does not exist."
+    )
 
     table = data_fixture.create_database_table()
     field = data_fixture.create_text_field(table=table)
@@ -93,13 +97,23 @@ def test_upsert_row_workflow_action_type_prepare_value_for_db(data_fixture):
 
     # Set a new table with `table2`, but use `field` from `table`
     table2 = data_fixture.create_database_table()
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError) as exc:
         UpsertRowWorkflowActionType().prepare_value_for_db(
             {
                 "table_id": table2.id,
                 "field_mappings": [{"field_id": field.id, "value": "'Bread'"}],
             }
         )
+    assert exc.value.args[0] == f"The field with id {field.id} does not exist."
+
+    with pytest.raises(ValidationError) as exc:
+        UpsertRowWorkflowActionType().prepare_value_for_db(
+            {
+                "table_id": table.id,
+                "field_mappings": [{"value": "'Bread'"}],
+            }
+        )
+    assert exc.value.args[0] == "A field mapping must have a `field_id`."
 
 
 @pytest.mark.django_db
