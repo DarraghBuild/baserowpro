@@ -1051,4 +1051,124 @@ describe('Grid view store', () => {
 
     expect(store.getters['grid/getFieldIdByIndex'](2, fields)).toBe(3)
   })
+
+  test('UPDATE_GROUP_META_DATA mutation', () => {
+    const state = Object.assign(gridStore.state(), {})
+    gridStore.state = () => state
+    store.registerModule('grid', gridStore)
+
+    store.commit('grid/SET_GROUP_META_DATA', {
+      field_1: [
+        {
+          field_1: 1,
+          count: 2,
+        },
+        {
+          field_1: 2,
+          count: 2,
+        },
+      ],
+      field_2: [
+        {
+          field_1: 1,
+          field_2: 'a',
+          count: 1,
+        },
+        {
+          field_1: 1,
+          field_2: 'b',
+          count: 1,
+        },
+        {
+          field_1: 2,
+          field_2: 'a',
+          count: 1,
+        },
+        {
+          field_1: 2,
+          field_2: 'b',
+          count: 1,
+        },
+      ],
+    })
+
+    store.commit('grid/UPDATE_GROUP_META_DATA', {
+      field_1: [
+        {
+          count: 4,
+          field_1: 1,
+        },
+        {
+          count: 1,
+          field_1: 3,
+        },
+      ],
+      field_2: [
+        {
+          count: 2,
+          field_1: 1,
+          field_2: 'a',
+        },
+        {
+          count: 1,
+          field_1: 1,
+          field_2: 'c',
+        },
+        {
+          count: 1,
+          field_1: 3,
+          field_2: 'a',
+        },
+      ],
+    })
+
+    expect(store.state.grid.groupMetaData).toEqual({
+      field_1: [
+        {
+          count: 4,
+          field_1: 1,
+        },
+        {
+          count: 2,
+          field_1: 2,
+        },
+        {
+          count: 1,
+          field_1: 3,
+        },
+      ],
+      field_2: [
+        {
+          count: 2,
+          field_1: 1,
+          field_2: 'a',
+        },
+        {
+          count: 1,
+          field_1: 1,
+          field_2: 'b',
+        },
+        {
+          count: 1,
+          field_1: 2,
+          field_2: 'a',
+        },
+        {
+          count: 1,
+          field_1: 2,
+          field_2: 'b',
+        },
+        {
+          count: 1,
+          field_1: 1,
+          field_2: 'c',
+        },
+        {
+          count: 1,
+          field_1: 3,
+          field_2: 'a',
+        },
+      ],
+    })
+  })
 })
