@@ -606,4 +606,8 @@ export class FormElementType extends ContainerElementType {
   get generalFormComponent() {
     return null // TODO
   }
+
+  get childElementTypesForbidden() {
+    return this.elementTypesAll.filter((type) => !type.isFormElement)
+  }
 }
