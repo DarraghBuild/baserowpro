@@ -236,7 +236,7 @@ export class ColumnElementType extends ContainerElementType {
  * are all elements that can be used as part of a form. So in simple terms, any element
  * that can represents data in a way that is directly modifiable by an application user.
  */
-export class FormElementType extends ElementType {
+export class FormElementElementType extends ElementType {
   isFormElement = true
 
   get formDataType() {
@@ -294,7 +294,7 @@ export class FormElementType extends ElementType {
   }
 }
 
-export class InputTextElementType extends FormElementType {
+export class InputTextElementType extends FormElementElementType {
   getType() {
     return 'input_text'
   }
