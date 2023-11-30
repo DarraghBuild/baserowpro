@@ -21,6 +21,7 @@ import dataSourceContentStore from '@baserow/modules/builder/store/dataSourceCon
 import elementContentStore from '@baserow/modules/builder/store/elementContent'
 import themeStore from '@baserow/modules/builder/store/theme'
 import workflowActionStore from '@baserow/modules/builder/store/workflowAction'
+import formDataStore from '@baserow/modules/builder/store/formData'
 
 import { registerRealtimeEvents } from '@baserow/modules/builder/realtime'
 import {
@@ -73,6 +74,7 @@ import {
   PageParameterDataProviderType,
   DataSourceDataProviderType,
   CurrentRecordDataProviderType,
+  FormDataProviderType,
 } from '@baserow/modules/builder/dataProviderTypes'
 
 import { MainThemeConfigBlock } from '@baserow/modules/builder/themeConfigBlockTypes'
@@ -113,6 +115,7 @@ export default (context) => {
   store.registerModule('elementContent', elementContentStore)
   store.registerModule('theme', themeStore)
   store.registerModule('workflowAction', workflowActionStore)
+  store.registerModule('formData', formDataStore)
 
   app.$registry.registerNamespace('builderSettings')
   app.$registry.registerNamespace('element')
@@ -202,6 +205,10 @@ export default (context) => {
   app.$registry.register(
     'builderDataProvider',
     new PageParameterDataProviderType(context)
+  )
+  app.$registry.register(
+    'builderDataProvider',
+    new FormDataProviderType(context)
   )
   app.$registry.register('themeConfigBlock', new MainThemeConfigBlock(context))
 

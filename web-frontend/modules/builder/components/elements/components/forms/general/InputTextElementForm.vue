@@ -1,16 +1,22 @@
 <template>
   <form @submit.prevent @keydown.enter.prevent>
     <ApplicationBuilderFormulaInputGroup
+      v-model="values.label"
+      :label="$t('inputTextElementForm.labelTitle')"
+      :placeholder="$t('inputTextElementForm.labelPlaceholder')"
+      :data-providers-allowed="DATA_PROVIDERS_ALLOWED_ELEMENTS"
+    ></ApplicationBuilderFormulaInputGroup>
+    <ApplicationBuilderFormulaInputGroup
       v-model="values.default_value"
       :label="$t('inputTextElementForm.valueTitle')"
       :placeholder="$t('inputTextElementForm.valuePlaceholder')"
-      :data-providers-allowed="DATA_PROVIDERS_ALLOWED_ELEMENTS"
+      :data-providers-allowed="dataProvidersAllowed"
     ></ApplicationBuilderFormulaInputGroup>
     <ApplicationBuilderFormulaInputGroup
       v-model="values.placeholder"
       :label="$t('inputTextElementForm.placeholderTitle')"
       :placeholder="$t('inputTextElementForm.placeholderPlaceholder')"
-      :data-providers-allowed="DATA_PROVIDERS_ALLOWED_ELEMENTS"
+      :data-providers-allowed="dataProvidersAllowed"
     ></ApplicationBuilderFormulaInputGroup>
     <FormElement class="control">
       <label class="control__label">
@@ -25,8 +31,12 @@
 
 <script>
 import form from '@baserow/modules/core/mixins/form'
-import { DATA_PROVIDERS_ALLOWED_ELEMENTS } from '@baserow/modules/builder/enums'
 import ApplicationBuilderFormulaInputGroup from '@baserow/modules/builder/components/ApplicationBuilderFormulaInputGroup.vue'
+import {
+  CurrentRecordDataProviderType,
+  DataSourceDataProviderType,
+  PageParameterDataProviderType,
+} from '@baserow/modules/builder/dataProviderTypes'
 
 export default {
   name: 'InputTextElementForm',
@@ -35,6 +45,7 @@ export default {
   data() {
     return {
       values: {
+        label: '',
         default_value: '',
         required: false,
         placeholder: '',
@@ -42,7 +53,13 @@ export default {
     }
   },
   computed: {
-    DATA_PROVIDERS_ALLOWED_ELEMENTS: () => DATA_PROVIDERS_ALLOWED_ELEMENTS,
+    dataProvidersAllowed() {
+      return [
+        CurrentRecordDataProviderType.getType(),
+        PageParameterDataProviderType.getType(),
+        DataSourceDataProviderType.getType(),
+      ]
+    },
   },
   methods: {
     emitChange(newValues) {

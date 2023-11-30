@@ -1,20 +1,26 @@
 <template>
-  <input
-    type="text"
-    class="input-element"
-    :readonly="isEditable"
-    :value="resolvedDefaultValue"
-    :required="element.required"
-    :placeholder="resolvedPlaceholder"
-  />
+  <div>
+    <label v-if="element.label" class="control__label">
+      {{ resolvedLabelValue }}
+    </label>
+    <input
+      type="text"
+      class="input-element"
+      :readonly="isEditable"
+      :value="resolvedDefaultValue"
+      :required="element.required"
+      :placeholder="resolvedPlaceholder"
+      @input="setFormData($event.target.value)"
+    />
+  </div>
 </template>
 
 <script>
-import element from '@baserow/modules/builder/mixins/element'
+import formElement from '@baserow/modules/builder/mixins/formElement'
 
 export default {
   name: 'InputTextElement',
-  mixins: [element],
+  mixins: [formElement],
   props: {
     /**
      * @type {Object}
@@ -28,6 +34,13 @@ export default {
     },
   },
   computed: {
+    resolvedLabelValue() {
+      try {
+        return this.resolveFormula(this.element.label)
+      } catch (e) {
+        return ''
+      }
+    },
     resolvedDefaultValue() {
       try {
         return this.resolveFormula(this.element.default_value)
@@ -41,6 +54,11 @@ export default {
       } catch (e) {
         return ''
       }
+    },
+  },
+  watch: {
+    resolvedDefaultValue(value) {
+      this.setFormData(value)
     },
   },
 }
