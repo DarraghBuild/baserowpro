@@ -33,7 +33,7 @@ import ElementPreview from '@baserow/modules/builder/components/elements/Element
 import PageElement from '@baserow/modules/builder/components/page/PageElement.vue'
 
 export default {
-  name: 'FormElement',
+  name: 'FormContainerElement',
   components: { PageElement, ElementPreview, AddElementModal, AddElementZone },
   mixins: [containerElement],
   methods: {
