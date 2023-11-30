@@ -1277,18 +1277,16 @@ class DurationFieldType(CharFieldMatchingRegexFieldType):
         """ """
         return self.MAX_DURATION_LENGTH
 
-    # TODO: fix this:
     @property
     def regex(self):
         """
-        Allow common punctuation used in phone numbers and spaces to allow formatting,
-        but otherwise don't allow text as the phone number should work as a link on
-        mobile devices.
+        A regex for only allowing certain characters and extracting the duration
+        parts from a string.
         Duplicated in the frontend code at, please keep in sync:
-        web-frontend/modules/core/utils/string.js#isSimplePhoneNumber
+        web-frontend/modules/core/utils/string.js#guessDurationValue
         """
 
-        return rf"^[0-9NnXx,+._*()#=;/ -]{{1,{self.max_length}}}$"
+        return "/^(\d+)(?::(\d{1,2})(?::(\d{1,2}(?:\.\d{1,3})?)?)?)?(.*?)$/"
 
     def get_model_field(self, instance, **kwargs):
         return models.DurationField(
