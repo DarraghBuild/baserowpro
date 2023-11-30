@@ -306,8 +306,6 @@ class SerialField(models.Field):
 
 
 class IntegerFieldWithSequence(models.IntegerField):
-    requires_refresh_after_insert = True
-
     """
     This field is similar to the `SerialField` but it uses a `integer` db_type
     instead of a `serial` one. This is needed in the autonumber field because

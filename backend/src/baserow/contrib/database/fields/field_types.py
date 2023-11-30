@@ -5402,3 +5402,13 @@ class AutonumberFieldType(ReadOnlyFieldType):
                 f"ALTER TABLE {db_table} ALTER COLUMN {db_column} DROP DEFAULT;"
             )
             cursor.execute(f"DROP SEQUENCE IF EXISTS {db_column}_seq;")
+
+    def to_baserow_formula_type(self, field: NumberField) -> BaserowFormulaType:
+        return BaserowFormulaNumberType(
+            number_decimal_places=0, nullable=True, requires_refresh_after_insert=True
+        )
+
+    def from_baserow_formula_type(
+        self, formula_type: BaserowFormulaNumberType
+    ) -> NumberField:
+        return NumberField(number_decimal_places=0, number_negative=False)

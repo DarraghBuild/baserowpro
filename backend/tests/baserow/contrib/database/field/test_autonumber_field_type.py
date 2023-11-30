@@ -459,3 +459,47 @@ def test_autonumber_field_values_cannot_be_updated_manually(data_fixture):
             model,
             rows_to_update=[row],
         )
+
+
+@pytest.mark.field_autonumber
+@pytest.mark.django_db
+def test_autonumber_field_can_be_referenced_in_formula(data_fixture):
+    user = data_fixture.create_user()
+    table = data_fixture.create_database_table(user=user)
+    data_fixture.create_autonumber_field(name="autonumber", table=table)
+
+    formula_field = data_fixture.create_formula_field(
+        table=table, formula="field('autonumber') * 2"
+    )
+
+    model = table.get_model()
+    (row,) = RowHandler().create_rows(
+        user=user, table=table, rows_values=[{}], model=model
+    )
+    assert getattr(row, f"field_{formula_field.id}") == 2
+
+
+@pytest.mark.field_autonumber
+@pytest.mark.django_db
+def test_autonumber_field_can_be_looked_up(data_fixture):
+    user = data_fixture.create_user()
+    table_a, table_b, link_field = data_fixture.create_two_linked_tables(user=user)
+    data_fixture.create_autonumber_field(name="autonumber", table=table_b)
+    formula_field = data_fixture.create_formula_field(
+        table=table_a, formula=f"sum(lookup('{link_field.name}', 'autonumber'))"
+    )
+
+    model_b = table_b.get_model()
+    row_b_1 = model_b.objects.create()
+    row_b_2 = model_b.objects.create()
+
+    model_a = table_a.get_model()
+    (row,) = RowHandler().create_rows(
+        user=user,
+        table=table_a,
+        rows_values=[
+            {f"field_{link_field.id}": [row_b_1.id, row_b_2.id]},
+        ],
+        model=model_a,
+    )
+    assert getattr(row, f"field_{formula_field.id}") == 3

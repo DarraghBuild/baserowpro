@@ -3598,11 +3598,7 @@ export class AutonumberFieldType extends FieldType {
     return genericContainsFilter
   }
 
-  getContainsWordFilterFunction(field) {
-    return genericContainsWordFilter
-  }
-
   canBeReferencedByFormulaField() {
-    return false
+    return true
   }
 }
