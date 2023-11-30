@@ -22,6 +22,11 @@
       />
       <PageElement v-else :key="child.id" :element="child" :mode="mode" />
     </template>
+    <div class="form-container-element__submit-button margin-top-2">
+      <button class="link-button-element-button">
+        {{ submitButtonLabelResolved }}
+      </button>
+    </div>
   </div>
 </template>
 
@@ -36,6 +41,25 @@ export default {
   name: 'FormContainerElement',
   components: { PageElement, ElementPreview, AddElementModal, AddElementZone },
   mixins: [containerElement],
+  props: {
+    /**
+     * @type {Object}
+     * @property submit_button_label - The label of the submit button
+     */
+    element: {
+      type: Object,
+      required: true,
+    },
+  },
+  computed: {
+    submitButtonLabelResolved() {
+      try {
+        return this.resolveFormula(this.element.submit_button_label)
+      } catch (e) {
+        return ''
+      }
+    },
+  },
   methods: {
     showAddElementModal() {
       this.$refs.addElementModal.show({
