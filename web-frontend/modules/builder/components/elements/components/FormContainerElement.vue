@@ -1,27 +1,29 @@
 <template>
-  <div v-if="mode === 'editing' && children.length === 0">
-    <AddElementZone @add-element="showAddElementModal"></AddElementZone>
-    <AddElementModal
-      ref="addElementModal"
-      :page="page"
-      :element-types-allowed="elementType.childElementTypes"
-    ></AddElementModal>
-  </div>
-  <div v-else>
-    <template v-for="(child, index) in children">
-      <ElementPreview
-        v-if="mode === 'editing'"
-        :key="child.id"
-        class="element"
-        :element="child"
-        :active="child.id === elementSelectedId"
-        :index="index"
-        :placements="[PLACEMENTS.BEFORE, PLACEMENTS.AFTER]"
-        :placements-disabled="getPlacementsDisabledVertical(index)"
-        @move="moveVertical(child, index, $event)"
-      />
-      <PageElement v-else :key="child.id" :element="child" :mode="mode" />
-    </template>
+  <div>
+    <div v-if="mode === 'editing' && children.length === 0">
+      <AddElementZone @add-element="showAddElementModal"></AddElementZone>
+      <AddElementModal
+        ref="addElementModal"
+        :page="page"
+        :element-types-allowed="elementType.childElementTypes"
+      ></AddElementModal>
+    </div>
+    <div v-else>
+      <template v-for="(child, index) in children">
+        <ElementPreview
+          v-if="mode === 'editing'"
+          :key="child.id"
+          class="element"
+          :element="child"
+          :active="child.id === elementSelectedId"
+          :index="index"
+          :placements="[PLACEMENTS.BEFORE, PLACEMENTS.AFTER]"
+          :placements-disabled="getPlacementsDisabledVertical(index)"
+          @move="moveVertical(child, index, $event)"
+        />
+        <PageElement v-else :key="child.id" :element="child" :mode="mode" />
+      </template>
+    </div>
     <div class="form-container-element__submit-button margin-top-2">
       <button class="link-button-element-button">
         {{ submitButtonLabelResolved || $t('buttonElement.noValue') }}
