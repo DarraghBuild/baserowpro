@@ -856,7 +856,7 @@ class FormContainerElementType(ContainerElementType):
                 ).help_text,
                 required=False,
                 allow_blank=True,
-                default="",
+                default="'Submit'",
             )
         }
 

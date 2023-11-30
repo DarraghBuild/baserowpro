@@ -24,7 +24,7 @@
     </template>
     <div class="form-container-element__submit-button margin-top-2">
       <button class="link-button-element-button">
-        {{ submitButtonLabelResolved }}
+        {{ submitButtonLabelResolved || $t('buttonElement.noValue') }}
       </button>
     </div>
   </div>
