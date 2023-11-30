@@ -16,6 +16,7 @@ import guessFormat from 'moment-guess'
 import { Registerable } from '@baserow/modules/core/registry'
 
 import FieldNumberSubForm from '@baserow/modules/database/components/field/FieldNumberSubForm'
+import FieldDurationSubForm from '@baserow/modules/database/components/field/FieldDurationSubForm'
 import FieldRatingSubForm from '@baserow/modules/database/components/field/FieldRatingSubForm'
 import FieldTextSubForm from '@baserow/modules/database/components/field/FieldTextSubForm'
 import FieldDateSubForm from '@baserow/modules/database/components/field/FieldDateSubForm'
@@ -1902,6 +1903,10 @@ export class DurationFieldType extends FieldType {
       field,
       this.app.i18n.t('fieldDocs.duration')
     )
+  }
+
+  getFormComponent() {
+    return FieldDurationSubForm
   }
 
   // TODO: fix this:
