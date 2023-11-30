@@ -207,6 +207,9 @@ export default ({ service, customPopulateRow }) => {
     UPDATE_ROW_AT_INDEX(state, { index, values }) {
       Object.assign(state.rows[index], values)
     },
+    UPDATE_ROW_VALUES(state, { row, values }) {
+      Object.assign(row, values)
+    },
     ADD_FIELD_TO_ALL_ROWS(state, { field, value }) {
       const name = `field_${field.id}`
       // We have to replace all the rows by using the map function to make it
@@ -694,6 +697,14 @@ export default ({ service, customPopulateRow }) => {
         row,
         values: newValues,
       })
+      // There is a change that the row is not in the buffer, but it does exist in
+      // the view. In that case, the `afterExistingRowUpdated` action has not done
+      // anything. There is a possibility that the row is visible in the row edit
+      // modal, but then it won't be updated, so we have to update it forcefully.
+      commit('UPDATE_ROW_VALUES', {
+        row,
+        values: { ...newValues },
+      })
 
       try {
         const { data } = await RowService(this.$client).update(
@@ -708,6 +719,10 @@ export default ({ service, customPopulateRow }) => {
           fields,
           row,
           values: oldValues,
+        })
+        commit('UPDATE_ROW_VALUES', {
+          row,
+          values: { ...oldValues },
         })
         dispatch('fetchAllFieldAggregationData', { view })
         throw error

@@ -187,6 +187,9 @@ export const mutations = {
   DECREASE_COUNT(state, { stackId }) {
     state.dateStacks[stackId].count--
   },
+  UPDATE_ROW_VALUES(state, { row, values }) {
+    Object.assign(row, values)
+  },
 }
 
 export const actions = {
@@ -728,6 +731,14 @@ export const actions = {
       values: newValues,
       fields,
     })
+    // There is a change that the row is not in the buffer, but it does exist in
+    // the view. In that case, the `updatedExistingRow` action has not done
+    // anything. There is a possibility that the row is visible in the row edit
+    // modal, but then it won't be updated, so we have to update it forcefully.
+    commit('UPDATE_ROW_VALUES', {
+      row,
+      values: { ...newValues },
+    })
 
     try {
       const { data } = await RowService(this.$client).update(
@@ -742,6 +753,10 @@ export const actions = {
         row,
         values: oldValues,
         fields,
+      })
+      commit('UPDATE_ROW_VALUES', {
+        row,
+        values: { ...oldValues },
       })
       throw error
     }
