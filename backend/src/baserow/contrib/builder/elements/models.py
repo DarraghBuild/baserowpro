@@ -543,7 +543,9 @@ class TableElement(CollectionElement):
     """
 
 
-class FormElement(ContainerElement):
+class FormContainerElement(ContainerElement):
     """
     A form element
     """
+
+    submit_button_label = FormulaField(default="")

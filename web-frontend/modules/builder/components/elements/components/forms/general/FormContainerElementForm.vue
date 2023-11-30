@@ -1,51 +1,32 @@
 <template>
   <form @submit.prevent @keydown.enter.prevent>
-    <FormElement class="control">
-      <label class="control__label form-container-element-form__button-label">
-        {{ $t('formContainerElementForm.submitButtonLabel') }}
-        <i class="iconoir-submit-document"></i>
-      </label>
-      <Dropdown v-model="values.submitButtonId" :show-search="false">
-        <DropdownItem
-          v-for="button in buttonsInForm"
-          :key="button.id"
-          :value="button.id"
-          :name="getFormElementName(button)"
-          >{{ getFormElementName(button) }}</DropdownItem
-        >
-      </Dropdown>
-    </FormElement>
+    <ApplicationBuilderFormulaInputGroup
+      v-model="values.submit_button_label"
+      :data-providers-allowed="DATA_PROVIDERS_ALLOWED_ELEMENTS"
+      :label="$t('formContainerElementForm.submitButtonLabel')"
+      :placeholder="$t('formContainerElementForm.submitButtonPlaceholder')"
+    />
   </form>
 </template>
 
 <script>
 import form from '@baserow/modules/core/mixins/form'
+import ApplicationBuilderFormulaInputGroup from '@baserow/modules/builder/components/ApplicationBuilderFormulaInputGroup.vue'
+import { DATA_PROVIDERS_ALLOWED_ELEMENTS } from '@baserow/modules/builder/enums'
 
 export default {
   name: 'FormContainerElementForm',
+  components: { ApplicationBuilderFormulaInputGroup },
   mixins: [form],
-  inject: ['page'],
   data() {
     return {
       values: {
-        submitButtonId: null,
+        submit_button_label: '',
       },
     }
   },
   computed: {
-    buttonsInForm() {
-      // TODO we still need to filter by button
-      return this.$store.getters['element/getChildren'](
-        this.page,
-        this.defaultValues
-      )
-    },
-  },
-  methods: {
-    getFormElementName(formElement) {
-      const elementType = this.$registry.get('element', formElement.type)
-      return elementType.getFormDataName(formElement, { page: this.page })
-    },
+    DATA_PROVIDERS_ALLOWED_ELEMENTS: () => DATA_PROVIDERS_ALLOWED_ELEMENTS,
   },
 }
 </script>

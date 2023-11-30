@@ -26,7 +26,7 @@ from baserow.contrib.builder.elements.models import (
     ParagraphElement,
     TableElement,
     VerticalAlignments,
-    FormElement,
+    FormContainerElement,
 )
 from baserow.contrib.builder.elements.registries import ElementType
 from baserow.contrib.builder.elements.signals import elements_moved
@@ -838,7 +838,38 @@ class TableElementType(CollectionElementType):
 
 class FormContainerElementType(ContainerElementType):
     type = "form_container"
-    model_class = FormElement
+    model_class = FormContainerElement
+    allowed_fields = ["submit_button_label"]
+    serializer_field_names = ["submit_button_label"]
+
+    class SerializedDict(ElementDict):
+        submit_button_label: BaserowFormula
+
+    @property
+    def serializer_field_overrides(self):
+        from baserow.core.formula.serializers import FormulaSerializerField
+
+        overrides = {
+            "submit_button_label": FormulaSerializerField(
+                help_text=FormContainerElement._meta.get_field(
+                    "submit_button_label"
+                ).help_text,
+                required=False,
+                allow_blank=True,
+                default="",
+            )
+        }
+
+        return overrides
 
     def get_sample_params(self) -> Dict[str, Any]:
-        return {}  # TODO
+        return {"submit_button_label": "'hello'"}
+
+    def import_serialized(self, page, serialized_values, id_mapping):
+        serialized_copy = serialized_values.copy()
+        if serialized_copy["submit_button_label"]:
+            serialized_copy["submit_button_label"] = import_formula(
+                serialized_copy["submit_button_label"], id_mapping
+            )
+
+        return super().import_serialized(page, serialized_copy, id_mapping)

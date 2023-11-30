@@ -382,6 +382,7 @@
       "details": "Details"
     },
     "formContainerElementForm": {
-        "submitButtonLabel": "Submit button"
+        "submitButtonLabel": "Submit button",
+        "submitButtonPlaceholder": "Enter value..."
     }
 }
