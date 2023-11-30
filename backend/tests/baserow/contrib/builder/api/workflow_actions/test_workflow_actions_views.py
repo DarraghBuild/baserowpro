@@ -15,6 +15,10 @@ from baserow.contrib.builder.workflow_actions.models import EventTypes
 from baserow.contrib.builder.workflow_actions.workflow_action_types import (
     CreateRowWorkflowActionType,
     NotificationWorkflowActionType,
+    UpdateRowWorkflowActionType,
+)
+from baserow.contrib.integrations.local_baserow.service_types import (
+    LocalBaserowUpsertRowServiceType,
 )
 from baserow.core.formula.serializers import FormulaSerializerField
 
@@ -332,6 +336,160 @@ def test_create_create_row_workflow_action(api_client, data_fixture):
     assert response.status_code == HTTP_200_OK
     assert response_json["type"] == workflow_action_type
     assert response_json["element_id"] == element.id
+    assert response_json["table_id"] is None
+    assert response_json["integration_id"] is None
+    assert response_json["field_mappings"] == []
+
+    workflow_action = CreateRowWorkflowActionType.model_class.objects.get(
+        pk=response_json["id"]
+    )
+    assert response_json["service"] == {
+        "id": workflow_action.service_id,
+        "integration_id": None,
+        "type": LocalBaserowUpsertRowServiceType.type,
+        "schema": None,
+        "table_id": None,
+    }
+
+
+@pytest.mark.django_db
+def test_update_create_row_workflow_action(api_client, data_fixture):
+    user, token = data_fixture.create_user_and_token()
+    table, fields, rows = data_fixture.build_table(
+        user=user,
+        columns=[
+            ("Animal", "text"),
+        ],
+        rows=[],
+    )
+    field = table.field_set.get(name="Animal")
+    builder = data_fixture.create_builder_application(user=user)
+    page = data_fixture.create_builder_page(user=user, builder=builder)
+    element = data_fixture.create_builder_button_element(page=page)
+    workflow_action = data_fixture.create_local_baserow_create_row_workflow_action(
+        page=page, element=element, event=EventTypes.CLICK, user=user
+    )
+    service = workflow_action.service
+
+    url = reverse(
+        "api:builder:workflow_action:item",
+        kwargs={"workflow_action_id": workflow_action.id},
+    )
+    response = api_client.patch(
+        url,
+        {
+            "table_id": table.id,
+            "integration_id": workflow_action.service.integration_id,
+            "field_mappings": [{"field_id": field.id, "value": "'Pony'"}],
+        },
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+
+    service.refresh_from_db()
+
+    response_json = response.json()
+    assert response.status_code == HTTP_200_OK
+    assert response_json["id"] == workflow_action.id
+    assert response_json["element_id"] == workflow_action.element_id
+    assert response_json["table_id"] == service.table_id
+    assert response_json["integration_id"] == service.integration_id
+    assert response_json["field_mappings"] == [
+        {"field_id": field.id, "value": "'Pony'"}
+    ]
+
+
+@pytest.mark.django_db
+def test_create_update_row_workflow_action(api_client, data_fixture):
+    user, token = data_fixture.create_user_and_token()
+    page = data_fixture.create_builder_page(user=user)
+    element = data_fixture.create_builder_button_element(page=page)
+    workflow_action_type = UpdateRowWorkflowActionType.type
+
+    url = reverse("api:builder:workflow_action:list", kwargs={"page_id": page.id})
+    response = api_client.post(
+        url,
+        {
+            "type": workflow_action_type,
+            "event": "click",
+            "element_id": element.id,
+        },
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+
+    response_json = response.json()
+    assert response.status_code == HTTP_200_OK
+    assert response_json["row_id"] == ""
+    assert response_json["type"] == workflow_action_type
+    assert response_json["element_id"] == element.id
+    assert response_json["table_id"] is None
+    assert response_json["integration_id"] is None
+    assert response_json["field_mappings"] == []
+
+    workflow_action = UpdateRowWorkflowActionType.model_class.objects.get(
+        pk=response_json["id"]
+    )
+    assert response_json["service"] == {
+        "id": workflow_action.service_id,
+        "integration_id": None,
+        "type": LocalBaserowUpsertRowServiceType.type,
+        "schema": None,
+        "table_id": None,
+    }
+
+
+@pytest.mark.django_db
+def test_update_update_row_workflow_action(api_client, data_fixture):
+    user, token = data_fixture.create_user_and_token()
+    table, fields, rows = data_fixture.build_table(
+        user=user,
+        columns=[
+            ("Animal", "text"),
+        ],
+        rows=[
+            ["Badger"],
+        ],
+    )
+    model = table.get_model()
+    first_row = model.objects.get()
+    field = table.field_set.get(name="Animal")
+    builder = data_fixture.create_builder_application(user=user)
+    page = data_fixture.create_builder_page(user=user, builder=builder)
+    element = data_fixture.create_builder_button_element(page=page)
+    workflow_action = data_fixture.create_local_baserow_update_row_workflow_action(
+        page=page, element=element, event=EventTypes.CLICK, user=user
+    )
+    service = workflow_action.service
+
+    url = reverse(
+        "api:builder:workflow_action:item",
+        kwargs={"workflow_action_id": workflow_action.id},
+    )
+    response = api_client.patch(
+        url,
+        {
+            "table_id": table.id,
+            "row_id": first_row.id,
+            "integration_id": workflow_action.service.integration_id,
+            "field_mappings": [{"field_id": field.id, "value": "'Pony'"}],
+        },
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+
+    service.refresh_from_db()
+
+    response_json = response.json()
+    assert response.status_code == HTTP_200_OK
+    assert response_json["id"] == workflow_action.id
+    assert response_json["row_id"] == str(first_row.id)
+    assert response_json["element_id"] == workflow_action.element_id
+    assert response_json["table_id"] == service.table_id
+    assert response_json["integration_id"] == service.integration_id
+    assert response_json["field_mappings"] == [
+        {"field_id": field.id, "value": "'Pony'"}
+    ]
 
 
 @pytest.mark.django_db
