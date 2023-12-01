@@ -155,13 +155,13 @@ class BuilderConfig(AppConfig):
         from .elements.element_types import (
             ButtonElementType,
             ColumnElementType,
+            FormContainerElementType,
             HeadingElementType,
             ImageElementType,
             InputTextElementType,
             LinkElementType,
             ParagraphElementType,
             TableElementType,
-            FormContainerElementType,
         )
         from .elements.registries import element_type_registry
 

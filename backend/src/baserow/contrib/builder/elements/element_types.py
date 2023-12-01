@@ -18,6 +18,7 @@ from baserow.contrib.builder.elements.models import (
     ColumnElement,
     ContainerElement,
     Element,
+    FormContainerElement,
     HeadingElement,
     HorizontalAlignments,
     ImageElement,
@@ -26,7 +27,6 @@ from baserow.contrib.builder.elements.models import (
     ParagraphElement,
     TableElement,
     VerticalAlignments,
-    FormContainerElement,
 )
 from baserow.contrib.builder.elements.registries import ElementType
 from baserow.contrib.builder.elements.signals import elements_moved
