@@ -172,6 +172,7 @@ def setup_interesting_test_table(
         "created_on_date_eu": None,
         "created_on_datetime_eu_tzone": None,
         "last_modified_by": None,
+        "created_by": None,
         # We will setup link rows manually later
         "link_row": None,
         "self_link_row": None,
@@ -251,7 +252,7 @@ def setup_interesting_test_table(
     # the current daylight savings time information.
     with freeze_time("2021-01-02 12:00"):
         blank_row = row_handler.create_row(user, table, {})
-        row = model.objects.create(**row_values)
+        row = model.objects.create(**row_values, created_by=user)
 
     # Setup the link rows
     linked_row_1 = row_handler.create_row(
