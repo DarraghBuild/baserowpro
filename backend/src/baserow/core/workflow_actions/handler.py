@@ -113,16 +113,15 @@ class WorkflowActionHandler(ABC):
 
         allowed_updates = extract_allowed(kwargs, workflow_action_type.allowed_fields)
 
-        allowed_updates = workflow_action_type.prepare_value_for_db(
-            allowed_updates, instance=workflow_action
-        )
-
         if has_type_changed:
             self.delete_workflow_action(workflow_action)
             workflow_action = self.create_workflow_action(
                 workflow_action_type, **allowed_updates
             )
         else:
+            allowed_updates = workflow_action_type.prepare_value_for_db(
+                allowed_updates, instance=workflow_action
+            )
             for key, value in allowed_updates.items():
                 setattr(workflow_action, key, value)
 
