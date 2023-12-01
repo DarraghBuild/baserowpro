@@ -28,7 +28,10 @@ from baserow.contrib.builder.elements.models import (
     TableElement,
     VerticalAlignments,
 )
-from baserow.contrib.builder.elements.registries import ElementType
+from baserow.contrib.builder.elements.registries import (
+    ElementType,
+    element_type_registry,
+)
 from baserow.contrib.builder.elements.signals import elements_moved
 from baserow.contrib.builder.formula_importer import import_formula
 from baserow.contrib.builder.pages.handler import PageHandler
@@ -40,6 +43,16 @@ from .registries import collection_field_type_registry
 
 
 class ContainerElementType(ElementType, ABC):
+    @property
+    def child_types_allowed(self) -> List[str]:
+        """
+        Lets you define which children types can be placed inside the container.
+
+        :return: All the allowed children types
+        """
+
+        return [element_type.type for element_type in element_type_registry.get_all()]
+
     def get_new_place_in_container(
         self, container_element: ContainerElement, places_removed: List[str]
     ) -> Optional[str]:
@@ -283,6 +296,10 @@ class CollectionElementType(ElementType, ABC):
             data_source_id=actual_data_source_id,
             **kwargs,
         )
+
+
+class FormElementType(ElementType):
+    pass
 
 
 class ColumnElementType(ContainerElementType):
@@ -713,7 +730,7 @@ class ImageElementType(ElementType):
         return overrides
 
 
-class InputElementType(ElementType, abc.ABC):
+class InputElementType(FormElementType, abc.ABC):
     pass
 
 
@@ -861,6 +878,16 @@ class FormContainerElementType(ContainerElementType):
         }
 
         return overrides
+
+    @property
+    def child_types_allowed(self) -> List[str]:
+        child_types_allowed = []
+
+        for element_type in element_type_registry.get_all():
+            if isinstance(element_type, FormElementType):
+                child_types_allowed.append(element_type.type)
+
+        return child_types_allowed
 
     def get_sample_params(self) -> Dict[str, Any]:
         return {"submit_button_label": "'hello'"}
