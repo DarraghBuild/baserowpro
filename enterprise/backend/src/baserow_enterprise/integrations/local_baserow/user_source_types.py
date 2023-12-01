@@ -7,6 +7,7 @@ from rest_framework import serializers
 from baserow.api.exceptions import RequestBodyValidationException
 from baserow.contrib.database.fields.handler import FieldHandler
 from baserow.contrib.database.table.handler import TableHandler
+from baserow.core.app_auth_providers.handler import AppAuthProviderHandler
 from baserow.core.user_sources.registries import UserSourceType
 from baserow.core.user_sources.types import UserSourceDict, UserSourceSubClass
 from baserow_enterprise.integrations.local_baserow.models import LocalBaserowUserSource
@@ -88,7 +89,7 @@ class LocalBaserowUserSourceType(UserSourceType):
                     "email_field_id" not in values
                     and instance
                     and instance.email_field_id
-                    and instance.email_field_id.table_id != table_id
+                    and instance.email_field.table_id != table_id
                 ):
                     values["email_field_id"] = None
 
@@ -96,7 +97,7 @@ class LocalBaserowUserSourceType(UserSourceType):
                     "name_field_id" not in values
                     and instance
                     and instance.name_field_id
-                    and instance.name_field_id.table_id != table_id
+                    and instance.name_field.table_id != table_id
                 ):
                     values["name_field_id"] = None
             else:
@@ -152,6 +153,16 @@ class LocalBaserowUserSourceType(UserSourceType):
                 values["name_field"] = None
 
         return values
+
+    def after_update(self, user, user_source, values):
+        if "auth_provider" not in values and "table" in values:
+            # We clear all auth provider when the table changes
+            for ap in AppAuthProviderHandler.list_app_auth_providers_for_user_source(
+                user_source
+            ):
+                ap.get_type().after_user_source_update(user, ap, user_source)
+
+        return super().after_update(user, user_source, values)
 
     def deserialize_property(
         self,
