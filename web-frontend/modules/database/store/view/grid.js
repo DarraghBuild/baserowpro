@@ -515,6 +515,82 @@ export const mutations = {
       })
     })
   },
+  UPDATE_GROUP_META_DATA_AFTER_ROW_CREATED(state, createdRow) {
+    const existingMetaData = state.groupMetaData
+
+    const getValues = (object, keys) => {
+      const newObject = {}
+      keys.forEach((key) => {
+        newObject[key] = object[key]
+      })
+      return JSON.stringify(newObject)
+    }
+
+    const existingFieldKeys = []
+    Object.keys(existingMetaData).forEach((existingGroupField) => {
+      let updated = false
+      existingFieldKeys.push(existingGroupField)
+      existingMetaData[existingGroupField].forEach(
+        (existingGroupEntry, index) => {
+          const existingValues = getValues(
+            existingGroupEntry,
+            existingFieldKeys
+          )
+          const rowValues = getValues(createdRow, existingFieldKeys)
+
+          if (existingValues === rowValues) {
+            Vue.set(
+              existingMetaData[existingGroupField][index],
+              'count',
+              existingGroupEntry.count + 1
+            )
+            updated = true
+          }
+        }
+      )
+
+      if (!updated) {
+        const newEntry = { count: 1 }
+        existingFieldKeys.forEach((key) => {
+          newEntry[key] = createdRow[key]
+        })
+        existingMetaData[existingGroupField].push(newEntry)
+      }
+    })
+  },
+  UPDATE_GROUP_META_DATA_AFTER_ROW_DELETED(state, deletedRow) {
+    const existingMetaData = state.groupMetaData
+
+    const getValues = (object, keys) => {
+      const newObject = {}
+      keys.forEach((key) => {
+        newObject[key] = object[key]
+      })
+      return JSON.stringify(newObject)
+    }
+
+    const existingFieldKeys = []
+    Object.keys(existingMetaData).forEach((existingGroupField) => {
+      existingFieldKeys.push(existingGroupField)
+      existingMetaData[existingGroupField].forEach(
+        (existingGroupEntry, index) => {
+          const existingValues = getValues(
+            existingGroupEntry,
+            existingFieldKeys
+          )
+          const rowValues = getValues(deletedRow, existingFieldKeys)
+
+          if (existingValues === rowValues) {
+            Vue.set(
+              existingMetaData[existingGroupField][index],
+              'count',
+              existingGroupEntry.count - 1
+            )
+          }
+        }
+      )
+    })
+  },
 }
 
 // Contains the info needed for the delayed scroll top action.
@@ -1707,6 +1783,7 @@ export const actions = {
     if (isSingleRowInsertion) {
       // When a single row is inserted we don't want to deal with filters, sorts and
       // search just yet. Therefore it is okay to just insert the row into the buffer.
+      commit('UPDATE_GROUP_META_DATA_AFTER_ROW_CREATED', rowsPopulated[0])
       commit('INSERT_NEW_ROWS_IN_BUFFER_AT_INDEX', {
         rows: rowsPopulated,
         index,
@@ -1790,6 +1867,7 @@ export const actions = {
       })
     } catch (error) {
       if (isSingleRowInsertion) {
+        commit('UPDATE_GROUP_META_DATA_AFTER_ROW_DELETED', rowsPopulated[0])
         commit('DELETE_ROW_IN_BUFFER', rowsPopulated[0])
       } else {
         // When we have multiple rows we will need to re-evaluate where the rest of the
@@ -1836,6 +1914,9 @@ export const actions = {
     if (!row._.matchFilters || !row._.matchSearch) {
       return
     }
+
+    // Update the group by meta data if needed.
+    commit('UPDATE_GROUP_META_DATA_AFTER_ROW_CREATED', row)
 
     // Now that we know that the row applies to the filters, which means it belongs
     // in this view, we need to estimate what position it has in the table.
@@ -1979,10 +2060,12 @@ export const actions = {
         // If the row exists in the buffer, we can visually show to the user that
         // the values have changed, without immediately reflecting the change in
         // the buffer.
+        commit('UPDATE_GROUP_META_DATA_AFTER_ROW_DELETED', row)
         commit('UPDATE_ROW_VALUES', {
           row,
           values: { ...values },
         })
+        commit('UPDATE_GROUP_META_DATA_AFTER_ROW_CREATED', row)
         await dispatch('onRowChange', { view, row, fields })
       } else {
         // If the row doesn't exist in the buffer, it could be that the new values
@@ -2308,6 +2391,11 @@ export const actions = {
         metadata,
       })
     } else if (oldRowExists && newRowExists) {
+      // Instead of implementing a meta data updated mutation, we can easily just
+      // call the deleted and created mutation because that will have the same effect.
+      commit('UPDATE_GROUP_META_DATA_AFTER_ROW_DELETED', oldRow)
+      commit('UPDATE_GROUP_META_DATA_AFTER_ROW_CREATED', newRow)
+
       // If the new order already exists in the buffer and is not the row that has
       // been updated, we need to decrease all the other orders, otherwise we could
       // have duplicate orders.
@@ -2496,6 +2584,9 @@ export const actions = {
     if (!row._.matchFilters || !row._.matchSearch) {
       return
     }
+
+    // Decrease the count in the group by meta data if an entry exists.
+    commit('UPDATE_GROUP_META_DATA_AFTER_ROW_DELETED', row)
 
     // Now that we know for sure that the row belongs in the view, we need to figure
     // out if is before, inside or after the buffered results.
