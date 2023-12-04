@@ -1703,7 +1703,7 @@ export const actions = {
    * object can be provided which will forcefully add the row before that row. If no
    * `before` is provided, the row will be added last.
    */
-  createNewRow(
+  async createNewRow(
     { commit, getters, dispatch },
     {
       view,
@@ -1714,7 +1714,7 @@ export const actions = {
       selectPrimaryCell = false,
     }
   ) {
-    dispatch('createNewRows', {
+    await dispatch('createNewRows', {
       view,
       table,
       fields,
