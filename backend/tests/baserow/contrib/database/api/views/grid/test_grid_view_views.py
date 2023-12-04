@@ -369,6 +369,92 @@ def test_list_rows_with_group_by(api_client, data_fixture):
 
 
 @pytest.mark.django_db
+def test_list_rows_with_group_by_with_filter(api_client, data_fixture):
+    user, token = data_fixture.create_user_and_token(
+        email="test@test.nl", password="password", first_name="Test1"
+    )
+    table = data_fixture.create_database_table(user=user)
+    text_field = data_fixture.create_text_field(
+        table=table, order=0, name="Color", text_default="white"
+    )
+    boolean_field = data_fixture.create_boolean_field(
+        table=table, order=2, name="For sale"
+    )
+    grid = data_fixture.create_grid_view(table=table)
+    data_fixture.create_view_group_by(view=grid, field=text_field)
+    data_fixture.create_view_filter(
+        view=grid, field=boolean_field, type="boolean", value="false"
+    )
+
+    model = grid.table.get_model()
+    row_1 = model.objects.create(
+        **{
+            f"field_{text_field.id}": "Green",
+            f"field_{boolean_field.id}": False,
+        }
+    )
+    row_2 = model.objects.create(
+        **{
+            f"field_{text_field.id}": "Green",
+            f"field_{boolean_field.id}": False,
+        }
+    )
+    row_3 = model.objects.create(
+        **{
+            f"field_{text_field.id}": "Green",
+            f"field_{boolean_field.id}": True,
+        }
+    )
+    row_4 = model.objects.create(
+        **{
+            f"field_{text_field.id}": "Green",
+            f"field_{boolean_field.id}": True,
+        }
+    )
+    row_5 = model.objects.create(
+        **{
+            f"field_{text_field.id}": "Green",
+            f"field_{boolean_field.id}": True,
+        }
+    )
+    row_6 = model.objects.create(
+        **{
+            f"field_{text_field.id}": "Green",
+            f"field_{boolean_field.id}": True,
+        }
+    )
+    row_7 = model.objects.create(
+        **{
+            f"field_{text_field.id}": "Orange",
+            f"field_{boolean_field.id}": False,
+        }
+    )
+    row_8 = model.objects.create(
+        **{
+            f"field_{text_field.id}": "Orange",
+            f"field_{boolean_field.id}": True,
+        }
+    )
+    row_9 = model.objects.create(
+        **{
+            f"field_{text_field.id}": "Orange",
+            f"field_{boolean_field.id}": True,
+        }
+    )
+
+    url = reverse("api:database:views:grid:list", kwargs={"view_id": grid.id})
+    response = api_client.get(url, **{"HTTP_AUTHORIZATION": f"JWT {token}"})
+    response_json = response.json()
+
+    assert response_json["group_meta_data"] == {
+        f"field_{text_field.id}": [
+            {f"field_{text_field.id}": "Green", "count": 2},
+            {f"field_{text_field.id}": "Orange", "count": 1},
+        ]
+    }
+
+
+@pytest.mark.django_db
 def test_list_rows_include_field_options(api_client, data_fixture):
     user, token = data_fixture.create_user_and_token(
         email="test@test.nl", password="password", first_name="Test1"
