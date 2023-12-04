@@ -259,7 +259,7 @@ class DurationSerializer(serializers.DurationField):
         self.duration_format = duration_format
 
     def format_timedelta(self, td, format_str):
-        """Makes sure that 49 hours are displayed as 49 instead of 1 day 1 hour."""
+        """Makes sure that 25 hours are displayed as 25 instead of 1 day 1 hour."""
 
         total_seconds = int(td.total_seconds())
         hours, remainder = divmod(total_seconds, 3600)
