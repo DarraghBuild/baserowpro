@@ -13,7 +13,7 @@
 export default {
   props: {
     /**
-     * The type of the button
+     * The type of the button.
      */
     type: {
       required: false,
@@ -25,6 +25,17 @@ export default {
     },
     /**
      * The size of the button.
+     */
+    size: {
+      required: false,
+      type: String,
+      default: 'regular',
+      validator: function (value) {
+        return ['regular', 'small'].includes(value)
+      },
+    },
+    /**
+     * The icon of the button.
      */
     icon: {
       required: true,
@@ -61,6 +72,7 @@ export default {
       const classObj = {
         'button-icon--loading': this.loading,
         'button-icon--secondary': this.type === 'secondary',
+        'button-icon--small': this.size === 'small',
         active: this.active,
       }
       return classObj
