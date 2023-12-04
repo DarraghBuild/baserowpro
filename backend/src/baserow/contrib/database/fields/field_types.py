@@ -1450,6 +1450,7 @@ class DurationFieldType(CharFieldMatchingRegexFieldType):
     def max_length(self):
         # TODO: fix this:
         """ """
+
         return self.MAX_DURATION_LENGTH
 
     @property
@@ -1461,7 +1462,7 @@ class DurationFieldType(CharFieldMatchingRegexFieldType):
         web-frontend/modules/core/utils/string.js#guessDurationValue
         """
 
-        return "/^(\d+)(?::(\d+)(?::(\d+(?:\.\d{1,3})?)?)?)?(.*?)$/"
+        return "/^(\d+)(?::(\d+)(?::(\d+(?:\.\d{1,3})?)?)?)?(.*?)$/"  # NOQA: W605
 
     def get_model_field(self, instance, **kwargs):
         return models.DurationField(

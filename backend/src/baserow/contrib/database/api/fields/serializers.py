@@ -281,7 +281,7 @@ class DurationSerializer(serializers.DurationField):
         return formatted_str
 
     def to_representation(self, instance):
-        representation = super().to_representation(instance)
+        super().to_representation(instance)
 
         formatted_str = self.format_timedelta(instance, self.duration_format)
 

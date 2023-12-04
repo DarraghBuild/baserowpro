@@ -1,5 +1,4 @@
 import typing
-from datetime import datetime
 from typing import NewType
 
 from django.contrib.contenttypes.models import ContentType
