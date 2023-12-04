@@ -710,9 +710,27 @@ class BooleanFieldType(FieldType):
 
     # WARNING: these values are prone to SQL injection
     # lowercase serializers.BooleanField.TRUE_VALUES + "checked" keyword
-    TRUE_VALUES = ["t", "true", "on", "y", "yes", 1, "checked"]
+    # fmt: off
+    TRUE_VALUES = [
+        't', 'T',
+        'y', 'Y', 'yes', 'Yes', 'YES',
+        'true', 'True', 'TRUE',
+        'on', 'On', 'ON',
+        '1', 1,
+        "checked",
+        True
+    ]
     # lowercase serializers.BooleanField.FALSE_VALUES + "unchecked" keyword
-    FALSE_VALUES = ["f", "false", "off", "n", "no", 0, "unchecked"]
+    # fmt: off
+    FALSE_VALUES = [
+        'f', 'F',
+        'n', 'N', 'no', 'No', 'NO',
+        'false', 'False', 'FALSE',
+        'off', 'Off', 'OFF',
+        '0', 0, 0.0,
+        "unchecked",
+        False
+    ]
 
     def prepare_value_for_db(self, instance: Field, value: bool) -> Any:
         """
@@ -721,12 +739,14 @@ class BooleanFieldType(FieldType):
         :return: The bool value, prepared.
         """
 
-        if str(value).lower() not in self.TRUE_VALUES + self.FALSE_VALUES:
-            raise ValidationError(
-                "A BooleanFieldType expects a truthy or falsy value, "
-                f"but it received: {value}."
-            )
-        return value
+        if value in self.TRUE_VALUES:
+            return True
+        elif value in self.FALSE_VALUES:
+            return False
+        raise ValidationError(
+            "A BooleanFieldType expects a truthy or falsy value, "
+            f"but it received: {value}."
+        )
 
     def get_alter_column_prepare_new_value(self, connection, from_field, to_field):
         """
