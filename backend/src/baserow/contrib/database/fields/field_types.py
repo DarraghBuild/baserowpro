@@ -1488,6 +1488,56 @@ class DurationFieldType(CharFieldMatchingRegexFieldType):
     def random_value(self, instance, fake, cache):
         pass
 
+    def get_alter_column_prepare_old_value(self, connection, from_field, to_field):
+        """
+        Prepares value when casting it from Duration field to Text field and makes
+        sure that the value for the Text field is exactly the same as the previous
+        value from the Duration field:
+
+        - fixes padding zeros
+        - for 25 hours, returns 25 hours instead of 1 day and 1 hour
+        - formats miliseconds correctly
+        - makes sure there is no rounding done by the database
+        """
+
+        if from_field.duration_format == "h:mm":
+            return """
+                p_in = EXTRACT(EPOCH FROM CAST(p_in AS INTERVAL))::INTEGER / 3600 || ':' ||
+                       TO_CHAR(EXTRACT(MINUTE FROM CAST(p_in AS INTERVAL)), 'FM00');
+            """
+
+        elif from_field.duration_format == "h:mm:ss":
+            return """
+                p_in = EXTRACT(EPOCH FROM CAST(p_in AS INTERVAL))::INTEGER / 3600 || ':' ||
+                       TO_CHAR(EXTRACT(MINUTE FROM CAST(p_in AS INTERVAL)), 'FM00') || ':' ||
+                       TO_CHAR(TRUNC(EXTRACT(SECOND FROM CAST(p_in AS INTERVAL))::NUMERIC, 0), 'FM00');
+            """
+
+        elif from_field.duration_format == "h:mm:ss.s":
+            return """
+                p_in = EXTRACT(EPOCH FROM CAST(p_in AS INTERVAL))::INTEGER / 3600 || ':' ||
+                       TO_CHAR(EXTRACT(MINUTE FROM CAST(p_in AS INTERVAL)), 'FM00') || ':' ||
+                       TO_CHAR(TRUNC(EXTRACT(SECOND FROM CAST(p_in AS INTERVAL))::NUMERIC, 1), 'FM00.0');
+            """
+
+        elif from_field.duration_format == "h:mm:ss.ss":
+            return """
+                p_in = EXTRACT(EPOCH FROM CAST(p_in AS INTERVAL))::INTEGER / 3600 || ':' ||
+                       TO_CHAR(EXTRACT(MINUTE FROM CAST(p_in AS INTERVAL)), 'FM00') || ':' ||
+                       TO_CHAR(TRUNC(EXTRACT(SECOND FROM CAST(p_in AS INTERVAL))::NUMERIC, 2), 'FM00.00');
+            """
+
+        elif from_field.duration_format == "h:mm:ss.sss":
+            return """
+                p_in = EXTRACT(EPOCH FROM CAST(p_in AS INTERVAL))::INTEGER / 3600 || ':' ||
+                       TO_CHAR(EXTRACT(MINUTE FROM CAST(p_in AS INTERVAL)), 'FM00') || ':' ||
+                       TO_CHAR(TRUNC(EXTRACT(SECOND FROM CAST(p_in AS INTERVAL))::NUMERIC, 3), 'FM00.000');
+            """
+
+        return super().get_alter_column_prepare_old_value(
+            connection, from_field, to_field
+        )
+
 
 class LinkRowFieldType(FieldType):
     """
