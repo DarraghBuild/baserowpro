@@ -144,7 +144,7 @@ def test_export_import_local_baserow_list_rows_service(data_fixture):
     id_mapping = {}
 
     service: LocalBaserowListRows = service_type.import_serialized(  # type: ignore
-        integration, exported, id_mapping, fake_import_formula
+        integration, exported, id_mapping, import_formula=fake_import_formula
     )
 
     assert service.id != exported["id"]
@@ -176,7 +176,7 @@ def test_export_import_local_baserow_list_rows_service(data_fixture):
     id_mapping["database_fields"] = {field.id: field_2.id}  # type: ignore
     id_mapping["database_tables"] = {table.id: table_2.id}  # type: ignore
     service: LocalBaserowListRows = service_type.import_serialized(  # type: ignore
-        integration, exported, id_mapping, fake_import_formula
+        integration, exported, id_mapping, import_formula=fake_import_formula
     )
 
     assert service.view_id == view_2.id
@@ -396,7 +396,7 @@ def test_export_import_local_baserow_get_row_service(data_fixture):
     id_mapping = {}
 
     service: LocalBaserowGetRow = service_type.import_serialized(  # type: ignore
-        integration, exported, id_mapping, fake_import_formula
+        integration, exported, id_mapping, import_formula=fake_import_formula
     )
 
     assert service.id != exported["id"]
@@ -424,7 +424,7 @@ def test_export_import_local_baserow_get_row_service(data_fixture):
     id_mapping["database_fields"] = {field.id: field_2.id}  # type: ignore
     id_mapping["database_tables"] = {table.id: table_2.id}  # type: ignore
     service: LocalBaserowGetRow = service_type.import_serialized(  # type: ignore
-        integration, exported, id_mapping, fake_import_formula
+        integration, exported, id_mapping, import_formula=fake_import_formula
     )
 
     assert service.view_id == view_2.id
@@ -1161,6 +1161,17 @@ def test_local_baserow_table_service_generate_schema_with_interesting_test_table
             "metadata": {},
             "type": "string",
         },
+        field_db_column_by_name["last_modified_by"]: {
+            "default": None,
+            "metadata": {},
+            "original_type": "last_modified_by",
+            "properties": {
+                "id": {"title": "id", "type": "number"},
+                "name": {"title": "name", "type": "string"},
+            },
+            "title": "last_modified_by",
+            "type": "object",
+        },
         field_db_column_by_name["link_row"]: {
             "title": "link_row",
             "default": None,
@@ -1404,7 +1415,7 @@ def test_local_baserow_table_service_generate_schema_with_interesting_test_table
             "metadata": {},
             "type": "string",
         },
-        "id": {"metadata": {}, "type": "number", "title": "ID"},
+        "id": {"metadata": {}, "type": "number", "title": "Id"},
     }
 
     get_row_service_type = LocalBaserowGetRowUserServiceType()

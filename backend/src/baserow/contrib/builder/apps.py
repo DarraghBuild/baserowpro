@@ -190,12 +190,14 @@ class BuilderConfig(AppConfig):
         from .data_providers.data_provider_types import (
             CurrentRecordDataProviderType,
             DataSourceDataProviderType,
+            FormDataProviderType,
             PageParameterDataProviderType,
         )
 
         builder_data_provider_type_registry.register(DataSourceDataProviderType())
         builder_data_provider_type_registry.register(PageParameterDataProviderType())
         builder_data_provider_type_registry.register(CurrentRecordDataProviderType())
+        builder_data_provider_type_registry.register(FormDataProviderType())
 
         from baserow.contrib.builder.theme.operations import UpdateThemeOperationType
 
@@ -214,6 +216,15 @@ class BuilderConfig(AppConfig):
 
         builder_workflow_action_type_registry.register(NotificationWorkflowActionType())
         builder_workflow_action_type_registry.register(OpenPageWorkflowActionType())
+
+        from .elements.collection_field_types import (
+            LinkCollectionFieldType,
+            TextCollectionFieldType,
+        )
+        from .elements.registries import collection_field_type_registry
+
+        collection_field_type_registry.register(TextCollectionFieldType())
+        collection_field_type_registry.register(LinkCollectionFieldType())
 
         from .domains.receivers import connect_to_domain_pre_delete_signal
 

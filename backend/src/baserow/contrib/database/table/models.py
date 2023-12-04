@@ -12,7 +12,7 @@ from django.contrib.postgres.search import SearchQuery, SearchVectorField
 from django.core.exceptions import FieldDoesNotExist as DjangoFieldDoesNotExist
 from django.db import models
 from django.db.models import Field as DjangoModelFieldClass
-from django.db.models import ForeignKey, JSONField, Q, QuerySet, Value
+from django.db.models import JSONField, Q, QuerySet, Value
 
 from loguru import logger
 from opentelemetry import trace
@@ -28,6 +28,7 @@ from baserow.contrib.database.fields.field_filters import (
     FILTER_TYPE_OR,
     FilterBuilder,
 )
+from baserow.contrib.database.fields.fields import IgnoreMissingForeignKey
 from baserow.contrib.database.fields.models import (
     CreatedOnField,
     Field,
@@ -514,6 +515,49 @@ class GeneratedTableModel(HierarchicalModelMixin, models.Model):
     like `isinstance(possible_baserow_model, GeneratedTableModel)`.
     """
 
+    @classmethod
+    def info(cls):
+        """
+        Print basic information about the generated table.
+
+        Use only in development.
+        """
+
+        from rich import box
+        from rich.console import Console
+        from rich.table import Table
+
+        table = Table(
+            title=f"{cls.baserow_table.name} ({cls.baserow_table.id})", box=box.ROUNDED
+        )
+        table.add_column("Name", justify="right", style="cyan", no_wrap=True)
+        table.add_column("Column", justify="right", style="cyan", no_wrap=True)
+        table.add_column("Type", style="magenta")
+        table.add_column("Order", style="grey84")
+        table.add_column("Trashed", justify="center", style="green")
+        table.add_column("TS vector column", style="yellow")
+
+        field_objects = cls.get_field_objects(include_trash=True)
+        for field_obj in field_objects:
+            primary = "(primary) " if field_obj["field"].primary else ""
+            name = f"{primary}{field_obj['field'].name}"
+            ts_vector_created = (
+                "✓" if field_obj["field"].tsvector_column_created else ""
+            )
+            ts_vector = f"{field_obj['field'].tsv_db_column} {ts_vector_created}"
+            trashed = "🗑️" if field_obj["field"].trashed else ""
+            table.add_row(
+                name,
+                field_obj["field"].db_column,
+                field_obj["type"].type,
+                str(field_obj["field"].order),
+                trashed,
+                ts_vector,
+            )
+
+        console = Console()
+        console.print(table)
+
     def _do_update(self, base_qs, using, pk_val, values, update_fields, forced_update):
         """
         We override this method to prevent safe and bulk save queries from setting
@@ -577,10 +621,14 @@ class GeneratedTableModel(HierarchicalModelMixin, models.Model):
         return field_objects
 
     @classmethod
-    def get_field_objects_by_type(cls, field_type: str, include_trash: bool = False):
-        field_objects = cls.get_field_objects(include_trash)
-
-        return filter(lambda f: f["type"].type == field_type, field_objects)
+    def get_field_objects_to_always_update(cls):
+        field_objects = cls.get_field_objects(True)
+        return [
+            field_object
+            for field_object in field_objects
+            if field_type_registry.get_by_type(field_object["type"]).update_always
+            is True
+        ]
 
     @classmethod
     def get_fields_missing_search_index(cls) -> List[Field]:
@@ -977,9 +1025,12 @@ class Table(
         indexes.append(get_row_needs_background_update_index(self))
 
     def _add_last_modified_by(self, field_attrs, indexes):
-        field_attrs[LAST_MODIFIED_BY_COLUMN_NAME] = ForeignKey(
+        field_attrs[LAST_MODIFIED_BY_COLUMN_NAME] = IgnoreMissingForeignKey(
             User,
             null=True,
+            related_name="+",
+            related_query_name="+",
+            db_constraint=False,
             on_delete=models.SET_NULL,
             help_text="Stores information about the user that modified the row last.",
         )

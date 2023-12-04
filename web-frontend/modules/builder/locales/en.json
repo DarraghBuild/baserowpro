@@ -2,7 +2,11 @@
     "dataProviderType": {
         "dataSource": "Data",
         "pageParameter": "Parameter",
-        "currentRecord": "Data source"
+        "currentRecord": "Data source",
+        "formData": "Form data"
+    },
+    "formDataProviderType": {
+        "nodeMissing": "Missing"
     },
     "builderForm": {
         "submit": "Add application"
@@ -104,6 +108,9 @@
     "emptySidePanelState": {
         "message": "Click on one of the elements to see more details"
     },
+    "pagePreview": {
+        "emptyMessage": "Click to create first element"
+    },
     "elementForms": {
         "textInputPlaceholder": "Enter text...",
         "urlInputPlaceholder": "Enter url...",
@@ -141,6 +148,8 @@
         "uploadFileButton": "Upload file"
     },
     "inputTextElementForm": {
+        "labelTitle": "Label",
+        "labelPlaceholder": "Enter a label (optional)",
         "valueTitle": "Default value",
         "valuePlaceholder": "Enter a default value (optional)",
         "placeholderTitle": "Placeholder",
@@ -333,7 +342,7 @@
       "showMore": "Show more"
     },
     "currentRecordDataProviderType": {
-      "index": "index",
+      "index": "Index",
       "firstPartName": "Data source: {name}"
     },
     "workflowActionTypes": {
@@ -363,7 +372,9 @@
     },
     "linkFieldForm": {
       "fieldValueLabel": "Url",
-      "fieldValuePlaceholder": "Enter value..."
+      "fieldValuePlaceholder": "Enter value...",
+      "fieldLinkNameLabel": "Link text",
+      "fieldLinkNamePlaceholder": "Enter value..."
     },
     "linkField": {
       "details": "Details"

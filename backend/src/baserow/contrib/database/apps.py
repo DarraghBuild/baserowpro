@@ -206,6 +206,7 @@ class DatabaseConfig(AppConfig):
             EmailFieldType,
             FileFieldType,
             FormulaFieldType,
+            LastModifiedByFieldType,
             LastModifiedFieldType,
             LinkRowFieldType,
             LongTextFieldType,
@@ -231,6 +232,7 @@ class DatabaseConfig(AppConfig):
         field_type_registry.register(BooleanFieldType())
         field_type_registry.register(DateFieldType())
         field_type_registry.register(LastModifiedFieldType())
+        field_type_registry.register(LastModifiedByFieldType())
         field_type_registry.register(CreatedOnFieldType())
         field_type_registry.register(DurationFieldType())
         field_type_registry.register(LinkRowFieldType())
@@ -334,6 +336,8 @@ class DatabaseConfig(AppConfig):
             NotEqualViewFilterType,
             SingleSelectEqualViewFilterType,
             SingleSelectNotEqualViewFilterType,
+            UserIsNotViewFilterType,
+            UserIsViewFilterType,
         )
 
         view_filter_type_registry.register(EqualViewFilterType())
@@ -382,6 +386,8 @@ class DatabaseConfig(AppConfig):
         view_filter_type_registry.register(MultipleSelectHasNotViewFilterType())
         view_filter_type_registry.register(MultipleCollaboratorsHasViewFilterType())
         view_filter_type_registry.register(MultipleCollaboratorsHasNotViewFilterType())
+        view_filter_type_registry.register(UserIsViewFilterType())
+        view_filter_type_registry.register(UserIsNotViewFilterType())
 
         from .views.view_aggregations import (
             AverageViewAggregationType,
@@ -750,9 +756,13 @@ class DatabaseConfig(AppConfig):
         from baserow.contrib.database.fields.notification_types import (
             CollaboratorAddedToRowNotificationType,
         )
+        from baserow.contrib.database.views.notification_types import (
+            FormSubmittedNotificationType,
+        )
         from baserow.core.notifications.registries import notification_type_registry
 
         notification_type_registry.register(CollaboratorAddedToRowNotificationType())
+        notification_type_registry.register(FormSubmittedNotificationType())
 
         # The signals must always be imported last because they use the registries
         # which need to be filled first.

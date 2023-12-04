@@ -67,7 +67,7 @@ from baserow.contrib.database.api.fields.serializers import (
 from baserow.contrib.database.db.functions import RandomUUID
 from baserow.contrib.database.export_serialized import DatabaseExportSerializedStructure
 from baserow.contrib.database.fields.field_cache import FieldCache
-from baserow.contrib.database.fields.models import DURATION_FORMAT
+from baserow.contrib.database.fields.fields import SyncedLastModifiedByForeignKeyField
 from baserow.contrib.database.formula import (
     BASEROW_FORMULA_TYPE_ALLOWED_FIELDS,
     BaserowExpression,
@@ -83,6 +83,7 @@ from baserow.contrib.database.formula import (
 )
 from baserow.contrib.database.formula.registries import formula_function_registry
 from baserow.contrib.database.models import Table
+from baserow.contrib.database.table.handler import TableHandler
 from baserow.contrib.database.types import SerializedRowHistoryFieldMetadata
 from baserow.contrib.database.validators import UnicodeRegexValidator
 from baserow.core.db import (
@@ -155,6 +156,7 @@ from .models import (
     Field,
     FileField,
     FormulaField,
+    LastModifiedByField,
     LastModifiedField,
     LinkRowField,
     LongTextField,
@@ -179,11 +181,13 @@ from .registries import (
     field_type_registry,
 )
 
+User = get_user_model()
+
 if TYPE_CHECKING:
     from baserow.contrib.database.fields.dependencies.update_collector import (
         FieldUpdateCollector,
     )
-    from baserow.contrib.database.table.models import GeneratedTableModel
+    from baserow.contrib.database.table.models import FieldObject, GeneratedTableModel
 
 
 class CollationSortMixin:
@@ -1216,6 +1220,7 @@ class CreatedOnLastModifiedBaseFieldType(ReadOnlyFieldType, DateFieldType):
 class LastModifiedFieldType(CreatedOnLastModifiedBaseFieldType):
     type = "last_modified"
     model_class = LastModifiedField
+    update_always = True
     source_field_name = "updated_on"
     model_field_class = BaserowLastModifiedField
     model_field_kwargs = {"sync_with": "updated_on"}
@@ -1226,6 +1231,211 @@ class CreatedOnFieldType(CreatedOnLastModifiedBaseFieldType):
     model_class = CreatedOnField
     source_field_name = "created_on"
     model_field_kwargs = {"sync_with_add": "created_on"}
+
+
+class LastModifiedByFieldType(ReadOnlyFieldType):
+    type = "last_modified_by"
+    model_class = LastModifiedByField
+    can_be_in_form_view = False
+    keep_data_on_duplication = True
+    update_always = True
+
+    source_field_name = "last_modified_by"
+    model_field_kwargs = {"sync_with": "last_modified_by"}
+
+    def get_model_field(self, instance, **kwargs):
+        kwargs["null"] = True
+        kwargs["blank"] = True
+        kwargs.update(self.model_field_kwargs)
+        return SyncedLastModifiedByForeignKeyField(
+            User,
+            on_delete=models.SET_NULL,
+            related_name="+",
+            related_query_name="+",
+            db_constraint=False,
+            **kwargs,
+        )
+
+    def get_serializer_field(self, instance, **kwargs):
+        return CollaboratorSerializer(required=False, **kwargs)
+
+    def before_create(
+        self, table, primary, allowed_field_values, order, user, field_kwargs
+    ):
+        """
+        If last_modified_by column is still not present on the table,
+        we need to create it first.
+        """
+
+        if not table.last_modified_by_column_added:
+            table_to_update = TableHandler().get_table_for_update(table.id)
+            TableHandler().create_last_modified_by_field(table_to_update)
+            table.refresh_from_db()
+
+    def after_create(self, field, model, user, connection, before, field_kwargs):
+        """
+        Immediately after the field has been created, we need to populate the values
+        with the already existing source_field_name column.
+        """
+
+        model.objects.all().update(
+            **{f"{field.db_column}": models.F(self.source_field_name)}
+        )
+
+    def after_update(
+        self,
+        from_field,
+        to_field,
+        from_model,
+        to_model,
+        user,
+        connection,
+        altered_column,
+        before,
+        to_field_kwargs,
+    ):
+        """
+        If the field type has changed, we need to update the values from
+        the source_field_name column.
+        """
+
+        if not isinstance(from_field, self.model_class):
+            to_model.objects.all().update(
+                **{f"{to_field.db_column}": models.F(self.source_field_name)}
+            )
+
+    def enhance_queryset(self, queryset, field, name):
+        return queryset.select_related(name)
+
+    def should_backup_field_data_for_same_type_update(
+        self, old_field, new_field_attrs: Dict[str, Any]
+    ) -> bool:
+        return False
+
+    def random_value(self, instance, fake, cache):
+        return None
+
+    def get_export_serialized_value(
+        self,
+        row: "GeneratedTableModel",
+        field_name: str,
+        cache: Dict[str, Any],
+        files_zip: Optional[ZipFile] = None,
+        storage: Optional[Storage] = None,
+    ) -> Any:
+        """
+        Exported value will be the user's email address.
+        """
+
+        user = self.get_internal_value_from_db(row, field_name)
+        return user.email if user else None
+
+    def set_import_serialized_value(
+        self,
+        row: "GeneratedTableModel",
+        field_name: str,
+        value: Any,
+        id_mapping: Dict[str, Any],
+        cache: Dict[str, Any],
+        files_zip: Optional[ZipFile] = None,
+        storage: Optional[Storage] = None,
+    ):
+        """
+        Importing will use the value from source_field_name column.
+        """
+
+        value = getattr(row, self.source_field_name)
+        setattr(row, field_name, value)
+
+    def get_internal_value_from_db(
+        self, row: "GeneratedTableModel", field_name: str
+    ) -> Any:
+        return getattr(row, field_name)
+
+    def get_export_value(
+        self, value: Any, field_object: "FieldObject", rich_value: bool = False
+    ) -> Any:
+        """
+        Exported value will be the user's email address.
+        """
+
+        user = value
+        return user.email if user else None
+
+    def get_order(
+        self, field, field_name, order_direction
+    ) -> OptionallyAnnotatedOrderBy:
+        """
+        If the user wants to sort the results they expect them to be ordered
+        alphabetically based on the user's name.
+        """
+
+        name = f"{field_name}__first_name"
+        order = collate_expression(F(name))
+
+        if order_direction == "ASC":
+            order = order.asc(nulls_first=True)
+        else:
+            order = order.desc(nulls_last=True)
+        return OptionallyAnnotatedOrderBy(order=order)
+
+    def get_value_for_filter(self, row: "GeneratedTableModel", field: Field) -> any:
+        value = getattr(row, field.db_column)
+        return value
+
+    def get_search_expression(self, field: Field, queryset: QuerySet) -> Expression:
+        return Subquery(
+            queryset.filter(pk=OuterRef("pk")).values(f"{field.db_column}__first_name")[
+                :1
+            ]
+        )
+
+    def is_searchable(self, field: Field) -> bool:
+        return True
+
+    def contains_query(self, field_name, value, model_field, field):
+        value = value.strip()
+        if value == "":
+            return Q()
+        return Q(**{f"{field_name}__first_name__icontains": value})
+
+    def get_alter_column_prepare_new_value(self, connection, from_field, to_field):
+        """
+        When converting to last modified by field type we won't preserve any
+        values.
+        """
+
+        # fmt: off
+        sql = (
+            f"""
+            p_in = NULL;
+            """  # nosec b608
+        )
+        # fmt: on
+        return sql, {}
+
+    def get_alter_column_prepare_old_value(self, connection, from_field, to_field):
+        """
+        When converting to another field type we won't preserve any values.
+        """
+
+        to_field_type = field_type_registry.get_by_model(to_field)
+        if to_field_type.type != self.type and connection.vendor == "postgresql":
+            with connection.cursor() as cursor:
+                cursor.execute("SET CONSTRAINTS ALL IMMEDIATE")
+
+            # fmt: off
+            sql = (
+                f"""
+                p_in = NULL;
+                """  # nosec b608
+            )
+            # fmt: on
+            return sql, {}
+
+        return super().get_alter_column_prepare_old_value(
+            connection, from_field, to_field
+        )
 
 
 class DurationFieldType(CharFieldMatchingRegexFieldType):
@@ -1604,6 +1814,9 @@ class LinkRowFieldType(FieldType):
                 field_object, value, map_to_human_readable_value
             )
         )
+
+    def serialize_to_input_value(self, field: Field, value: any) -> any:
+        return [v.id for v in value.all()]
 
     def _get_related_model_and_primary_field(self, instance):
         """
@@ -2220,7 +2433,20 @@ class LinkRowFieldType(FieldType):
     def set_import_serialized_value(
         self, row, field_name, value, id_mapping, cache, files_zip, storage
     ):
-        getattr(row, field_name).set(value)
+        through_model = row._meta.get_field(field_name).remote_field.through
+        through_model_fields = through_model._meta.get_fields()
+        current_field_name = through_model_fields[1].name
+        relation_field_name = through_model_fields[2].name
+
+        return [
+            through_model(
+                **{
+                    f"{current_field_name}_id": row.id,
+                    f"{relation_field_name}_id": item,
+                }
+            )
+            for item in value
+        ]
 
     def get_other_fields_to_trash_restore_always_together(self, field) -> List[Field]:
         fields = []
@@ -2633,28 +2859,31 @@ class FileFieldType(FieldType):
             # it must be fetched and added to to it.
             cache_entry = f"user_file_{file['name']}"
             if cache_entry not in cache:
-                try:
-                    user_file = UserFile.objects.all().name(file["name"]).get()
-                except UserFile.DoesNotExist:
-                    continue
-
                 if files_zip is not None and file["name"] not in files_zip.namelist():
                     # Load the user file from the content and write it to the zip file
                     # because it might not exist in the environment that it is going
                     # to be imported in.
-                    file_path = user_file_handler.user_file_path(user_file.name)
+                    file_path = user_file_handler.user_file_path(file["name"])
                     with storage.open(file_path, mode="rb") as storage_file:
                         files_zip.writestr(file["name"], storage_file.read())
 
-                cache[cache_entry] = user_file
+                # This is just used to avoid writing the same file twice.
+                cache[cache_entry] = True
 
-            file_names.append(
-                DatabaseExportSerializedStructure.file_field_value(
-                    name=file["name"],
-                    visible_name=file["visible_name"],
-                    original_name=cache[cache_entry].original_name,
+            if files_zip is None:
+                # If the zip file is `None`, it means we're duplicating this row. To
+                # avoid unnecessary queries, we jump add the complete file, and will
+                # use that during import instead of fetching the user file object.
+                file_names.append(file)
+            else:
+                file_names.append(
+                    DatabaseExportSerializedStructure.file_field_value(
+                        name=file["name"],
+                        visible_name=file["visible_name"],
+                        original_name=file["name"],
+                    )
                 )
-            )
+
         return file_names
 
     def set_import_serialized_value(
@@ -2674,7 +2903,7 @@ class FileFieldType(FieldType):
             # files_zip could be None when files are in the same storage of the export
             # so no need to export/reimport files already present in the storage.
             if files_zip is None:
-                user_file = user_file_handler.get_user_file_by_name(file["name"])
+                files.append(file)
             else:
                 with files_zip.open(file["name"]) as stream:
                     # Try to upload the user file with the original name to make sure
@@ -2683,9 +2912,9 @@ class FileFieldType(FieldType):
                         None, file["original_name"], stream, storage=storage
                     )
 
-            value = user_file.serialize()
-            value["visible_name"] = file["visible_name"]
-            files.append(value)
+                value = user_file.serialize()
+                value["visible_name"] = file["visible_name"]
+                files.append(value)
 
         setattr(row, field_name, files)
 
@@ -3292,6 +3521,9 @@ class MultipleSelectFieldType(SelectOptionBaseFieldType):
 
         return ", ".join(export_value)
 
+    def serialize_to_input_value(self, field: Field, value: any) -> any:
+        return [v.id for v in value.all()]
+
     def get_model_field(self, instance, **kwargs):
         return None
 
@@ -3371,12 +3603,23 @@ class MultipleSelectFieldType(SelectOptionBaseFieldType):
     def set_import_serialized_value(
         self, row, field_name, value, id_mapping, cache, files_zip, storage
     ):
-        mapped_values = [
-            id_mapping["database_field_select_options"][item]
+        through_model = row._meta.get_field(field_name).remote_field.through
+        through_model_fields = through_model._meta.get_fields()
+        current_field_name = through_model_fields[1].name
+        relation_field_name = through_model_fields[2].name
+
+        return [
+            through_model(
+                **{
+                    f"{current_field_name}_id": row.id,
+                    f"{relation_field_name}_id": id_mapping[
+                        "database_field_select_options"
+                    ][item],
+                }
+            )
             for item in value
             if item in id_mapping["database_field_select_options"]
         ]
-        getattr(row, field_name).set(mapped_values)
 
     def contains_query(self, field_name, value, model_field, field):
         value = value.strip()
@@ -3883,7 +4126,14 @@ class FormulaFieldType(ReadOnlyFieldType):
 
         old_name = updated_old_field.name
         new_name = updated_field.name
-        rename = old_name != new_name
+        rename = (
+            old_name != new_name
+            # Because the `rename_field_references_in_formula_string` only updates
+            # field references in the same table, there is no need to rename if the
+            # table id doesn't match because it can cause incorrect renames if fields
+            # have the same name in the two tables.
+            and field.table_id == updated_field.table_id
+        )
         if rename:
             field.formula = FormulaHandler.rename_field_references_in_formula_string(
                 field.formula, {old_name: new_name}
@@ -3912,19 +4162,6 @@ class FormulaFieldType(ReadOnlyFieldType):
         update_collector.add_field_with_pending_update_statement(
             field, expr, via_path_to_starting_table=via_path_to_starting_table
         )
-        for (
-            dependant_field,
-            dependant_field_type,
-            path_to_starting_table,
-        ) in field.dependant_fields_with_types(field_cache, via_path_to_starting_table):
-            dependant_field_type.field_dependency_updated(
-                dependant_field,
-                field,
-                old_field,
-                update_collector,
-                field_cache,
-                path_to_starting_table,
-            )
 
     def field_dependency_deleted(
         self,
@@ -4830,13 +5067,27 @@ class MultipleCollaboratorsFieldType(FieldType):
             for workspaceuser in workspaceusers_from_workspace:
                 cache[cache_entry][workspaceuser.user.email] = workspaceuser.user.id
 
-        user_ids = []
+        through_model = row._meta.get_field(field_name).remote_field.through
+        through_model_fields = through_model._meta.get_fields()
+        current_field_name = through_model_fields[1].name
+        relation_field_name = through_model_fields[2].name
+
+        through_objects = []
         for email in value:
             user_id = cache[cache_entry].get(email, None)
             if user_id is not None:
-                user_ids.append(user_id)
+                through_objects.append(
+                    through_model(
+                        **{
+                            f"{current_field_name}_id": row.id,
+                            f"{relation_field_name}_id": cache[cache_entry].get(
+                                email, None
+                            ),
+                        }
+                    )
+                )
 
-        getattr(row, field_name).set(user_ids)
+        return through_objects
 
     def random_value(self, instance, fake, cache):
         """

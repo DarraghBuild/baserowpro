@@ -35,6 +35,8 @@ from baserow.contrib.builder.pages.models import Page
 from baserow.contrib.builder.types import ElementDict
 from baserow.core.formula.types import BaserowFormula
 
+from .registries import collection_field_type_registry
+
 
 class ContainerElementType(ElementType, ABC):
     @abc.abstractmethod
@@ -50,8 +52,6 @@ class ContainerElementType(ElementType, ABC):
         :return: The new place in the container the elements can be moved to
         """
 
-        pass
-
     @abc.abstractmethod
     def get_places_in_container_removed(
         self, values: Dict, instance: ContainerElement
@@ -64,8 +64,6 @@ class ContainerElementType(ElementType, ABC):
         :param instance: The current state of the element
         :return: The places in the container that have been removed
         """
-
-        pass
 
     def apply_order_by_children(self, queryset: QuerySet[Element]) -> QuerySet[Element]:
         """
@@ -103,8 +101,6 @@ class ContainerElementType(ElementType, ABC):
         :raises ValidationError: If the place in container is invalid
         """
 
-        pass
-
 
 class CollectionElementType(ElementType, ABC):
     allowed_fields = ["data_source", "data_source_id", "items_per_page"]
@@ -118,10 +114,10 @@ class CollectionElementType(ElementType, ABC):
     @property
     def serializer_field_overrides(self):
         from baserow.contrib.builder.api.elements.serializers import (
-            CollectionElementFieldSerializer,
+            CollectionFieldSerializer,
         )
 
-        overrides = {
+        return {
             "data_source_id": serializers.IntegerField(
                 allow_null=True,
                 default=None,
@@ -133,12 +129,8 @@ class CollectionElementType(ElementType, ABC):
                 help_text=TableElement._meta.get_field("items_per_page").help_text,
                 required=False,
             ),
-            "fields": CollectionElementFieldSerializer(
-                many=True, required=False, help_text="The fields to show in the table."
-            ),
+            "fields": CollectionFieldSerializer(many=True, required=False),
         }
-
-        return overrides
 
     def prepare_value_for_db(
         self, values: Dict, instance: Optional[LinkElement] = None
@@ -163,9 +155,21 @@ class CollectionElementType(ElementType, ABC):
 
     def after_create(self, instance, values):
         default_fields = [
-            {"name": _("Column %(count)s") % {"count": 1}, "value": ""},
-            {"name": _("Column %(count)s") % {"count": 2}, "value": ""},
-            {"name": _("Column %(count)s") % {"count": 3}, "value": ""},
+            {
+                "name": _("Column %(count)s") % {"count": 1},
+                "type": "text",
+                "config": {"value": ""},
+            },
+            {
+                "name": _("Column %(count)s") % {"count": 2},
+                "type": "text",
+                "config": {"value": ""},
+            },
+            {
+                "name": _("Column %(count)s") % {"count": 3},
+                "type": "text",
+                "config": {"value": ""},
+            },
         ]
 
         fields = values.get("fields", default_fields)
@@ -194,7 +198,7 @@ class CollectionElementType(ElementType, ABC):
     def before_delete(self, instance):
         instance.fields.all().delete()
 
-    def get_property_for_serialization(self, element: Element, prop_name: str):
+    def serialize_property(self, element: Element, prop_name: str):
         """
         You can customize the behavior of the serialization of a property with this
         hook.
@@ -202,47 +206,80 @@ class CollectionElementType(ElementType, ABC):
 
         if prop_name == "fields":
             return [
-                {"name": f.name, "value": f.value, "type": f.type}
+                collection_field_type_registry.get(f.type).export_serialized(f)
                 for f in element.fields.all()
             ]
 
-        return super().get_property_for_serialization(element, prop_name)
+        return super().serialize_property(element, prop_name)
 
-    def import_serialized(self, page, serialized_values, id_mapping):
-        serialized_copy = serialized_values.copy()
+    def deserialize_property(
+        self,
+        prop_name: str,
+        value: Any,
+        id_mapping: Dict[str, Any],
+        **kwargs,
+    ) -> Any:
+        if prop_name == "data_source_id" and value:
+            return id_mapping["builder_data_sources"][value]
 
-        if serialized_copy["data_source_id"]:
-            serialized_copy["data_source_id"] = id_mapping["builder_data_sources"][
-                serialized_copy["data_source_id"]
+        if prop_name == "fields":
+            return [
+                # We need to add the data_source_id for the current row
+                # provider.
+                collection_field_type_registry.get(f["type"]).import_serialized(
+                    f, id_mapping, data_source_id=kwargs["data_source_id"]
+                )
+                for f in value
             ]
 
-        fields = serialized_copy.pop("fields", [])
+        return super().deserialize_property(prop_name, value, id_mapping)
 
-        instance = super().import_serialized(page, serialized_copy, id_mapping)
+    def create_instance_from_serialized(self, serialized_values: Dict[str, Any]):
+        """Deals with the fields"""
+
+        fields = serialized_values.pop("fields", [])
+
+        instance = super().create_instance_from_serialized(serialized_values)
+
+        # Add the field order
+        for i, f in enumerate(fields):
+            f.order = i
 
         # Create fields
-        created_fields = CollectionField.objects.bulk_create(
-            [
-                CollectionField(
-                    **{
-                        **field,
-                        "value": import_formula(
-                            field["value"],
-                            id_mapping,
-                            # We need to add the data_source_id for the current row
-                            # provider.
-                            data_source_id=serialized_copy["data_source_id"],
-                        ),
-                    },
-                    order=index,
-                )
-                for index, field in enumerate(fields)
-            ]
-        )
+        created_fields = CollectionField.objects.bulk_create(fields)
 
         instance.fields.add(*created_fields)
 
         return instance
+
+    def import_serialized(
+        self,
+        parent: Any,
+        serialized_values: Dict[str, Any],
+        id_mapping: Dict[str, Any],
+        **kwargs,
+    ):
+        """
+        Here we add the data_source_id to the import process to be able to resolve
+        current_record formulas migration.
+        """
+
+        actual_data_source_id = None
+        if (
+            serialized_values.get("data_source_id", None)
+            and "builder_data_sources" in id_mapping
+        ):
+            actual_data_source_id = id_mapping["builder_data_sources"][
+                serialized_values["data_source_id"]
+            ]
+
+        return super().import_serialized(
+            parent,
+            serialized_values,
+            id_mapping,
+            data_source_id=actual_data_source_id,
+            **kwargs,
+        )
 
 
 class ColumnElementType(ContainerElementType):
@@ -460,31 +497,24 @@ class LinkElementType(ElementType):
         width: str
         alignment: str
 
-    def import_serialized(self, page, serialized_values, id_mapping):
-        serialized_copy = serialized_values.copy()
-        if serialized_copy["navigate_to_page_id"]:
-            serialized_copy["navigate_to_page_id"] = id_mapping["builder_pages"].get(
-                serialized_copy["navigate_to_page_id"],
-                serialized_copy["navigate_to_page_id"],
-            )
+    def deserialize_property(
+        self, prop_name: str, value: Any, id_mapping: Dict[str, Any]
+    ) -> Any:
+        if prop_name == "navigate_to_page_id" and value:
+            return id_mapping["builder_pages"][value]
 
-        if serialized_copy["value"]:
-            serialized_copy["value"] = import_formula(
-                serialized_copy["value"], id_mapping
-            )
+        if prop_name == "value":
+            return import_formula(value, id_mapping)
 
-        if serialized_copy["navigate_to_url"]:
-            serialized_copy["navigate_to_url"] = import_formula(
-                serialized_copy["navigate_to_url"], id_mapping
-            )
+        if prop_name == "navigate_to_url":
+            return import_formula(value, id_mapping)
 
-        if serialized_copy["page_parameters"]:
-            params = serialized_copy["page_parameters"]
-            serialized_copy["page_parameters"] = [
-                {**p, "value": import_formula(p["value"], id_mapping)} for p in params
+        if prop_name == "page_parameters":
+            return [
+                {**p, "value": import_formula(p["value"], id_mapping)} for p in value
             ]
 
-        return super().import_serialized(page, serialized_copy, id_mapping)
+        return super().deserialize_property(prop_name, value, id_mapping)
 
     @property
     def serializer_field_overrides(self):
@@ -687,10 +717,11 @@ class InputElementType(ElementType, abc.ABC):
 class InputTextElementType(InputElementType):
     type = "input_text"
     model_class = InputTextElement
-    allowed_fields = ["default_value", "required", "placeholder"]
-    serializer_field_names = ["default_value", "required", "placeholder"]
+    allowed_fields = ["label", "default_value", "required", "placeholder"]
+    serializer_field_names = ["label", "default_value", "required", "placeholder"]
 
     class SerializedDict(ElementDict):
+        label: BaserowFormula
         required: bool
         placeholder: str
         default_value: BaserowFormula
@@ -700,6 +731,12 @@ class InputTextElementType(InputElementType):
         from baserow.core.formula.serializers import FormulaSerializerField
 
         overrides = {
+            "label": FormulaSerializerField(
+                help_text=InputTextElement._meta.get_field("label").help_text,
+                required=False,
+                allow_blank=True,
+                default="",
+            ),
             "default_value": FormulaSerializerField(
                 help_text=InputTextElement._meta.get_field("default_value").help_text,
                 required=False,

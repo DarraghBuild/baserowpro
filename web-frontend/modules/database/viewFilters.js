@@ -105,6 +105,14 @@ export class ViewFilterType extends Registerable {
   }
 
   /**
+   * Determines whether the particular filter type will be available
+   * in public views.
+   */
+  isAllowedInPublicViews() {
+    return true
+  }
+
+  /**
    * Returns if a given field is compatible with this view filter or not. Uses the
    * list provided by getCompatibleFieldTypes to calculate this.
    */
@@ -1537,6 +1545,10 @@ export class MultipleCollaboratorsHasFilterType extends ViewFilterType {
     return ['multiple_collaborators']
   }
 
+  isAllowedInPublicViews() {
+    return false
+  }
+
   matches(rowValue, filterValue, field, fieldType) {
     if (!isNumeric(filterValue)) {
       return true
@@ -1569,6 +1581,10 @@ export class MultipleCollaboratorsHasNotFilterType extends ViewFilterType {
     return ['multiple_collaborators']
   }
 
+  isAllowedInPublicViews() {
+    return false
+  }
+
   matches(rowValue, filterValue, field, fieldType) {
     if (!isNumeric(filterValue)) {
       return true
@@ -1576,6 +1592,78 @@ export class MultipleCollaboratorsHasNotFilterType extends ViewFilterType {
 
     const filterValueId = parseInt(filterValue)
     return !rowValue.some((user) => user.id === filterValueId)
+  }
+}
+
+export class UserIsFilterType extends ViewFilterType {
+  static getType() {
+    return 'user_is'
+  }
+
+  getName() {
+    const { i18n } = this.app
+    return i18n.t('viewFilter.is')
+  }
+
+  getExample() {
+    return '1'
+  }
+
+  getInputComponent() {
+    return ViewFilterTypeCollaborators
+  }
+
+  getCompatibleFieldTypes() {
+    return ['last_modified_by']
+  }
+
+  isAllowedInPublicViews() {
+    return false
+  }
+
+  matches(rowValue, filterValue, field, fieldType) {
+    if (!isNumeric(filterValue)) {
+      return true
+    }
+
+    const filterValueId = parseInt(filterValue)
+    return rowValue?.id === filterValueId
+  }
+}
+
+export class UserIsNotFilterType extends ViewFilterType {
+  static getType() {
+    return 'user_is_not'
+  }
+
+  getName() {
+    const { i18n } = this.app
+    return i18n.t('viewFilter.isNot')
+  }
+
+  getExample() {
+    return '1'
+  }
+
+  getInputComponent() {
+    return ViewFilterTypeCollaborators
+  }
+
+  getCompatibleFieldTypes() {
+    return ['last_modified_by']
+  }
+
+  isAllowedInPublicViews() {
+    return false
+  }
+
+  matches(rowValue, filterValue, field, fieldType) {
+    if (!isNumeric(filterValue)) {
+      return true
+    }
+
+    const filterValueId = parseInt(filterValue)
+    return rowValue?.id !== filterValueId
   }
 }
 

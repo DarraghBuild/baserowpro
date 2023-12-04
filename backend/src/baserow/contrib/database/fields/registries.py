@@ -13,6 +13,7 @@ from django.db.models import (
     DurationField,
     Expression,
     JSONField,
+    Model,
     Q,
     QuerySet,
 )
@@ -145,6 +146,12 @@ class FieldType(
     Set this to True if the underlying database field is a ManyToManyField. This
     let the RowM2MChangeTracker to track changes to the field when creating/updating
     values without having to query the database.
+    """
+
+    update_always = False
+    """
+    Set to True if the field value should be updated in update operations at
+    all times.
     """
 
     def prepare_value_for_db(self, instance: Field, value: Any) -> Any:
@@ -927,14 +934,6 @@ class FieldType(
         )
 
         FieldDependencyHandler.rebuild_dependencies(field, field_cache)
-        for (
-            dependant_field,
-            dependant_field_type,
-            _,
-        ) in field.dependant_fields_with_types(field_cache):
-            dependant_field_type.after_import_serialized(
-                dependant_field, field_cache, id_mapping
-            )
 
     def after_rows_imported(
         self,
@@ -1015,7 +1014,7 @@ class FieldType(
         cache: Dict[str, Any],
         files_zip: Optional[ZipFile] = None,
         storage: Optional[Storage] = None,
-    ):
+    ) -> Optional[List[Model]]:
         """
         Sets an imported and serialized value on a row instance.
 
@@ -1032,6 +1031,9 @@ class FieldType(
         :param files_zip: A zip file buffer where the files related to the template
             must be copied into.
         :param storage: The storage where the files can be copied to.
+        :return: Optionally return with additional model objects that must be
+            inserted in bulk. This can be used to efficiently add m2m relationships,
+            for example.
         """
 
         setattr(row, field_name, value)
@@ -1268,23 +1270,6 @@ class FieldType(
             back to the starting table where the first row was changed.
         """
 
-        for (
-            dependant_field,
-            dependant_field_type,
-            dependant_path_to_starting_table,
-        ) in field.dependant_fields_with_types(field_cache, via_path_to_starting_table):
-            dependant_field_type.row_of_dependency_updated(
-                dependant_field,
-                starting_row,
-                update_collector,
-                field_cache,
-                dependant_path_to_starting_table,
-            )
-
-        from baserow.contrib.database.views.handler import ViewHandler
-
-        ViewHandler().field_value_updated(field)
-
     def row_of_dependency_deleted(
         self,
         field: Field,
@@ -1423,19 +1408,6 @@ class FieldType(
         )
 
         FieldDependencyHandler.rebuild_dependencies(field, field_cache)
-        for (
-            dependant_field,
-            dependant_field_type,
-            dependant_path_to_starting_table,
-        ) in field.dependant_fields_with_types(field_cache, via_path_to_starting_table):
-            dependant_field_type.field_dependency_updated(
-                dependant_field,
-                field,
-                field,
-                update_collector,
-                field_cache,
-                dependant_path_to_starting_table,
-            )
 
         from baserow.contrib.database.views.handler import ViewHandler
 

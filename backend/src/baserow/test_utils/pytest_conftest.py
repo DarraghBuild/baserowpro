@@ -10,11 +10,16 @@ from django.core.files.storage import Storage
 from django.core.management import call_command
 from django.db import DEFAULT_DB_ALIAS, OperationalError, connection
 from django.db.migrations.executor import MigrationExecutor
+from django.test.utils import CaptureQueriesContext
 from django.utils.timezone import now
 
 import pytest
 from faker import Faker
+from pygments import highlight
+from pygments.formatters import TerminalFormatter
+from pygments.lexers import PostgresLexer
 from pyinstrument import Profiler
+from sqlparse import format
 
 from baserow.compat.api.conf import GROUP_DEPRECATION
 from baserow.contrib.database.application_types import DatabaseApplicationType
@@ -81,6 +86,16 @@ def environ():
     yield os.environ
     for key, value in original_env.items():
         os.environ[key] = value
+
+
+@pytest.fixture()
+def print_sql():
+    with CaptureQueriesContext(connection) as ctx:
+        yield
+        for query in ctx.captured_queries:
+            formatted_query = format(query.get("sql", ""), reindent=True)
+            print()
+            print(highlight(formatted_query, PostgresLexer(), TerminalFormatter()))
 
 
 @pytest.fixture()
@@ -152,6 +167,19 @@ def mutable_builder_data_provider_registry():
     before = builder_data_provider_type_registry.registry.copy()
     yield builder_data_provider_type_registry
     builder_data_provider_type_registry.registry = before
+
+
+@pytest.fixture()
+def mutable_builder_workflow_action_registry():
+    from baserow.contrib.builder.workflow_actions.registries import (
+        builder_workflow_action_type_registry,
+    )
+
+    before = builder_workflow_action_type_registry.registry.copy()
+    builder_workflow_action_type_registry.get_for_class.cache_clear()
+    yield builder_workflow_action_type_registry
+    builder_workflow_action_type_registry.get_for_class.cache_clear()
+    builder_workflow_action_type_registry.registry = before
 
 
 @pytest.fixture()

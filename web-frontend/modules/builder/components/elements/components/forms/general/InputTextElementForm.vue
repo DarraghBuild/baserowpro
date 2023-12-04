@@ -1,21 +1,23 @@
 <template>
   <form @submit.prevent @keydown.enter.prevent>
-    <FormInput
+    <ApplicationBuilderFormulaInputGroup
+      v-model="values.label"
+      :label="$t('inputTextElementForm.labelTitle')"
+      :placeholder="$t('inputTextElementForm.labelPlaceholder')"
+      :data-providers-allowed="DATA_PROVIDERS_ALLOWED_ELEMENTS"
+    ></ApplicationBuilderFormulaInputGroup>
+    <ApplicationBuilderFormulaInputGroup
       v-model="values.default_value"
       :label="$t('inputTextElementForm.valueTitle')"
       :placeholder="$t('inputTextElementForm.valuePlaceholder')"
-    />
-    <FormInput
+      :data-providers-allowed="dataProvidersAllowed"
+    ></ApplicationBuilderFormulaInputGroup>
+    <ApplicationBuilderFormulaInputGroup
       v-model="values.placeholder"
       :label="$t('inputTextElementForm.placeholderTitle')"
-      :error="
-        $v.values.placeholder.$dirty && !$v.values.placeholder.maxLength
-          ? $t('error.maxLength', { max: 255 })
-          : ''
-      "
       :placeholder="$t('inputTextElementForm.placeholderPlaceholder')"
-      @blur="$v.values.placeholder.$touch()"
-    />
+      :data-providers-allowed="dataProvidersAllowed"
+    ></ApplicationBuilderFormulaInputGroup>
     <FormElement class="control">
       <label class="control__label">
         {{ $t('inputTextElementForm.requiredTitle') }}
@@ -29,19 +31,35 @@
 
 <script>
 import form from '@baserow/modules/core/mixins/form'
-import { maxLength } from 'vuelidate/lib/validators'
+import ApplicationBuilderFormulaInputGroup from '@baserow/modules/builder/components/ApplicationBuilderFormulaInputGroup.vue'
+import {
+  CurrentRecordDataProviderType,
+  DataSourceDataProviderType,
+  PageParameterDataProviderType,
+} from '@baserow/modules/builder/dataProviderTypes'
 
 export default {
   name: 'InputTextElementForm',
+  components: { ApplicationBuilderFormulaInputGroup },
   mixins: [form],
   data() {
     return {
       values: {
+        label: '',
         default_value: '',
         required: false,
         placeholder: '',
       },
     }
+  },
+  computed: {
+    dataProvidersAllowed() {
+      return [
+        CurrentRecordDataProviderType.getType(),
+        PageParameterDataProviderType.getType(),
+        DataSourceDataProviderType.getType(),
+      ]
+    },
   },
   methods: {
     emitChange(newValues) {
@@ -49,15 +67,6 @@ export default {
         form.methods.emitChange.bind(this)(newValues)
       }
     },
-  },
-  validations() {
-    return {
-      values: {
-        placeholder: {
-          maxLength: maxLength(225),
-        },
-      },
-    }
   },
 }
 </script>

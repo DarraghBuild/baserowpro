@@ -1,36 +1,15 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Type
 
-from baserow.core.registry import (
-    CustomFieldsInstanceMixin,
-    ImportExportMixin,
-    Instance,
-    ModelInstanceMixin,
-)
+from baserow.core.registry import EasyImportExportMixin, Instance, ModelInstanceMixin
 from baserow.core.workflow_actions.models import WorkflowAction
 from baserow.core.workflow_actions.types import WorkflowActionDictSubClass
 
 
-class WorkflowActionType(
-    Instance, ModelInstanceMixin, ImportExportMixin, CustomFieldsInstanceMixin, ABC
-):
+class WorkflowActionType(Instance, ModelInstanceMixin, EasyImportExportMixin, ABC):
     SerializedDict: Type[WorkflowActionDictSubClass]
 
-    def export_serialized(self, instance: WorkflowAction) -> Dict[str, Any]:
-        property_names = self.SerializedDict.__annotations__.keys()
-
-        serialized = self.SerializedDict(
-            **{
-                key: self.get_property_for_serialization(instance, key)
-                for key in property_names
-            }
-        )
-
-        return serialized
-
-    def get_property_for_serialization(
-        self, workflow_action: WorkflowAction, prop_name: str
-    ):
+    def serialize_property(self, workflow_action: WorkflowAction, prop_name: str):
         """
         You can customize the behavior of the serialization of a property with this
         hook.
@@ -40,12 +19,6 @@ class WorkflowActionType(
             return self.type
 
         return getattr(workflow_action, prop_name)
-
-    @abstractmethod
-    def import_serialized(
-        self, parent: Any, serialized_values: Dict[str, Any], id_mapping: Dict
-    ) -> WorkflowAction:
-        pass
 
     def prepare_value_for_db(self, values: Dict, instance: WorkflowAction = None):
         """

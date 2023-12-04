@@ -80,6 +80,8 @@ def setup_interesting_test_table(
     if database is None:
         database = data_fixture.create_database_application(user=user)
 
+    file_suffix = file_suffix or ""
+
     try:
         user2, user3 = User.objects.filter(
             email__in=["user2@example.com", "user3@example.com"]
@@ -169,6 +171,7 @@ def setup_interesting_test_table(
         "created_on_datetime_eu": None,
         "created_on_date_eu": None,
         "created_on_datetime_eu_tzone": None,
+        "last_modified_by": None,
         # We will setup link rows manually later
         "link_row": None,
         "self_link_row": None,
@@ -293,7 +296,6 @@ def setup_interesting_test_table(
             other_table_primary_decimal_field.id: None,
         },
     )
-    file_suffix = file_suffix or ""
     with freeze_time("2020-01-01 12:00"):
         user_file_1 = data_fixture.create_user_file(
             original_name=f"name{file_suffix}.txt",
