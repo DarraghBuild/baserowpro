@@ -368,7 +368,7 @@ export default {
           if (!checkIfInSameGroup(previousRow, row)) {
             // @TODO make this nicer
             const count =
-              metaData[`field_${groupBy.field}`].find((entry) => {
+              (metaData[`field_${groupBy.field}`] || []).find((entry) => {
                 return groupBys.slice(0, groupByIndex + 1).every((g) => {
                   const f = this.allFieldsInTable.find((f) => f.id === g.field)
                   const tp = this.$registry.get('field', f.type)
