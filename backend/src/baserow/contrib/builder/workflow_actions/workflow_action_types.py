@@ -208,11 +208,18 @@ class UpsertRowWorkflowActionType(BuilderWorkflowServiceActionType):
         else:
             service = instance.service.specific
 
+            # Did the table change? If it did, we need to nuke the field
+            # mappings that are present. An enhancement in the future would
+            # be to check if they relate to the new table, or the old one.
+            table_changed = service.table_id != table_id
+            if table_changed:
+                values["field_mappings"] = []
+
             # On a PATCH if no `service_id` value is provided, then `service_id`
             # is given a `None` value by DRF, so here we set it properly.
             values["service_id"] = service.id
 
-            if service.table_id != table_id or service.row_id != row_id:
+            if table_changed or service.row_id != row_id:
                 service.table = table
                 service.row_id = row_id
                 service.save()
