@@ -1,3 +1,4 @@
+import re
 from decimal import Decimal
 
 from drf_spectacular.openapi import OpenApiParameter, OpenApiTypes
@@ -61,7 +62,6 @@ from baserow.contrib.database.fields.field_filters import (
     FILTER_TYPE_OR,
 )
 from baserow.contrib.database.fields.handler import FieldHandler
-from baserow.contrib.database.fields.models import Field
 from baserow.contrib.database.rows.registries import row_metadata_registry
 from baserow.contrib.database.table.operations import ListRowsDatabaseTableOperationType
 from baserow.contrib.database.views.exceptions import (
@@ -79,9 +79,9 @@ from baserow.contrib.database.views.registries import (
     view_type_registry,
 )
 from baserow.contrib.database.views.signals import view_loaded
-from baserow.core.db import specific_iterator
 from baserow.core.exceptions import UserNotInWorkspace
 from baserow.core.handler import CoreHandler
+from baserow.core.utils import split_comma_separated_string
 
 from .errors import ERROR_GRID_DOES_NOT_EXIST
 from .schemas import (
@@ -306,10 +306,10 @@ class GridViewView(APIView):
         response = paginator.get_paginated_response(serializer.data)
 
         if view_type.can_group_by and view.viewgroupby_set:
-            group_bys = view.viewgroupby_set.all()
-            group_by_fields = specific_iterator(
-                [gb.field for gb in group_bys], base_model=Field
-            )
+            group_by_fields = [
+                model._field_objects[group_by.field_id]["field"]
+                for group_by in view.viewgroupby_set.all()
+            ]
             group_meta_data = view_handler.get_group_by_meta_data_in_rows(
                 group_by_fields, page, queryset
             )
@@ -916,5 +916,23 @@ class PublicGridViewRowsView(APIView):
                 create_if_missing=False
             )
             response.data.update(**serializer_class(view, context=context).data)
+
+        if group_by:
+            group_by_fields = [
+                # We can safely do this without having to check whether the
+                # `group_by` input is valid because this has already been validated
+                # by the `get_public_rows_queryset_and_field_ids`.
+                model._field_objects[int(re.sub("[^0-9]", "", str(field_string)))][
+                    "field"
+                ]
+                for field_string in split_comma_separated_string(group_by)
+            ]
+            group_meta_data = view_handler.get_group_by_meta_data_in_rows(
+                group_by_fields, page, queryset
+            )
+            serialized_group_by_meta_data = serialize_group_by_meta_data(
+                group_meta_data
+            )
+            response.data.update(group_meta_data=serialized_group_by_meta_data)
 
         return response

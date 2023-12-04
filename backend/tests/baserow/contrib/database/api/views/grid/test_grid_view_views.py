@@ -2493,6 +2493,12 @@ def test_list_rows_public_with_query_param_group_by(api_client, data_fixture):
     assert response_json["results"][0]["id"] == second_row.id
     assert response_json["results"][1]["id"] == first_row.id
     assert response_json["results"][2]["id"] == third_row.id
+    assert response_json["group_meta_data"] == {
+        f"field_{public_field.id}": [
+            {"count": 1, f"field_{public_field.id}": "a"},
+            {"count": 2, f"field_{public_field.id}": "b"},
+        ]
+    }
 
     url = reverse(
         "api:database:views:grid:public_rows", kwargs={"slug": grid_view.slug}
