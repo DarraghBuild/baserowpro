@@ -55,7 +55,7 @@ from baserow.contrib.builder.workflow_actions.registries import (
 from baserow.contrib.builder.workflow_actions.service import (
     BuilderWorkflowActionService,
 )
-from baserow.core.services.exceptions import DoesNotExist
+from baserow.core.services.exceptions import DoesNotExist, ServiceImproperlyConfigured
 from baserow.core.workflow_actions.exceptions import WorkflowActionDoesNotExist
 
 
@@ -364,6 +364,7 @@ class DispatchBuilderWorkflowActionView(APIView):
         {
             DoesNotExist: ERROR_DATA_DOES_NOT_EXIST,
             WorkflowActionDoesNotExist: ERROR_WORKFLOW_ACTION_DOES_NOT_EXIST,
+            ServiceImproperlyConfigured: ERROR_WORKFLOW_ACTION_IMPROPERLY_CONFIGURED,
             BuilderWorkflowActionCannotBeDispatched: ERROR_WORKFLOW_ACTION_CANNOT_BE_DISPATCHED,
             BuilderWorkflowActionImproperlyConfigured: ERROR_WORKFLOW_ACTION_IMPROPERLY_CONFIGURED,
         }
