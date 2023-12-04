@@ -366,17 +366,21 @@ export default {
           }
 
           if (!checkIfInSameGroup(previousRow, row)) {
-            // @TODO make this nicer
+            // The group by meta data is a dict where the key is equal to the group by,
+            // and the value an array containing the count for each unique value
+            // combination. Below we're looking through the entries to find the
+            // matching count for the row values.
             const count =
               (metaData[`field_${groupBy.field}`] || []).find((entry) => {
-                return groupBys.slice(0, groupByIndex + 1).every((g) => {
-                  const f = this.allFieldsInTable.find((f) => f.id === g.field)
-                  const tp = this.$registry.get('field', f.type)
-                  const groupValue = entry[`field_${g.field}`]
-                  // let rowValue = tp.prepareValueForUpdate(f, row[`field_${g.field}`])
-                  const rowValue = tp.getGroupByValue(
+                return groupBys.slice(0, groupByIndex + 1).every((groupBy) => {
+                  const field = this.allFieldsInTable.find(
+                    (f) => f.id === groupBy.field
+                  )
+                  const fieldType = this.$registry.get('field', field.type)
+                  const groupValue = entry[`field_${groupBy.field}`]
+                  const rowValue = fieldType.getGroupByValue(
                     field,
-                    row[`field_${g.field}`]
+                    row[`field_${groupBy.field}`]
                   )
                   return groupValue === rowValue
                 })

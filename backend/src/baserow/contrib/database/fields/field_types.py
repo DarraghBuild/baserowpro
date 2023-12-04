@@ -1460,7 +1460,7 @@ class LastModifiedByFieldType(ReadOnlyFieldType):
         )
 
 
-class LinkRowFieldType(ManyToManyGroupByMixin, FieldType):
+class LinkRowFieldType(FieldType):
     """
     The link row field can be used to link a field to a row of another table. Because
     the user should also be able to see which rows are linked to the related table,
@@ -4767,7 +4767,7 @@ class LookupFieldType(FormulaFieldType):
         return field
 
 
-class MultipleCollaboratorsFieldType(ManyToManyGroupByMixin, FieldType):
+class MultipleCollaboratorsFieldType(FieldType):
     type = "multiple_collaborators"
     model_class = MultipleCollaboratorsField
     can_get_unique_values = False

@@ -481,9 +481,18 @@ export const mutations = {
       [fieldId]: { ...current, loading: newLoadingValue },
     }
   },
+  /**
+   * Overwrites the group meta data. This should be done when all the rows in the
+   * buffer are refreshed.
+   */
   SET_GROUP_META_DATA(state, metaData) {
     state.groupMetaData = metaData
   },
+  /**
+   * Merges the existing group meta data and the newly provided meta data. If a
+   * count for the value combination already exists, it will be updated, otherwise
+   * it will be created.
+   */
   UPDATE_GROUP_META_DATA(state, newMetaData) {
     const existingMetaData = state.groupMetaData
 
@@ -515,6 +524,9 @@ export const mutations = {
       })
     })
   },
+  /**
+   * Increases or decreases the count of all group entries that match the row values.
+   */
   UPDATE_GROUP_META_DATA_COUNT(
     state,
     { fieldNameToGroupByValue, row, increase, decrease }

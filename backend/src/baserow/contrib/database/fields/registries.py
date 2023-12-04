@@ -1731,6 +1731,12 @@ class ReadOnlyFieldType(FieldType):
 
 
 class ManyToManyGroupByMixin:
+    """
+    Mixin that can be added to a field type that uses a ManyToMany relationship. It
+    introduces methods that make it compatible with the group by functionality. Note
+    that the field type must set the `_can_group_by` property to `True`.
+    """
+
     def get_group_by_field_unique_value_string(
         self, field: Field, field_name: str, value: Any
     ) -> Any:

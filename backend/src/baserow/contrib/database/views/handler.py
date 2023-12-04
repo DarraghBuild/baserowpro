@@ -3314,7 +3314,26 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
 
         return queryset, field_ids, publicly_visible_field_options
 
-    def get_group_by_meta_data_in_rows(self, fields, rows, base_queryset):
+    def get_group_by_meta_data_in_rows(
+        self,
+        fields: List[Field],
+        rows: List["GeneratedTableModel"],
+        base_queryset: QuerySet,
+    ) -> Dict[Field, QuerySet]:
+        """
+        This method figures out what the count per group of each unique value in the
+        provided rows is.
+
+        :param fields: A list of the fields of the group bys in the right order.
+        :param rows: The rows of the paginated query set. The unique values will be
+            extracted from here.
+        :param base_queryset: The base_queryset before the pagination was applied.
+            This is needed because the rows that must be counted can be outside of
+            the paginated range.
+        :return: A dictionary where the key is the grouped by field, and the value a
+            queryset containing the count per field.
+        """
+
         qs_per_level = defaultdict(lambda: Q())
         unique_value_per_level = defaultdict(set)
         annotations = {}
