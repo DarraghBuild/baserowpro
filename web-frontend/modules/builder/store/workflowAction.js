@@ -116,7 +116,6 @@ const actions = {
 
     return new Promise((resolve, reject) => {
       const fire = async () => {
-        console.log('Sending ', values)
         try {
           const { data } = await WorkflowActionService(this.$client).update(
             workflowAction.id,

@@ -14,6 +14,14 @@ export class NotificationWorkflowActionType extends WorkflowActionType {
     return NotificationWorkflowActionForm
   }
 
+  /**
+   * Responsible for returning the default-values which the `form` component
+   * will receive. By default, it'll just be the `workflowAction` object.
+   */
+  formDefaultValues(workflowAction) {
+    return workflowAction
+  }
+
   get label() {
     return this.app.i18n.t('workflowActionTypes.notificationLabel')
   }
@@ -61,17 +69,17 @@ export class OpenPageWorkflowActionType extends WorkflowActionType {
   }
 }
 
-export class CreateRowWorkflowActionType extends WorkflowActionType {
-  static getType() {
-    return 'create_row'
-  }
-
-  get form() {
-    return CreateRowWorkflowActionForm
-  }
-
-  get label() {
-    return this.app.i18n.t('workflowActionTypes.createRowLabel')
+export class WorkflowActionServiceType extends WorkflowActionType {
+  /**
+   * Workflow actions which are triggered by a backend service need to
+   * be precise about the default-values passed to their `form` component.
+   */
+  formDefaultValues(workflowAction) {
+    return {
+      table_id: workflowAction.table_id,
+      integration_id: workflowAction.integration_id,
+      field_mappings: workflowAction.field_mappings,
+    }
   }
 
   execute({ workflowAction: { id }, applicationContext, resolveFormula }) {
@@ -85,7 +93,21 @@ export class CreateRowWorkflowActionType extends WorkflowActionType {
   }
 }
 
-export class UpdateRowWorkflowActionType extends WorkflowActionType {
+export class CreateRowWorkflowActionType extends WorkflowActionServiceType {
+  static getType() {
+    return 'create_row'
+  }
+
+  get form() {
+    return CreateRowWorkflowActionForm
+  }
+
+  get label() {
+    return this.app.i18n.t('workflowActionTypes.createRowLabel')
+  }
+}
+
+export class UpdateRowWorkflowActionType extends WorkflowActionServiceType {
   static getType() {
     return 'update_row'
   }
@@ -96,15 +118,5 @@ export class UpdateRowWorkflowActionType extends WorkflowActionType {
 
   get label() {
     return this.app.i18n.t('workflowActionTypes.updateRowLabel')
-  }
-
-  execute({ workflowAction: { id }, applicationContext, resolveFormula }) {
-    return this.app.store.dispatch('workflowAction/dispatchAction', {
-      workflowActionId: id,
-      data: DataProviderType.getAllDispatchContext(
-        this.app.$registry.getAll('builderDataProvider'),
-        applicationContext
-      ),
-    })
   }
 }

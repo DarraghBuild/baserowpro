@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <form @submit.prevent>
     <label class="control__label control__label--small">{{
       $t('upsertRowWorkflowActionForm.integrationDropdownLabel')
     }}</label>
@@ -52,16 +52,11 @@
       :data-providers-allowed="dataProvidersAllowed"
       :label="$t('upsertRowWorkflowActionForm.rowIdLabel')"
     />
-    <template v-if="workflowAction.service && workflowAction.service.schema">
-      <FieldMapping
-        v-for="field in getWritableServiceFields"
-        :key="field.id"
-        :field="field"
-        :default-values="getFieldMapping(field)"
-        @values-changed="updateFieldMapping($event, field.id)"
-      ></FieldMapping>
-    </template>
-  </div>
+    <FieldMappingForm
+      v-model="values.field_mappings"
+      :fields="getWritableSchemaFields"
+    ></FieldMappingForm>
+  </form>
 </template>
 
 <script>
@@ -71,14 +66,14 @@ import IntegrationCreateEditModal from '@baserow/modules/core/components/integra
 import { mapActions, mapGetters } from 'vuex'
 import { LocalBaserowIntegrationType } from '@baserow/modules/integrations/integrationTypes'
 import { notifyIf } from '@baserow/modules/core/utils/error'
-import FieldMapping from '@baserow/modules/builder/components/workflowAction/FieldMapping.vue'
 import ApplicationBuilderFormulaInputGroup from '@baserow/modules/builder/components/ApplicationBuilderFormulaInputGroup.vue'
+import FieldMappingForm from '@baserow/modules/builder/components/workflowAction/FieldMappingForm.vue'
 
 export default {
   name: 'UpsertRowWorkflowActionForm',
   components: {
+    FieldMappingForm,
     ApplicationBuilderFormulaInputGroup,
-    FieldMapping,
     IntegrationCreateEditModal,
     LocalBaserowTableSelector,
   },
@@ -112,17 +107,6 @@ export default {
     ...mapGetters({
       integrations: 'integration/getIntegrations',
     }),
-    getWritableServiceFields() {
-      if (this.workflowAction.service && this.workflowAction.service.schema) {
-        const schema = this.workflowAction.service.schema
-        const schemaProperties =
-          schema.type === 'array' ? schema.items.properties : schema.properties
-        return Object.values(schemaProperties)
-          .filter(({ metadata }) => metadata && !metadata.read_only)
-          .map((prop) => prop.metadata)
-      }
-      return []
-    },
     integrationType() {
       return this.$registry.get(
         'integration',
@@ -131,6 +115,20 @@ export default {
     },
     databases() {
       return this.selectedIntegration?.context_data.databases || []
+    },
+    getWritableSchemaFields() {
+      if (
+        this.workflowAction.service == null ||
+        this.workflowAction.service.schema == null // have service, no table
+      ) {
+        return []
+      }
+      const schema = this.workflowAction.service.schema
+      const schemaProperties =
+        schema.type === 'array' ? schema.items.properties : schema.properties
+      return Object.values(schemaProperties)
+        .filter(({ metadata }) => metadata && !metadata.read_only)
+        .map((prop) => prop.metadata)
     },
   },
   watch: {
@@ -156,35 +154,6 @@ export default {
     ...mapActions({
       actionFetchIntegrations: 'integration/fetch',
     }),
-    getFieldMapping(field) {
-      return this.workflowAction.field_mappings.find(
-        (fieldMapping) => fieldMapping.field_id === field.id
-      )
-    },
-    updateFieldMapping(event, fieldId) {
-      if (this.workflowAction.service == null) {
-        return false
-      }
-      const existingMapping = this.values.field_mappings.some(
-        // eslint-disable-next-line camelcase
-        ({ field_id }) => field_id === fieldId
-      )
-      if (existingMapping) {
-        const newMapping = this.values.field_mappings.map((fieldMapping) => {
-          if (fieldMapping.field_id === fieldId) {
-            return { ...fieldMapping, ...event }
-          }
-          return fieldMapping
-        })
-        this.values.field_mappings = newMapping
-      } else {
-        // It already exists
-        this.values.field_mappings.push({
-          field_id: fieldId,
-          ...event,
-        })
-      }
-    },
     refreshIntegration() {
       this.selectedIntegration = this.$store.getters[
         'integration/getIntegrationById'

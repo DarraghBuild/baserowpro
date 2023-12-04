@@ -17,7 +17,7 @@
       :is="workflowActionType.form"
       ref="actionForm"
       :workflow-action="workflowAction"
-      :default-values="workflowAction"
+      :default-values="workflowActionType.formDefaultValues(workflowAction)"
       class="margin-top-2"
       @values-changed="updateWorkflowAction($event)"
     ></component>

@@ -1,12 +1,10 @@
 <template>
-  <form @submit.prevent="submit">
-    <UpsertRowWorkflowActionForm
-      :workflow-action="workflowAction"
-      :default-values="defaultValues"
-      @values-changed="$emit('values-changed', $event)"
-    >
-    </UpsertRowWorkflowActionForm>
-  </form>
+  <UpsertRowWorkflowActionForm
+    :workflow-action="workflowAction"
+    :default-values="defaultValues"
+    @values-changed="$emit('values-changed', $event)"
+  >
+  </UpsertRowWorkflowActionForm>
 </template>
 
 <script>

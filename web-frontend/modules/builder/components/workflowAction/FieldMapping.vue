@@ -1,34 +1,42 @@
 <template>
-  <form @submit.prevent @keydown.enter.prevent>
-    <ApplicationBuilderFormulaInputGroup
-      v-model="values.value"
-      :placeholder="$t('upsertRowWorkflowActionForm.fieldMappingPlaceholder')"
-      :data-providers-allowed="dataProvidersAllowed"
-      :label="field.name"
-    />
-  </form>
+  <ApplicationBuilderFormulaInputGroup
+    v-model="fieldValue"
+    :placeholder="$t('upsertRowWorkflowActionForm.fieldMappingPlaceholder')"
+    :data-providers-allowed="DATA_PROVIDERS_ALLOWED_ELEMENTS"
+    :label="field.name"
+  />
 </template>
 
 <script>
-import workflowActionForm from '@baserow/modules/builder/mixins/workflowActionForm'
 import ApplicationBuilderFormulaInputGroup from '@baserow/modules/builder/components/ApplicationBuilderFormulaInputGroup'
+import { DATA_PROVIDERS_ALLOWED_ELEMENTS } from '@baserow/modules/builder/enums'
 
 export default {
   name: 'FieldMapping',
   components: { ApplicationBuilderFormulaInputGroup },
-  mixins: [workflowActionForm],
   props: {
     field: {
       type: Object,
       required: true,
     },
+    value: {
+      type: String,
+      required: false,
+      default: () => '',
+    },
   },
-  data() {
-    return {
-      values: {
-        value: '',
+  computed: {
+    DATA_PROVIDERS_ALLOWED_ELEMENTS() {
+      return DATA_PROVIDERS_ALLOWED_ELEMENTS
+    },
+    fieldValue: {
+      get() {
+        return this.value
       },
-    }
+      set(value) {
+        this.$emit('change', value)
+      },
+    },
   },
 }
 </script>
