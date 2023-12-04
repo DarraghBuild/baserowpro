@@ -473,6 +473,7 @@ class NumberFieldType(FieldType):
                 "max_digits": self.MAX_DIGITS + kwargs["decimal_places"],
                 "required": required,
                 "allow_null": not required,
+                "coerce_to_string": False,
                 **kwargs,
             }
         )

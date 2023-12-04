@@ -379,13 +379,6 @@ export default {
                 })
               })?.count || -1
 
-            if (count === -1) {
-              console.log(`field_${groupBy.field}`)
-              console.log(groupBys.slice(0, groupByIndex + 1))
-              console.log(metaData[`field_${groupBy.field}`])
-              console.log('---')
-            }
-
             // If the start of a group, then create a new span object in the last.
             lastGroup = {
               rowSpan: 1,
