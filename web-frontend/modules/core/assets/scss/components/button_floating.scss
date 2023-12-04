@@ -19,10 +19,7 @@
     text-decoration: none;
   }
 
-  // &:focus {
-  //   box-shadow: 0 0 0 2px #fff, 0 0 0 4px #070810;
-  // }
-  &:active:not(.button-floating--loading) {
+  &:active:not(.button-floating--loading):not([disabled]) {
     background: $palette-neutral-50;
     color: $palette-blue-700;
     box-shadow: none;
@@ -66,10 +63,6 @@
     animation: spin infinite 1800ms;
     animation-timing-function: cubic-bezier(0.785, 0.135, 0.15, 0.86);
   }
-}
-
-.button-floating--secondary {
-  border: 1px solid $palette-neutral-200;
 }
 
 .button-floating__icon {

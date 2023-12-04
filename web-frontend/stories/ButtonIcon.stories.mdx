@@ -9,6 +9,13 @@ import ButtonIcon from '@baserow/modules/core/components/ButtonIcon'
     component={ButtonIcon}
     decorators={[withDesign]}
     argTypes={{
+        type: {
+            control: {
+                type: 'select',
+                options: ['primary', 'secondary'],
+            },
+            defaultValue: 'primary',
+        },
         icon: {
             defaultValue: 'iconoir-list',
         },

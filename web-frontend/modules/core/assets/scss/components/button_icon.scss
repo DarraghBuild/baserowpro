@@ -15,25 +15,20 @@
   @include rounded($rounded);
   @include add-elevation($elevation-low);
 
-  &:hover {
+  &:hover:not(.button-icon--loading):not([disabled]) {
     background: $palette-neutral-25;
     color: $palette-blue-600;
     text-decoration: none;
   }
 
-  //   &:focus {
-  //     box-shadow: 0 0 0 2px #fff, 0 0 0 4px #070810;
-  //   }
-
   &.active,
-  &:active {
+  &:active:not(.button-icon--loading):not([disabled]) {
     background: $palette-neutral-50;
     color: $palette-blue-700;
     box-shadow: none !important;
   }
 
-  &.disabled,
-  &[disabled] {
+  &[disabled]:not(.button-icon--loading) {
     cursor: not-allowed;
     background: $palette-neutral-100 !important;
     color: $palette-neutral-700;
@@ -44,23 +39,19 @@
   position: relative;
   cursor: wait;
   user-select: none;
-
-  &:hover,
-  &:focus {
-    box-shadow: none;
-  }
+  box-shadow: none;
 
   &::after {
     content: ' ';
     position: absolute;
     left: 50%;
     top: 50%;
-    margin: -5px;
+    margin: -7px;
     display: block;
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    border: 0.15em solid;
+    border: 0.2em solid;
     border-color: $palette-neutral-700 transparent $palette-neutral-700
       transparent;
     animation: spin infinite 1800ms;
@@ -70,4 +61,14 @@
 
 .button-icon__icon {
   font-size: 16px;
+}
+
+.button-icon--secondary {
+  &.active,
+  &:active,
+  &:hover {
+    .button-icon__icon {
+      color: $palette-neutral-1200;
+    }
+  }
 }

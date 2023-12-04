@@ -13,6 +13,17 @@
 export default {
   props: {
     /**
+     * The type of the button
+     */
+    type: {
+      required: false,
+      type: String,
+      default: 'primary',
+      validator: function (value) {
+        return ['primary', 'secondary'].includes(value)
+      },
+    },
+    /**
      * The size of the button.
      */
     icon: {
@@ -49,7 +60,7 @@ export default {
     classes() {
       const classObj = {
         'button-icon--loading': this.loading,
-        disabled: this.disabled,
+        'button-icon--secondary': this.type === 'secondary',
         active: this.active,
       }
       return classObj
