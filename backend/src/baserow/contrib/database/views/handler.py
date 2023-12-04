@@ -3358,7 +3358,11 @@ class ViewHandler(metaclass=baserow_trace_methods(tracer)):
                 field_name = field.db_column
                 field_names.append(field_name)
 
-            queryset = base_queryset.clear_multi_field_prefetch().values()
+            # Wrap the queryset to avoid conflicts with annotations, orders, joins,
+            # etc that can have an impact on the count.
+            queryset = base_queryset.model.objects.filter(
+                id__in=base_queryset.clear_multi_field_prefetch().values("id")
+            ).values()
 
             if len(annotations) > 0:
                 queryset = queryset.annotate(**annotations)

@@ -10,7 +10,7 @@
       "
     >
       <div class="grid-view__group-name">
-        {{ field.id }}
+        {{ field.name }}
       </div>
       <div class="grid-view__group-value">
         <component

@@ -3,6 +3,7 @@ from io import BytesIO
 
 from django.apps.registry import apps
 from django.db import connection
+from django.shortcuts import reverse
 from django.test.utils import CaptureQueriesContext
 
 import pytest
@@ -2648,4 +2649,60 @@ def test_get_group_by_meta_data_in_rows_with_many_to_many_field(data_fixture):
                 f"field_{multiple_select_field.id}": f"{select_option_2.id},{select_option_1.id}",
             },
         ]
+    }
+
+
+@pytest.mark.django_db
+def test_list_rows_with_group_by_and_many_to_many_field(api_client, data_fixture):
+    user, token = data_fixture.create_user_and_token(
+        email="test@test.nl", password="password", first_name="Test1"
+    )
+    table = data_fixture.create_database_table(user=user)
+    multiple_select_field = data_fixture.create_multiple_select_field(table=table)
+    select_option_1 = data_fixture.create_select_option(
+        field=multiple_select_field,
+        order=1,
+        value="Option 1",
+        color="blue",
+    )
+    select_option_2 = data_fixture.create_select_option(
+        field=multiple_select_field,
+        order=2,
+        value="Option 2",
+        color="blue",
+    )
+    select_option_3 = data_fixture.create_select_option(
+        field=multiple_select_field,
+        order=3,
+        value="Option 2",
+        color="blue",
+    )
+    grid = data_fixture.create_grid_view(table=table)
+    data_fixture.create_view_group_by(view=grid, field=multiple_select_field)
+
+    RowHandler().create_row(
+        user=user,
+        table=table,
+        values={
+            f"field_{multiple_select_field.id}": [
+                select_option_1.id,
+                select_option_2.id,
+                select_option_3.id,
+            ],
+        },
+    )
+
+    url = reverse("api:database:views:grid:list", kwargs={"view_id": grid.id})
+    response = api_client.get(url, **{"HTTP_AUTHORIZATION": f"JWT {token}"})
+    response_json = response.json()
+
+    assert response_json["group_meta_data"] == {
+        f"field_{multiple_select_field.id}": [
+            {
+                f"field_{multiple_select_field.id}": f"{select_option_1.id},"
+                f"{select_option_2.id},"
+                f"{select_option_3.id}",
+                "count": 1,
+            },
+        ],
     }
