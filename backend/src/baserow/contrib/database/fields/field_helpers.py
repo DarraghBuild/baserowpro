@@ -131,6 +131,11 @@ def construct_all_possible_field_kwargs(
                 "name": "last_modified_by",
             }
         ],
+        "duration": [
+            {
+                "name": "duration",
+            }
+        ],
         "link_row": [
             {"name": "link_row", "link_row_table": link_table},
             {
