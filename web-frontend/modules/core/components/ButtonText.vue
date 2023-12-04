@@ -3,7 +3,7 @@
     :is="tag === 'a' || href ? 'a' : 'button'"
     class="button-text"
     :class="classes"
-    :disabled="disabled"
+    :disabled="disabled || loading"
     :active="active"
     :rel="rel"
     v-bind.prop="customBind"
@@ -15,7 +15,7 @@
       :class="`iconoir-${icon}`"
     />
 
-    <i v-if="loading" class="button-text__loading"></i>
+    <i v-if="loading" class="button-text__spinner"></i>
     <span><slot /></span>
   </component>
 </template>
@@ -122,8 +122,6 @@ export default {
         [`button-text--${this.size}`]: this.size !== 'regular',
         [`button-text--${this.type}`]: this.type !== 'primary',
         'button-text--loading': this.loading,
-        disabled: this.disabled,
-        active: this.active,
       }
       return classObj
     },

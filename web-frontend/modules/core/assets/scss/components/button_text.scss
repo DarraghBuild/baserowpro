@@ -1,8 +1,3 @@
-.button-text__icon {
-  font-size: 18px;
-  color: $palette-neutral-600;
-}
-
 .button-text {
   cursor: pointer;
   display: inline-flex;
@@ -17,46 +12,29 @@
   line-height: 20px;
   padding: 2px;
 
-  &:hover {
-    text-decoration: none;
+  .button-text[disabled] & {
+    color: $palette-neutral-500;
+  }
+
+  &:hover:not(.button-text--loading):not([disabled]) {
     color: $palette-neutral-1300;
-
-    .button-text__icon {
-      color: $palette-neutral-1300;
-    }
   }
 
-  &.active,
-  &:active {
-    box-shadow: none !important;
-
-    .button-text__icon {
-      color: $palette-neutral-700;
-    }
-  }
-
-  &.disabled,
-  &[disabled] {
+  &[disabled]:not(.button-text--loading) {
     cursor: not-allowed;
     color: $palette-neutral-700;
-
-    .button-text__icon {
-      color: $palette-neutral-500;
-    }
   }
 }
 
-.button-text__loading {
-  position: relative;
+.button-text--loading {
   cursor: wait;
+}
+
+.button-text__spinner {
+  position: relative;
   user-select: none;
   width: 18px;
   height: 18px;
-
-  &:hover,
-  &:focus {
-    box-shadow: none;
-  }
 
   &::after {
     content: ' ';
@@ -73,15 +51,25 @@
 
 .button-text--secondary {
   color: $palette-neutral-900;
-
-  &:hover,
-  &:focus,
-  &.active,
-  &:active {
-    color: $palette-neutral-1300;
-  }
 }
 
 .button-text--small {
   font-size: 12px;
+}
+
+.button-text__icon {
+  font-size: 18px;
+  color: $palette-neutral-600;
+
+  .button-text[disabled]:not(.button-text--loading) & {
+    color: $palette-neutral-500;
+  }
+
+  .button-text:active:not(.button-text--loading):not([disabled]) & {
+    color: $palette-neutral-700;
+  }
+
+  .button-text:hover:not(.button-text--loading):not([disabled]) & {
+    color: $palette-neutral-1300;
+  }
 }
