@@ -3897,15 +3897,35 @@ def test_get_group_by_meta_data_in_rows(data_fixture):
 
     assert counts == {
         text_field: [
-            {"field_1": "Green", "count": 6},
-            {"field_1": "Orange", "count": 3},
+            {f"field_{text_field.id}": "Green", "count": 6},
+            {f"field_{text_field.id}": "Orange", "count": 3},
         ],
         number_field: [
-            {"field_1": "Green", "field_2": Decimal("10"), "count": 3},
-            {"field_1": "Green", "field_2": Decimal("20"), "count": 3},
-            {"field_1": "Orange", "field_2": Decimal("10"), "count": 1},
-            {"field_1": "Orange", "field_2": Decimal("30"), "count": 1},
-            {"field_1": "Orange", "field_2": Decimal("40"), "count": 1},
+            {
+                f"field_{text_field.id}": "Green",
+                f"field_{number_field.id}": Decimal("10"),
+                "count": 3,
+            },
+            {
+                f"field_{text_field.id}": "Green",
+                f"field_{number_field.id}": Decimal("20"),
+                "count": 3,
+            },
+            {
+                f"field_{text_field.id}": "Orange",
+                f"field_{number_field.id}": Decimal("10"),
+                "count": 1,
+            },
+            {
+                f"field_{text_field.id}": "Orange",
+                f"field_{number_field.id}": Decimal("30"),
+                "count": 1,
+            },
+            {
+                f"field_{text_field.id}": "Orange",
+                f"field_{number_field.id}": Decimal("40"),
+                "count": 1,
+            },
         ],
     }
 
@@ -3928,122 +3948,208 @@ def test_get_group_by_on_all_fields_in_interesting_table(data_fixture):
 
     for field in fields_to_group_by:
         counts = handler.get_group_by_meta_data_in_rows([field], rows, queryset)
+        results = list(counts[field])
+        # rename the `field_{id}` to the field name, so that we can do a look
+        # comparison.
+        for result in results:
+            result[f"field_{field.name}"] = result.pop(f"field_{field.id}")
         actual_result_per_field_name[field.name] = list(counts[field])
 
+    select_select_options = Field.objects.get(name="single_select").select_options.all()
+    multiple_select_options = Field.objects.get(
+        name="multiple_select"
+    ).select_options.all()
+
     assert actual_result_per_field_name == {
-        "text": [{"field_4": "text", "count": 1}, {"field_4": None, "count": 1}],
+        "text": [{"field_text": "text", "count": 1}, {"field_text": None, "count": 1}],
         "long_text": [
-            {"field_5": "long_text", "count": 1},
-            {"field_5": None, "count": 1},
+            {"field_long_text": "long_text", "count": 1},
+            {"field_long_text": None, "count": 1},
         ],
         "url": [
-            {"field_6": "", "count": 1},
-            {"field_6": "https://www.google.com", "count": 1},
+            {"field_url": "", "count": 1},
+            {"field_url": "https://www.google.com", "count": 1},
         ],
         "email": [
-            {"field_7": "", "count": 1},
-            {"field_7": "test@example.com", "count": 1},
+            {"field_email": "", "count": 1},
+            {"field_email": "test@example.com", "count": 1},
         ],
         "negative_int": [
-            {"field_8": Decimal("-1"), "count": 1},
-            {"field_8": None, "count": 1},
+            {"field_negative_int": Decimal("-1"), "count": 1},
+            {"field_negative_int": None, "count": 1},
         ],
         "positive_int": [
-            {"field_9": Decimal("1"), "count": 1},
-            {"field_9": None, "count": 1},
+            {"field_positive_int": Decimal("1"), "count": 1},
+            {"field_positive_int": None, "count": 1},
         ],
         "negative_decimal": [
-            {"field_10": Decimal("-1.2"), "count": 1},
-            {"field_10": None, "count": 1},
+            {"field_negative_decimal": Decimal("-1.2"), "count": 1},
+            {"field_negative_decimal": None, "count": 1},
         ],
         "positive_decimal": [
-            {"field_11": Decimal("1.2"), "count": 1},
-            {"field_11": None, "count": 1},
+            {"field_positive_decimal": Decimal("1.2"), "count": 1},
+            {"field_positive_decimal": None, "count": 1},
         ],
-        "rating": [{"field_12": 0, "count": 1}, {"field_12": 3, "count": 1}],
-        "boolean": [{"field_13": False, "count": 1}, {"field_13": True, "count": 1}],
+        "rating": [{"field_rating": 0, "count": 1}, {"field_rating": 3, "count": 1}],
+        "boolean": [
+            {"field_boolean": False, "count": 1},
+            {"field_boolean": True, "count": 1},
+        ],
         "datetime_us": [
-            {"field_14": datetime.datetime(2020, 2, 1, 1, 23, tzinfo=UTC), "count": 1},
-            {"field_14": None, "count": 1},
+            {
+                "field_datetime_us": datetime.datetime(2020, 2, 1, 1, 23, tzinfo=UTC),
+                "count": 1,
+            },
+            {"field_datetime_us": None, "count": 1},
         ],
         "date_us": [
-            {"field_15": datetime.date(2020, 2, 1), "count": 1},
-            {"field_15": None, "count": 1},
+            {"field_date_us": datetime.date(2020, 2, 1), "count": 1},
+            {"field_date_us": None, "count": 1},
         ],
         "datetime_eu": [
-            {"field_16": datetime.datetime(2020, 2, 1, 1, 23, tzinfo=UTC), "count": 1},
-            {"field_16": None, "count": 1},
+            {
+                "field_datetime_eu": datetime.datetime(2020, 2, 1, 1, 23, tzinfo=UTC),
+                "count": 1,
+            },
+            {"field_datetime_eu": None, "count": 1},
         ],
         "date_eu": [
-            {"field_17": datetime.date(2020, 2, 1), "count": 1},
-            {"field_17": None, "count": 1},
+            {"field_date_eu": datetime.date(2020, 2, 1), "count": 1},
+            {"field_date_eu": None, "count": 1},
         ],
         "datetime_eu_tzone_visible": [
-            {"field_18": datetime.datetime(2020, 2, 1, 1, 23, tzinfo=UTC), "count": 1},
-            {"field_18": None, "count": 1},
+            {
+                "field_datetime_eu_tzone_visible": datetime.datetime(
+                    2020, 2, 1, 1, 23, tzinfo=UTC
+                ),
+                "count": 1,
+            },
+            {"field_datetime_eu_tzone_visible": None, "count": 1},
         ],
         "datetime_eu_tzone_hidden": [
-            {"field_19": datetime.datetime(2020, 2, 1, 1, 23, tzinfo=UTC), "count": 1},
-            {"field_19": None, "count": 1},
+            {
+                "field_datetime_eu_tzone_hidden": datetime.datetime(
+                    2020, 2, 1, 1, 23, tzinfo=UTC
+                ),
+                "count": 1,
+            },
+            {"field_datetime_eu_tzone_hidden": None, "count": 1},
         ],
         "last_modified_datetime_us": [
-            {"field_20": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+            {
+                "field_last_modified_datetime_us": datetime.datetime(
+                    2021, 1, 2, 12, 0, tzinfo=UTC
+                ),
+                "count": 2,
+            }
         ],
         "last_modified_date_us": [
-            {"field_21": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+            {
+                "field_last_modified_date_us": datetime.datetime(
+                    2021, 1, 2, 12, 0, tzinfo=UTC
+                ),
+                "count": 2,
+            }
         ],
         "last_modified_datetime_eu": [
-            {"field_22": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+            {
+                "field_last_modified_datetime_eu": datetime.datetime(
+                    2021, 1, 2, 12, 0, tzinfo=UTC
+                ),
+                "count": 2,
+            }
         ],
         "last_modified_date_eu": [
-            {"field_23": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+            {
+                "field_last_modified_date_eu": datetime.datetime(
+                    2021, 1, 2, 12, 0, tzinfo=UTC
+                ),
+                "count": 2,
+            }
         ],
         "last_modified_datetime_eu_tzone": [
-            {"field_24": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+            {
+                "field_last_modified_datetime_eu_tzone": datetime.datetime(
+                    2021, 1, 2, 12, 0, tzinfo=UTC
+                ),
+                "count": 2,
+            }
         ],
         "created_on_datetime_us": [
-            {"field_25": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+            {
+                "field_created_on_datetime_us": datetime.datetime(
+                    2021, 1, 2, 12, 0, tzinfo=UTC
+                ),
+                "count": 2,
+            }
         ],
         "created_on_date_us": [
-            {"field_26": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+            {
+                "field_created_on_date_us": datetime.datetime(
+                    2021, 1, 2, 12, 0, tzinfo=UTC
+                ),
+                "count": 2,
+            }
         ],
         "created_on_datetime_eu": [
-            {"field_27": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+            {
+                "field_created_on_datetime_eu": datetime.datetime(
+                    2021, 1, 2, 12, 0, tzinfo=UTC
+                ),
+                "count": 2,
+            }
         ],
         "created_on_date_eu": [
-            {"field_28": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+            {
+                "field_created_on_date_eu": datetime.datetime(
+                    2021, 1, 2, 12, 0, tzinfo=UTC
+                ),
+                "count": 2,
+            }
         ],
         "created_on_datetime_eu_tzone": [
-            {"field_29": datetime.datetime(2021, 1, 2, 12, 0, tzinfo=UTC), "count": 2}
+            {
+                "field_created_on_datetime_eu_tzone": datetime.datetime(
+                    2021, 1, 2, 12, 0, tzinfo=UTC
+                ),
+                "count": 2,
+            }
         ],
         "single_select": [
-            {"field_40": 1, "count": 1},
-            {"field_40": None, "count": 1},
+            {"field_single_select": select_select_options[0].id, "count": 1},
+            {"field_single_select": None, "count": 1},
         ],
         "multiple_select": [
-            {"field_41": "", "count": 1},
-            {"field_41": "4,3,5", "count": 1},
+            {"field_multiple_select": "", "count": 1},
+            {
+                "field_multiple_select": f"{multiple_select_options[1].id},"
+                f"{multiple_select_options[0].id},"
+                f"{multiple_select_options[2].id}",
+                "count": 1,
+            },
         ],
         "phone_number": [
-            {"field_43": "", "count": 1},
-            {"field_43": "+4412345678", "count": 1},
+            {"field_phone_number": "", "count": 1},
+            {"field_phone_number": "+4412345678", "count": 1},
         ],
-        "formula_text": [{"field_44": "test FORMULA", "count": 2}],
-        "formula_int": [{"field_45": Decimal("1"), "count": 2}],
-        "formula_bool": [{"field_46": True, "count": 2}],
-        "formula_decimal": [{"field_47": Decimal("33.3333333333"), "count": 2}],
-        "formula_dateinterval": [{"field_48": "1 day", "count": 2}],
-        "formula_date": [{"field_49": datetime.date(2020, 1, 1), "count": 2}],
+        "formula_text": [{"field_formula_text": "test FORMULA", "count": 2}],
+        "formula_int": [{"field_formula_int": Decimal("1"), "count": 2}],
+        "formula_bool": [{"field_formula_bool": True, "count": 2}],
+        "formula_decimal": [
+            {"field_formula_decimal": Decimal("33.3333333333"), "count": 2}
+        ],
+        "formula_dateinterval": [{"field_formula_dateinterval": "1 day", "count": 2}],
+        "formula_date": [{"field_formula_date": datetime.date(2020, 1, 1), "count": 2}],
         "formula_email": [
-            {"field_51": "", "count": 1},
-            {"field_51": "test@example.com", "count": 1},
+            {"field_formula_email": "", "count": 1},
+            {"field_formula_email": "test@example.com", "count": 1},
         ],
         "count": [
-            {"field_54": Decimal("0"), "count": 1},
-            {"field_54": Decimal("3"), "count": 1},
+            {"field_count": Decimal("0"), "count": 1},
+            {"field_count": Decimal("3"), "count": 1},
         ],
         "rollup": [
-            {"field_55": Decimal("-122.222"), "count": 1},
-            {"field_55": Decimal("0.000"), "count": 1},
+            {"field_rollup": Decimal("-122.222"), "count": 1},
+            {"field_rollup": Decimal("0.000"), "count": 1},
         ],
     }

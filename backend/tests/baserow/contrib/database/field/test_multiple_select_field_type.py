@@ -2637,9 +2637,15 @@ def test_get_group_by_meta_data_in_rows_with_many_to_many_field(data_fixture):
     assert counts == {
         multiple_select_field: [
             {"count": 2, f"field_{multiple_select_field.id}": ""},
-            {"count": 2, f"field_{multiple_select_field.id}": "1"},
-            {"count": 2, f"field_{multiple_select_field.id}": "1,2"},
-            {"count": 2, f"field_{multiple_select_field.id}": "2"},
-            {"count": 1, f"field_{multiple_select_field.id}": "2,1"},
+            {"count": 2, f"field_{multiple_select_field.id}": f"{select_option_1.id}"},
+            {
+                "count": 2,
+                f"field_{multiple_select_field.id}": f"{select_option_1.id},{select_option_2.id}",
+            },
+            {"count": 2, f"field_{multiple_select_field.id}": f"{select_option_2.id}"},
+            {
+                "count": 1,
+                f"field_{multiple_select_field.id}": f"{select_option_2.id},{select_option_1.id}",
+            },
         ]
     }

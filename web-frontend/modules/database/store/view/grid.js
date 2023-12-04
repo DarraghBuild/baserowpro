@@ -515,13 +515,24 @@ export const mutations = {
       })
     })
   },
-  UPDATE_GROUP_META_DATA_AFTER_ROW_CREATED(state, createdRow) {
+  UPDATE_GROUP_META_DATA_COUNT(
+    state,
+    { fieldNameToGroupByValue, row, increase, decrease }
+  ) {
     const existingMetaData = state.groupMetaData
 
-    const getValues = (object, keys) => {
+    /**
+     * Helper function that constructs a JSON object that can be used for comparison
+     * of values.
+     */
+    const getValues = (object, keys, applyGetGroupByValue = false) => {
       const newObject = {}
       keys.forEach((key) => {
-        newObject[key] = object[key]
+        let value = object[key]
+        if (applyGetGroupByValue) {
+          value = fieldNameToGroupByValue[key](value)
+        }
+        newObject[key] = value
       })
       return JSON.stringify(newObject)
     }
@@ -536,59 +547,30 @@ export const mutations = {
             existingGroupEntry,
             existingFieldKeys
           )
-          const rowValues = getValues(createdRow, existingFieldKeys)
+          const rowValues = getValues(row, existingFieldKeys, true)
 
           if (existingValues === rowValues) {
-            Vue.set(
-              existingMetaData[existingGroupField][index],
-              'count',
-              existingGroupEntry.count + 1
-            )
+            let count = existingGroupEntry.count
+            if (increase) {
+              count += 1
+            }
+            if (decrease) {
+              count -= 1
+            }
+
+            Vue.set(existingMetaData[existingGroupField][index], 'count', count)
             updated = true
           }
         }
       )
 
-      if (!updated) {
+      if (!updated && increase) {
         const newEntry = { count: 1 }
         existingFieldKeys.forEach((key) => {
-          newEntry[key] = createdRow[key]
+          newEntry[key] = row[key]
         })
         existingMetaData[existingGroupField].push(newEntry)
       }
-    })
-  },
-  UPDATE_GROUP_META_DATA_AFTER_ROW_DELETED(state, deletedRow) {
-    const existingMetaData = state.groupMetaData
-
-    const getValues = (object, keys) => {
-      const newObject = {}
-      keys.forEach((key) => {
-        newObject[key] = object[key]
-      })
-      return JSON.stringify(newObject)
-    }
-
-    const existingFieldKeys = []
-    Object.keys(existingMetaData).forEach((existingGroupField) => {
-      existingFieldKeys.push(existingGroupField)
-      existingMetaData[existingGroupField].forEach(
-        (existingGroupEntry, index) => {
-          const existingValues = getValues(
-            existingGroupEntry,
-            existingFieldKeys
-          )
-          const rowValues = getValues(deletedRow, existingFieldKeys)
-
-          if (existingValues === rowValues) {
-            Vue.set(
-              existingMetaData[existingGroupField][index],
-              'count',
-              existingGroupEntry.count - 1
-            )
-          }
-        }
-      )
     })
   },
 }
@@ -1783,7 +1765,11 @@ export const actions = {
     if (isSingleRowInsertion) {
       // When a single row is inserted we don't want to deal with filters, sorts and
       // search just yet. Therefore it is okay to just insert the row into the buffer.
-      commit('UPDATE_GROUP_META_DATA_AFTER_ROW_CREATED', rowsPopulated[0])
+      await dispatch('updateGroupMetaDataCount', {
+        fields,
+        row: rowsPopulated[0],
+        increase: true,
+      })
       commit('INSERT_NEW_ROWS_IN_BUFFER_AT_INDEX', {
         rows: rowsPopulated,
         index,
@@ -1867,7 +1853,11 @@ export const actions = {
       })
     } catch (error) {
       if (isSingleRowInsertion) {
-        commit('UPDATE_GROUP_META_DATA_AFTER_ROW_DELETED', rowsPopulated[0])
+        await dispatch('updateGroupMetaDataCount', {
+          fields,
+          row: rowsPopulated[0],
+          decrease: true,
+        })
         commit('DELETE_ROW_IN_BUFFER', rowsPopulated[0])
       } else {
         // When we have multiple rows we will need to re-evaluate where the rest of the
@@ -1894,7 +1884,7 @@ export const actions = {
    * another channel. It will only add the row if it belongs inside the views and it
    * also makes sure that row will be inserted at the correct position.
    */
-  createdNewRow(
+  async createdNewRow(
     { commit, getters, dispatch },
     { view, fields, values, metadata, populate = true }
   ) {
@@ -1906,8 +1896,8 @@ export const actions = {
 
     // Check if the row belongs into the current view by checking if it matches the
     // filters and search.
-    dispatch('updateMatchFilters', { view, row, fields })
-    dispatch('updateSearchMatchesForRow', { row, fields })
+    await dispatch('updateMatchFilters', { view, row, fields })
+    await dispatch('updateSearchMatchesForRow', { row, fields })
 
     // If the row does not match the filters or the search then we don't have to add
     // it at all.
@@ -1916,7 +1906,7 @@ export const actions = {
     }
 
     // Update the group by meta data if needed.
-    commit('UPDATE_GROUP_META_DATA_AFTER_ROW_CREATED', row)
+    await dispatch('updateGroupMetaDataCount', { fields, row, increase: true })
 
     // Now that we know that the row applies to the filters, which means it belongs
     // in this view, we need to estimate what position it has in the table.
@@ -2060,12 +2050,20 @@ export const actions = {
         // If the row exists in the buffer, we can visually show to the user that
         // the values have changed, without immediately reflecting the change in
         // the buffer.
-        commit('UPDATE_GROUP_META_DATA_AFTER_ROW_DELETED', row)
+        await dispatch('updateGroupMetaDataCount', {
+          fields,
+          row,
+          decrease: true,
+        })
         commit('UPDATE_ROW_VALUES', {
           row,
           values: { ...values },
         })
-        commit('UPDATE_GROUP_META_DATA_AFTER_ROW_CREATED', row)
+        await dispatch('updateGroupMetaDataCount', {
+          fields,
+          row,
+          increase: true,
+        })
         await dispatch('onRowChange', { view, row, fields })
       } else {
         // If the row doesn't exist in the buffer, it could be that the new values
@@ -2363,7 +2361,7 @@ export const actions = {
    * via another channel. It will make sure that the row has the correct position or
    * that is will be deleted or created depending if was already in the view.
    */
-  updatedExistingRow(
+  async updatedExistingRow(
     { commit, getters, dispatch },
     { view, fields, row, values, metadata }
   ) {
@@ -2372,19 +2370,19 @@ export const actions = {
     populateRow(oldRow, metadata)
     populateRow(newRow, metadata)
 
-    dispatch('updateMatchFilters', { view, row: oldRow, fields })
-    dispatch('updateSearchMatchesForRow', { row: oldRow, fields })
+    await dispatch('updateMatchFilters', { view, row: oldRow, fields })
+    await dispatch('updateSearchMatchesForRow', { row: oldRow, fields })
 
-    dispatch('updateMatchFilters', { view, row: newRow, fields })
-    dispatch('updateSearchMatchesForRow', { row: newRow, fields })
+    await dispatch('updateMatchFilters', { view, row: newRow, fields })
+    await dispatch('updateSearchMatchesForRow', { row: newRow, fields })
 
     const oldRowExists = oldRow._.matchFilters && oldRow._.matchSearch
     const newRowExists = newRow._.matchFilters && newRow._.matchSearch
 
     if (oldRowExists && !newRowExists) {
-      dispatch('deletedExistingRow', { view, fields, row })
+      await dispatch('deletedExistingRow', { view, fields, row })
     } else if (!oldRowExists && newRowExists) {
-      dispatch('createdNewRow', {
+      await dispatch('createdNewRow', {
         view,
         fields,
         values: newRow,
@@ -2393,8 +2391,16 @@ export const actions = {
     } else if (oldRowExists && newRowExists) {
       // Instead of implementing a meta data updated mutation, we can easily just
       // call the deleted and created mutation because that will have the same effect.
-      commit('UPDATE_GROUP_META_DATA_AFTER_ROW_DELETED', oldRow)
-      commit('UPDATE_GROUP_META_DATA_AFTER_ROW_CREATED', newRow)
+      await dispatch('updateGroupMetaDataCount', {
+        fields,
+        row: oldRow,
+        decrease: true,
+      })
+      await dispatch('updateGroupMetaDataCount', {
+        fields,
+        row: newRow,
+        increase: true,
+      })
 
       // If the new order already exists in the buffer and is not the row that has
       // been updated, we need to decrease all the other orders, otherwise we could
@@ -2495,7 +2501,7 @@ export const actions = {
       if (oldRowInBuffer && !newRowInBuffer && (newIsFirst || newIsLast)) {
         commit('DELETE_ROW_IN_BUFFER_WITHOUT_UPDATE', row)
       }
-      dispatch('correctMultiSelect')
+      await dispatch('correctMultiSelect')
     }
   },
   /**
@@ -2571,13 +2577,16 @@ export const actions = {
    * Called after an existing row has been deleted, which could be by the user or
    * via another channel.
    */
-  deletedExistingRow({ commit, getters, dispatch }, { view, fields, row }) {
+  async deletedExistingRow(
+    { commit, getters, dispatch },
+    { view, fields, row }
+  ) {
     row = clone(row)
     populateRow(row)
 
     // Check if that row was visible in the view.
-    dispatch('updateMatchFilters', { view, row, fields })
-    dispatch('updateSearchMatchesForRow', { row, fields })
+    await dispatch('updateMatchFilters', { view, row, fields })
+    await dispatch('updateSearchMatchesForRow', { row, fields })
 
     // If the row does not match the filters or the search then did not exist in the
     // view, so we don't have to do anything.
@@ -2586,7 +2595,7 @@ export const actions = {
     }
 
     // Decrease the count in the group by meta data if an entry exists.
-    commit('UPDATE_GROUP_META_DATA_AFTER_ROW_DELETED', row)
+    await dispatch('updateGroupMetaDataCount', { fields, row, decrease: true })
 
     // Now that we know for sure that the row belongs in the view, we need to figure
     // out if is before, inside or after the buffered results.
@@ -2598,7 +2607,7 @@ export const actions = {
     // accordingly.
     if (exists) {
       commit('DELETE_ROW_IN_BUFFER', row)
-      dispatch('correctMultiSelect')
+      await dispatch('correctMultiSelect')
       return
     }
 
@@ -2621,7 +2630,7 @@ export const actions = {
 
     // Regardless of where the
     commit('SET_COUNT', getters.getCount - 1)
-    dispatch('correctMultiSelect')
+    await dispatch('correctMultiSelect')
   },
   /**
    * Triggered when a row has been changed, or has a pending change in the provided
@@ -2825,6 +2834,43 @@ export const actions = {
       textData: data,
       rowIndex: minRowIndex,
       fieldIndex: minFieldIndex,
+    })
+  },
+  /**
+   * Increases or decreases the count value of the group by entries if the row
+   * values match the group by values.
+   */
+  updateGroupMetaDataCount(
+    { commit, getters },
+    { fields, row, increase = false, decrease = false }
+  ) {
+    if (increase && decrease) {
+      throw new Error("The group count can't be increased and decreased.")
+    }
+    if (!increase && !decrease) {
+      throw new Error('The group count must be increased or decreased.')
+    }
+
+    // Prepare a object where the key is the field name, and the value a function to
+    // convert the row value to a value that can be compared with the group by value.
+    const fieldNameToGroupByValue = {}
+    const groupMetaFields = Object.keys(getters.getGroupMetaData)
+    fields.forEach((field) => {
+      const fieldName = `field_${field.id}`
+      if (groupMetaFields.includes(fieldName)) {
+        fieldNameToGroupByValue[fieldName] = (value) => {
+          return this.$registry
+            .get('field', field.type)
+            .getGroupByValue(field, value)
+        }
+      }
+    })
+
+    commit('UPDATE_GROUP_META_DATA_COUNT', {
+      fieldNameToGroupByValue,
+      row,
+      increase,
+      decrease,
     })
   },
 }

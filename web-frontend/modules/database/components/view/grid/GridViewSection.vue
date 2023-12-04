@@ -372,10 +372,13 @@ export default {
                 return groupBys.slice(0, groupByIndex + 1).every((g) => {
                   const f = this.allFieldsInTable.find((f) => f.id === g.field)
                   const tp = this.$registry.get('field', f.type)
-                  return (
-                    entry[`field_${g.field}`] ===
-                    tp.prepareValueForUpdate(f, row[`field_${g.field}`])
+                  const groupValue = entry[`field_${g.field}`]
+                  // let rowValue = tp.prepareValueForUpdate(f, row[`field_${g.field}`])
+                  const rowValue = tp.getGroupByValue(
+                    field,
+                    row[`field_${g.field}`]
                   )
+                  return groupValue === rowValue
                 })
               })?.count || -1
 

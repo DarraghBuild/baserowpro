@@ -305,7 +305,7 @@ class GridViewView(APIView):
 
         response = paginator.get_paginated_response(serializer.data)
 
-        if view_type.can_group_by and view.viewgroupby_set:
+        if view_type.can_group_by and view.viewgroupby_set.all():
             group_by_fields = [
                 model._field_objects[group_by.field_id]["field"]
                 for group_by in view.viewgroupby_set.all()

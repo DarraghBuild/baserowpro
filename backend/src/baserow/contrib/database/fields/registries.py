@@ -1531,7 +1531,7 @@ class FieldType(
         :rtype: serializer.Field
         """
 
-        return self.get_serializer_field(instance, **kwargs)
+        return self.get_response_serializer_field(instance, **kwargs)
 
     def before_field_options_update(
         self,

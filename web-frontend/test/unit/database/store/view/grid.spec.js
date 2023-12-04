@@ -1223,7 +1223,7 @@ describe('Grid view store', () => {
       {
         id: 2,
         name: 'Test 1',
-        type: 'numeric',
+        type: 'number',
         primary: false,
       },
     ]
@@ -1375,7 +1375,7 @@ describe('Grid view store', () => {
       {
         id: 2,
         name: 'Test 1',
-        type: 'numeric',
+        type: 'number',
         primary: false,
       },
     ]
@@ -1497,7 +1497,7 @@ describe('Grid view store', () => {
       {
         id: 2,
         name: 'Test 1',
-        type: 'numeric',
+        type: 'number',
         primary: false,
       },
     ]
@@ -1584,6 +1584,117 @@ describe('Grid view store', () => {
           count: 1,
           field_1: 'b',
           field_2: 2,
+        },
+      ],
+    })
+  })
+
+  test('group by meta data count increase decrease using correct field type methods', async () => {
+    const state = Object.assign(gridStore.state(), {
+      bufferStartIndex: 0,
+      bufferLimit: 0,
+      rows: [],
+      count: 100,
+      groupMetaData: {
+        field_1: [
+          {
+            field_1: null,
+            count: 0,
+          },
+          {
+            field_1: 1,
+            count: 0,
+          },
+        ],
+      },
+    })
+    gridStore.state = () => state
+    store.registerModule('grid', gridStore)
+
+    const view = {
+      id: 1,
+      filters_disabled: false,
+      filter_type: 'AND',
+      filters: [],
+      sortings: [],
+    }
+    const fields = [
+      {
+        id: 1,
+        name: 'single_select',
+        order: 1,
+        primary: false,
+        table_id: 0,
+        type: 'single_select',
+        select_options: [
+          {
+            id: 1,
+            value: 'Test 1',
+            color: 'orange',
+          },
+        ],
+      },
+    ]
+    const getScrollTop = () => 0
+
+    await store.dispatch('grid/createdNewRow', {
+      view,
+      fields,
+      values: {
+        id: 1,
+        order: '1.00000000000000000000',
+        field_1: {
+          id: 1,
+          value: 'Test 1',
+          color: 'orange',
+        },
+      },
+      getScrollTop,
+    })
+    await store.dispatch('grid/createdNewRow', {
+      view,
+      fields,
+      values: {
+        id: 2,
+        order: '2.00000000000000000000',
+        field_1: null,
+      },
+      getScrollTop,
+    })
+
+    expect(store.state.grid.groupMetaData).toEqual({
+      field_1: [
+        {
+          field_1: null,
+          count: 1,
+        },
+        {
+          field_1: 1,
+          count: 1,
+        },
+      ],
+    })
+
+    await store.dispatch('grid/deletedExistingRow', {
+      view,
+      fields,
+      row: {
+        id: 2,
+        order: '2.00000000000000000000',
+        field_1: null,
+      },
+      getScrollTop,
+    })
+
+    expect(store.state.grid.groupMetaData).toEqual({
+      field_1: [
+        {
+          field_1: null,
+          count: 0,
+        },
+        {
+          field_1: 1,
+          count: 1,
         },
       ],
     })

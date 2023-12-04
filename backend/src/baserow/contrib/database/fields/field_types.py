@@ -473,7 +473,6 @@ class NumberFieldType(FieldType):
                 "max_digits": self.MAX_DIGITS + kwargs["decimal_places"],
                 "required": required,
                 "allow_null": not required,
-                "coerce_to_string": False,
                 **kwargs,
             }
         )
@@ -3289,6 +3288,15 @@ class SingleSelectFieldType(SelectOptionBaseFieldType):
 
     def from_baserow_formula_type(self, formula_type) -> Field:
         return self.model_class()
+
+    def get_group_by_serializer_field(self, field, **kwargs):
+        return serializers.IntegerField(
+            **{
+                "required": False,
+                "allow_null": True,
+                **kwargs,
+            }
+        )
 
 
 class MultipleSelectFieldType(ManyToManyGroupByMixin, SelectOptionBaseFieldType):

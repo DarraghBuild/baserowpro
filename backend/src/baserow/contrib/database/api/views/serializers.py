@@ -755,9 +755,14 @@ def serialize_group_by_meta_data(
             serialized_entry = {"count": entry["count"]}
             for key, value in entry.items():
                 if key in serializer_mapping:
-                    serialized_entry[key] = serializer_mapping[key].to_representation(
-                        value
-                    )
+                    # This is the same behaviour as a normal serializer, so that's
+                    # what we need in the frontend to compare the two values.
+                    if value is None:
+                        serialized_entry[key] = None
+                    else:
+                        serialized_entry[key] = serializer_mapping[
+                            key
+                        ].to_representation(value)
             serialized_data[field.db_column].append(serialized_entry)
 
     return serialized_data

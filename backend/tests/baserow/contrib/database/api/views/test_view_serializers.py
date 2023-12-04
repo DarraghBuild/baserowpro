@@ -41,14 +41,22 @@ def test_serialize_group_by_meta_data(api_client, data_fixture):
         [text_field, number_field], rows, queryset
     )
 
-    assert serialize_group_by_meta_data(counts) == {
+    assert dict(serialize_group_by_meta_data(counts)) == {
         f"field_{text_field.id}": [
-            {"field_1": "Green", "count": 1},
-            {"field_1": "Orange", "count": 1},
+            {f"field_{text_field.id}": "Green", "count": 1},
+            {f"field_{text_field.id}": "Orange", "count": 1},
         ],
         f"field_{number_field.id}": [
-            {"field_1": "Green", "field_2": "10.000", "count": 1},
-            {"field_1": "Orange", "field_2": "10.000", "count": 1},
+            {
+                f"field_{text_field.id}": "Green",
+                f"field_{number_field.id}": "10.000",
+                "count": 1,
+            },
+            {
+                f"field_{text_field.id}": "Orange",
+                f"field_{number_field.id}": "10.000",
+                "count": 1,
+            },
         ],
     }
 
@@ -73,96 +81,131 @@ def test_serialize_group_by_meta_data_on_all_fields_in_interesting_table(
 
     for field in fields_to_group_by:
         counts = handler.get_group_by_meta_data_in_rows([field], rows, queryset)
-        actual_result_per_field_name[field.name] = serialize_group_by_meta_data(counts)[
-            field.db_column
-        ]
+        serialized = serialize_group_by_meta_data(counts)[field.db_column]
+        # rename the `field_{id}` to the field name, so that we can do an accurate
+        # comparison.
+        for result in serialized:
+            result[f"field_{field.name}"] = result.pop(f"field_{str(field.id)}")
+        actual_result_per_field_name[field.name] = serialized
 
+    # Keep this manually in sync with `test/unit/database/fieldTypes.spec.js` "group
+    # by values match the field type" test.
     assert actual_result_per_field_name == {
-        "text": [{"count": 1, "field_4": "text"}, {"count": 1, "field_4": "None"}],
+        "text": [
+            {"count": 1, "field_text": "text"},
+            {"count": 1, "field_text": None},
+        ],
         "long_text": [
-            {"count": 1, "field_5": "long_text"},
-            {"count": 1, "field_5": "None"},
+            {"count": 1, "field_long_text": "long_text"},
+            {"count": 1, "field_long_text": None},
         ],
         "url": [
-            {"count": 1, "field_6": ""},
-            {"count": 1, "field_6": "https://www.google.com"},
+            {"count": 1, "field_url": ""},
+            {"count": 1, "field_url": "https://www.google.com"},
         ],
         "email": [
-            {"count": 1, "field_7": ""},
-            {"count": 1, "field_7": "test@example.com"},
+            {"count": 1, "field_email": ""},
+            {"count": 1, "field_email": "test@example.com"},
         ],
-        "negative_int": [{"count": 1, "field_8": "-1"}, {"count": 1, "field_8": ""}],
-        "positive_int": [{"count": 1, "field_9": "1"}, {"count": 1, "field_9": ""}],
+        "negative_int": [
+            {"count": 1, "field_negative_int": "-1"},
+            {"count": 1, "field_negative_int": None},
+        ],
+        "positive_int": [
+            {"count": 1, "field_positive_int": "1"},
+            {"count": 1, "field_positive_int": None},
+        ],
         "negative_decimal": [
-            {"count": 1, "field_10": "-1.2"},
-            {"count": 1, "field_10": ""},
+            {"count": 1, "field_negative_decimal": "-1.2"},
+            {"count": 1, "field_negative_decimal": None},
         ],
         "positive_decimal": [
-            {"count": 1, "field_11": "1.2"},
-            {"count": 1, "field_11": ""},
+            {"count": 1, "field_positive_decimal": "1.2"},
+            {"count": 1, "field_positive_decimal": None},
         ],
-        "rating": [{"count": 1, "field_12": 0}, {"count": 1, "field_12": 3}],
-        "boolean": [{"count": 1, "field_13": False}, {"count": 1, "field_13": True}],
+        "rating": [{"count": 1, "field_rating": 0}, {"count": 1, "field_rating": 3}],
+        "boolean": [
+            {"count": 1, "field_boolean": False},
+            {"count": 1, "field_boolean": True},
+        ],
         "datetime_us": [
-            {"count": 1, "field_14": "2020-02-01T01:23:00Z"},
-            {"count": 1, "field_14": None},
+            {"count": 1, "field_datetime_us": "2020-02-01T01:23:00Z"},
+            {"count": 1, "field_datetime_us": None},
         ],
         "date_us": [
-            {"count": 1, "field_15": "2020-02-01"},
-            {"count": 1, "field_15": None},
+            {"count": 1, "field_date_us": "2020-02-01"},
+            {"count": 1, "field_date_us": None},
         ],
         "datetime_eu": [
-            {"count": 1, "field_16": "2020-02-01T01:23:00Z"},
-            {"count": 1, "field_16": None},
+            {"count": 1, "field_datetime_eu": "2020-02-01T01:23:00Z"},
+            {"count": 1, "field_datetime_eu": None},
         ],
         "date_eu": [
-            {"count": 1, "field_17": "2020-02-01"},
-            {"count": 1, "field_17": None},
+            {"count": 1, "field_date_eu": "2020-02-01"},
+            {"count": 1, "field_date_eu": None},
         ],
         "datetime_eu_tzone_visible": [
-            {"count": 1, "field_18": "2020-02-01T01:23:00Z"},
-            {"count": 1, "field_18": None},
+            {"count": 1, "field_datetime_eu_tzone_visible": "2020-02-01T01:23:00Z"},
+            {"count": 1, "field_datetime_eu_tzone_visible": None},
         ],
         "datetime_eu_tzone_hidden": [
-            {"count": 1, "field_19": "2020-02-01T01:23:00Z"},
-            {"count": 1, "field_19": None},
+            {"count": 1, "field_datetime_eu_tzone_hidden": "2020-02-01T01:23:00Z"},
+            {"count": 1, "field_datetime_eu_tzone_hidden": None},
         ],
-        "last_modified_datetime_us": [{"count": 2, "field_20": "2021-01-02T12:00:00Z"}],
-        "last_modified_date_us": [{"count": 2, "field_21": "2021-01-02"}],
-        "last_modified_datetime_eu": [{"count": 2, "field_22": "2021-01-02T12:00:00Z"}],
-        "last_modified_date_eu": [{"count": 2, "field_23": "2021-01-02"}],
+        "last_modified_datetime_us": [
+            {"count": 2, "field_last_modified_datetime_us": "2021-01-02T12:00:00Z"}
+        ],
+        "last_modified_date_us": [
+            {"count": 2, "field_last_modified_date_us": "2021-01-02"}
+        ],
+        "last_modified_datetime_eu": [
+            {"count": 2, "field_last_modified_datetime_eu": "2021-01-02T12:00:00Z"}
+        ],
+        "last_modified_date_eu": [
+            {"count": 2, "field_last_modified_date_eu": "2021-01-02"}
+        ],
         "last_modified_datetime_eu_tzone": [
-            {"count": 2, "field_24": "2021-01-02T12:00:00Z"}
+            {
+                "count": 2,
+                "field_last_modified_datetime_eu_tzone": "2021-01-02T12:00:00Z",
+            }
         ],
-        "created_on_datetime_us": [{"count": 2, "field_25": "2021-01-02T12:00:00Z"}],
-        "created_on_date_us": [{"count": 2, "field_26": "2021-01-02"}],
-        "created_on_datetime_eu": [{"count": 2, "field_27": "2021-01-02T12:00:00Z"}],
-        "created_on_date_eu": [{"count": 2, "field_28": "2021-01-02"}],
+        "created_on_datetime_us": [
+            {"count": 2, "field_created_on_datetime_us": "2021-01-02T12:00:00Z"}
+        ],
+        "created_on_date_us": [{"count": 2, "field_created_on_date_us": "2021-01-02"}],
+        "created_on_datetime_eu": [
+            {"count": 2, "field_created_on_datetime_eu": "2021-01-02T12:00:00Z"}
+        ],
+        "created_on_date_eu": [{"count": 2, "field_created_on_date_eu": "2021-01-02"}],
         "created_on_datetime_eu_tzone": [
-            {"count": 2, "field_29": "2021-01-02T12:00:00Z"}
+            {"count": 2, "field_created_on_datetime_eu_tzone": "2021-01-02T12:00:00Z"}
         ],
-        "single_select": [{"count": 1, "field_40": 1}, {"count": 1, "field_40": None}],
+        "single_select": [
+            {"count": 1, "field_single_select": 1},
+            {"count": 1, "field_single_select": None},
+        ],
         "multiple_select": [
-            {"count": 1, "field_41": ""},
-            {"count": 1, "field_41": "4,3,5"},
+            {"count": 1, "field_multiple_select": ""},
+            {"count": 1, "field_multiple_select": "4,3,5"},
         ],
         "phone_number": [
-            {"count": 1, "field_43": ""},
-            {"count": 1, "field_43": "+4412345678"},
+            {"count": 1, "field_phone_number": ""},
+            {"count": 1, "field_phone_number": "+4412345678"},
         ],
-        "formula_text": [{"count": 2, "field_44": "test FORMULA"}],
-        "formula_int": [{"count": 2, "field_45": "1"}],
-        "formula_bool": [{"count": 2, "field_46": True}],
-        "formula_decimal": [{"count": 2, "field_47": "33.3333333333"}],
-        "formula_dateinterval": [{"count": 2, "field_48": "1 day"}],
-        "formula_date": [{"count": 2, "field_49": "2020-01-01"}],
+        "formula_text": [{"count": 2, "field_formula_text": "test FORMULA"}],
+        "formula_int": [{"count": 2, "field_formula_int": "1"}],
+        "formula_bool": [{"count": 2, "field_formula_bool": True}],
+        "formula_decimal": [{"count": 2, "field_formula_decimal": "33.3333333333"}],
+        "formula_dateinterval": [{"count": 2, "field_formula_dateinterval": "1 day"}],
+        "formula_date": [{"count": 2, "field_formula_date": "2020-01-01"}],
         "formula_email": [
-            {"count": 1, "field_51": ""},
-            {"count": 1, "field_51": "test@example.com"},
+            {"count": 1, "field_formula_email": ""},
+            {"count": 1, "field_formula_email": "test@example.com"},
         ],
-        "count": [{"count": 1, "field_54": "0"}, {"count": 1, "field_54": "3"}],
+        "count": [{"count": 1, "field_count": "0"}, {"count": 1, "field_count": "3"}],
         "rollup": [
-            {"count": 1, "field_55": "-122.222"},
-            {"count": 1, "field_55": "0.000"},
+            {"count": 1, "field_rollup": "-122.222"},
+            {"count": 1, "field_rollup": "0.000"},
         ],
     }

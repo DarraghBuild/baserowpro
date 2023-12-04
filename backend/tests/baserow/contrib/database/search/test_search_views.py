@@ -65,6 +65,7 @@ def test_search_grid_with_compat_mode(api_client, data_fixture):
     )
     assert response.status_code == HTTP_200_OK
     response_json = response.json()
+    print(response_json)
     assert response_json == {
         "count": 1,
         "next": None,

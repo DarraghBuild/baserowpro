@@ -303,6 +303,18 @@ export class FieldType extends Registerable {
     return false
   }
 
+  /**
+   * In some cases, the group by value is different from the row value because this
+   * was needed for the backend grouping, or serialization. In that case, the row
+   * value can be converted to the group value to do a comparison.
+   *
+   * Related to the `get_group_by_serializer_field` and
+   * `get_group_by_field_unique_value_string` methods in the backend.
+   */
+  getGroupByValue(field, value) {
+    return value
+  }
+
   getGroupByIndicator(field, registry) {
     return this.getSortIndicator(field, registry)
   }
@@ -1075,6 +1087,10 @@ export class LinkRowFieldType extends FieldType {
     }
 
     return false
+  }
+
+  getGroupByValue(field, value) {
+    return value.map((relation) => relation.id.toString()).join(',')
   }
 }
 
@@ -2611,6 +2627,10 @@ export class SingleSelectFieldType extends FieldType {
   getCanGroupByInView(field) {
     return true
   }
+
+  getGroupByValue(field, value) {
+    return value ? value.id : null
+  }
 }
 
 export class MultipleSelectFieldType extends FieldType {
@@ -2866,6 +2886,10 @@ export class MultipleSelectFieldType extends FieldType {
 
   getCanGroupByInView(field) {
     return true
+  }
+
+  getGroupByValue(field, value) {
+    return value.map((relation) => relation.id.toString()).join(',')
   }
 }
 
@@ -3417,6 +3441,10 @@ export class MultipleCollaboratorsFieldType extends FieldType {
       return ''
     }
     return this._collaboratorCellValueToListOfNames(value).join(delimiter)
+  }
+
+  getGroupByValue(field, value) {
+    return value.map((relation) => relation.id.toString()).join(',')
   }
 }
 
