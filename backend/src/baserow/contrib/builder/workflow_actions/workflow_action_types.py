@@ -4,7 +4,6 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError as DRFValidationError
 
 from baserow.contrib.builder.api.workflow_actions.serializers import (
-    BuilderWorkflowServiceActionTypeSerializer,
     UpsertRowWorkflowActionTypeSerializer,
 )
 from baserow.contrib.builder.formula_importer import import_formula
@@ -120,9 +119,11 @@ class OpenPageWorkflowActionType(BuilderWorkflowActionType):
 
 class BuilderWorkflowServiceActionType(BuilderWorkflowActionType):
     serializer_field_names = ["service"]
-    serializer_mixins = [BuilderWorkflowServiceActionTypeSerializer]
     serializer_field_overrides = {
-        "service": serializers.SerializerMethodField(help_text="", source="service"),
+        "service": serializers.SerializerMethodField(
+            help_text="The Service this workflow action is dispatched by.",
+            source="service",
+        ),
     }
 
     class SerializedDict(BuilderWorkflowActionDict):

@@ -13,6 +13,7 @@ from baserow.contrib.builder.workflow_actions.registries import (
 from baserow.contrib.integrations.local_baserow.api.serializers import (
     LocalBaserowTableServiceFieldMappingSerializer,
 )
+from baserow.core.services.registries import service_type_registry
 
 
 class BuilderWorkflowActionSerializer(WorkflowActionSerializer):
@@ -65,29 +66,8 @@ class UpdateBuilderWorkflowActionsSerializer(serializers.ModelSerializer):
         fields = ("type",)
 
 
-class OrderWorkflowActionsSerializer(serializers.Serializer):
-    workflow_action_ids = serializers.ListField(
-        child=serializers.IntegerField(),
-        help_text="The ids of the workflow actions in the order they are supposed to be "
-        "set in",
-    )
-    element_id = serializers.IntegerField(
-        required=False, help_text="The element the workflow actions belong to"
-    )
-
-
-class BuilderWorkflowServiceActionTypeSerializer(serializers.Serializer):
+class UpsertRowWorkflowActionTypeSerializer(serializers.Serializer):
     service = serializers.SerializerMethodField()
-
-    def get_service(self, workflow_action):
-        from baserow.core.services.registries import service_type_registry
-
-        return service_type_registry.get_serializer(
-            workflow_action.service, ServiceSerializer
-        ).data
-
-
-class UpsertRowWorkflowActionTypeSerializer(BuilderWorkflowServiceActionTypeSerializer):
     row_id = serializers.SerializerMethodField(
         help_text="The Baserow row ID which we should use when updating rows.",
     )
@@ -102,6 +82,11 @@ class UpsertRowWorkflowActionTypeSerializer(BuilderWorkflowServiceActionTypeSeri
         required=False, many=True, source="service.field_mappings"
     )
 
+    def get_service(self, workflow_action):
+        return service_type_registry.get_serializer(
+            workflow_action.service, ServiceSerializer
+        ).data
+
     def get_row_id(self, workflow_action):
         return workflow_action.service.specific.row_id
 
@@ -110,3 +95,14 @@ class UpsertRowWorkflowActionTypeSerializer(BuilderWorkflowServiceActionTypeSeri
 
     def get_table_id(self, workflow_action):
         return workflow_action.service.specific.table_id
+
+
+class OrderWorkflowActionsSerializer(serializers.Serializer):
+    workflow_action_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        help_text="The ids of the workflow actions in the order they are supposed to be "
+                  "set in",
+    )
+    element_id = serializers.IntegerField(
+        required=False, help_text="The element the workflow actions belong to"
+    )
