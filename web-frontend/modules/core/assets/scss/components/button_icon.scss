@@ -13,7 +13,7 @@
   color: $palette-neutral-1200;
 
   @include rounded($rounded-md);
-  @include add-elevation($elevation-low);
+  @include elevation($elevation-low);
 
   &:hover:not(.button-icon--loading):not([disabled]) {
     background: $palette-neutral-25;

@@ -30,7 +30,7 @@
     background: $palette-neutral-100 !important;
     color: $palette-neutral-700;
 
-    @include add-elevation($elevation-low);
+    @include elevation($elevation-low);
   }
 }
 

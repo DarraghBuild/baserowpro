@@ -170,7 +170,7 @@
     ):hover {
     cursor: pointer;
 
-    @include add-elevation($elevation-medium);
+    @include elevation($elevation-medium);
   }
 }
 

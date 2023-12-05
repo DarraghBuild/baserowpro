@@ -5,7 +5,7 @@
   background-color: $white;
   border: 1px solid $palette-neutral-400;
 
-  @include add-elevation($elevation-medium);
+  @include elevation($elevation-medium);
   @include rounded($rounded-md);
 
   &.context--loading-overlay {
