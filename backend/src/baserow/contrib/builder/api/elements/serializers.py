@@ -10,7 +10,12 @@ from rest_framework.exceptions import ValidationError
 from baserow.contrib.builder.api.workflow_actions.serializers import (
     BuilderWorkflowActionSerializer,
 )
-from baserow.contrib.builder.elements.models import CollectionField, Element
+from baserow.contrib.builder.elements.models import (
+    CollectionField,
+    DropdownElement,
+    DropdownElementOption,
+    Element,
+)
 from baserow.contrib.builder.elements.registries import (
     collection_field_type_registry,
     element_type_registry,
@@ -273,3 +278,21 @@ class UpdateCollectionFieldSerializer(serializers.ModelSerializer):
     )
 
     value = FormulaSerializerField(allow_blank=True)
+
+
+class DropdownOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DropdownElementOption
+        fields = ["value", "name"]
+
+
+class DropdownOptionSerializerMixin(serializers.Serializer):
+    options = serializers.SerializerMethodField(
+        help_text="All the options the dropdown will be populated with"
+    )
+
+    @extend_schema_field(DropdownOptionSerializer(many=True))
+    def get_options(self, obj: DropdownElement):
+        return DropdownOptionSerializer(
+            obj.dropdownelementoption_set.all(), many=True
+        ).data

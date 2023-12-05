@@ -68,7 +68,7 @@ export default {
       })
     },
     createOption() {
-      this.values.options.push({ name: null, value: null })
+      this.values.options.push({ name: '', value: '' })
     },
   },
 }

@@ -561,6 +561,8 @@ class DropdownElement(Element):
 
 
 class DropdownElementOption(models.Model):
-    value = FormulaField(default="", help_text="The value of the option")
-    name = FormulaField(default="", help_text="The display name of the option")
+    value = FormulaField(blank=True, default="", help_text="The value of the option")
+    name = FormulaField(
+        blank=True, default="", help_text="The display name of the option"
+    )
     dropdown = models.ForeignKey(DropdownElement, on_delete=models.CASCADE)

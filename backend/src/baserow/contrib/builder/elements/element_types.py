@@ -9,6 +9,10 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from baserow.contrib.builder.api.elements.serializers import (
+    DropdownOptionSerializer,
+    DropdownOptionSerializerMixin,
+)
 from baserow.contrib.builder.data_sources.handler import DataSourceHandler
 from baserow.contrib.builder.elements.handler import ElementHandler
 from baserow.contrib.builder.elements.models import (
@@ -38,6 +42,7 @@ from baserow.core.formula.types import BaserowFormula
 from baserow.core.registry import T
 
 from .registries import collection_field_type_registry
+from .types import ElementSubClass
 
 
 class ContainerElementType(ElementType, ABC):
@@ -840,7 +845,21 @@ class DropdownElementType(ElementType):
     type = "dropdown"
     model_class = DropdownElement
     allowed_fields = ["label", "default_value", "required", "placeholder"]
-    serializer_field_names = ["label", "default_value", "required", "placeholder"]
+    serializer_field_names = [
+        "label",
+        "default_value",
+        "required",
+        "placeholder",
+        "options",
+    ]
+    request_serializer_field_names = [
+        "label",
+        "default_value",
+        "required",
+        "placeholder",
+        "options",
+    ]
+    serializer_mixins = [DropdownOptionSerializerMixin]
 
     class SerilizedDict(ElementDict):
         label: BaserowFormula
@@ -880,6 +899,39 @@ class DropdownElementType(ElementType):
 
         return overrides
 
+    @property
+    def request_serializer_field_overrides(self):
+        from baserow.core.formula.serializers import FormulaSerializerField
+
+        overrides = {
+            "label": FormulaSerializerField(
+                help_text=DropdownElement._meta.get_field("label").help_text,
+                required=False,
+                allow_blank=True,
+                default="",
+            ),
+            "default_value": FormulaSerializerField(
+                help_text=DropdownElement._meta.get_field("default_value").help_text,
+                required=False,
+                allow_blank=True,
+                default="",
+            ),
+            "required": serializers.BooleanField(
+                help_text=DropdownElement._meta.get_field("required").help_text,
+                default=False,
+                required=False,
+            ),
+            "placeholder": serializers.CharField(
+                help_text=DropdownElement._meta.get_field("placeholder").help_text,
+                required=False,
+                allow_blank=True,
+                default="",
+            ),
+            "options": DropdownOptionSerializer(many=True),
+        }
+
+        return overrides
+
     def import_serialized(
         self,
         parent: Any,
@@ -892,3 +944,12 @@ class DropdownElementType(ElementType):
 
     def get_sample_params(self) -> Dict[str, Any]:
         return {}  # TODO
+
+    def after_create(self, instance: DropdownElement, values: Dict):
+        pass  # TODO
+
+    def after_update(self, instance: DropdownElement, values: Dict):
+        pass  # TODO
+
+    def before_delete(self, instance: ElementSubClass):
+        pass  # TODO
