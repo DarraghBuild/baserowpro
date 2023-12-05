@@ -80,7 +80,9 @@
         "button": "Button",
         "buttonDescription": "A button element",
         "table": "Table",
-        "tableDescription": "A table element"
+        "tableDescription": "A table element",
+        "dropdown": "Dropdown",
+        "dropdownDescription": "Dropdown element"
     },
     "addElementButton": {
         "label": "Element"

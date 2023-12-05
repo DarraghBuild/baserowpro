@@ -17,6 +17,7 @@ from baserow.contrib.builder.elements.models import (
     CollectionField,
     ColumnElement,
     ContainerElement,
+    DropdownElement,
     Element,
     HeadingElement,
     HorizontalAlignments,
@@ -831,3 +832,12 @@ class TableElementType(CollectionElementType):
 
     def get_sample_params(self) -> Dict[str, Any]:
         return {"data_source_id": None}
+
+
+# TODO need to inherit from FormElementType once other MR is merged
+class DropdownElementType(ElementType):
+    type = "dropdown"
+    model_class = DropdownElement
+
+    def get_sample_params(self) -> Dict[str, Any]:
+        return {}  # TODO

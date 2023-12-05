@@ -155,6 +155,7 @@ class BuilderConfig(AppConfig):
         from .elements.element_types import (
             ButtonElementType,
             ColumnElementType,
+            DropdownElementType,
             HeadingElementType,
             ImageElementType,
             InputTextElementType,
@@ -172,6 +173,7 @@ class BuilderConfig(AppConfig):
         element_type_registry.register(ColumnElementType())
         element_type_registry.register(ButtonElementType())
         element_type_registry.register(TableElementType())
+        element_type_registry.register(DropdownElementType())
 
         from .domains.domain_types import CustomDomainType, SubDomainType
         from .domains.registries import domain_type_registry

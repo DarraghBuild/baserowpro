@@ -541,3 +541,7 @@ class TableElement(CollectionElement):
     """
     A table element
     """
+
+
+class DropdownElement(Element):
+    pass
