@@ -16,12 +16,12 @@
   @include rounded($rounded-md);
 
   &:hover:not([disabled]) {
-    color: $palette-blue-600;
+    color: $palette-blue-700;
     text-decoration: none;
   }
 
   &:active:not([disabled]) {
-    color: $palette-blue-700;
+    color: $palette-blue-900;
   }
 
   &[disabled] {

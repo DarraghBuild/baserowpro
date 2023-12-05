@@ -47,22 +47,7 @@
   user-select: none;
   box-shadow: none;
 
-  &::after {
-    content: ' ';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    margin: -5px;
-    display: block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    border: 0.15em solid;
-    border-color: $palette-neutral-700 transparent $palette-neutral-700
-      transparent;
-    animation: spin infinite 1800ms;
-    animation-timing-function: cubic-bezier(0.785, 0.135, 0.15, 0.86);
-  }
+  @include loading-spinner($palette-neutral-700);
 }
 
 .button-floating__icon {
