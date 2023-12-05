@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { isDuration } from '@baserow/modules/core/utils/duration'
+import { isValidDuration } from '@baserow/modules/core/utils/duration'
 import {
   collatedStringCompare,
   getFilenameFromUrl,
@@ -2067,11 +2067,9 @@ export class DurationFieldType extends FieldType {
       return null
     }
 
-    const durationFormat = field.duration_format
-
-    if (!isDuration(value, durationFormat)) {
+    if (!isValidDuration(value)) {
       return this.app.i18n.t('fieldErrors.invalidDuration', {
-        durationFormat,
+        durationFormat: field.duration_format,
       })
     }
     return null

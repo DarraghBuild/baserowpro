@@ -40,7 +40,12 @@ export default {
   },
   methods: {
     edit(value = null, event = null) {
-      return this.$super(gridFieldInput).edit(this.formattedValue, event)
+      // value is null when the user double clicks on the cell to edit it or
+      // when the user presses the enter key to edit it. The value is undefined
+      // when the user clicks only once on the cell and then presses the keys to
+      // replace the value.
+      const valueToEdit = value === null ? this.formattedValue : ''
+      return this.$super(gridFieldInput).edit(valueToEdit, event)
     },
     afterEdit() {
       this.$nextTick(() => {

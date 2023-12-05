@@ -1,6 +1,7 @@
 import {
   formatDuration,
-  guessDurationValue,
+  guessDurationValueFromString,
+  roundDurationValueToFormat,
 } from '@baserow/modules/core/utils/duration'
 
 /**
@@ -13,8 +14,12 @@ export default {
     formatValue(value, format) {
       return formatDuration(value, format)
     },
-    beforeSave(value) {
-      return guessDurationValue(value, this.field.duration_format)
+    beforeSave(inputValue) {
+      let value = guessDurationValueFromString(inputValue)
+      if (value !== null) {
+        value = roundDurationValueToFormat(value, this.field.duration_format)
+      }
+      return value
     },
   },
 }

@@ -1,16 +1,31 @@
-export const isDuration = (inputValue, durationFormat) => {
+export const isValidDuration = (inputValue) => {
   if (typeof inputValue === 'number') {
     return true
   } else if (!inputValue) {
     return false
   }
-  return guessDurationValue(inputValue, durationFormat) !== null
+  return guessDurationValueFromString(inputValue) !== null
 }
 
-export const guessDurationValue = (inputValue, durationFormat) => {
+export const roundDurationValueToFormat = (value, format) => {
+  if (format === 'h:mm') {
+    return Math.round(value / 60) * 60
+  } else if (format === 'h:mm:ss') {
+    return Math.round(value)
+  } else if (format === 'h:mm:ss.s') {
+    return Math.round(value * 10) / 10
+  } else if (format === 'h:mm:ss.ss') {
+    return Math.round(value * 100) / 100
+  } else if (format === 'h:mm:ss.sss') {
+    return Math.round(value * 1000) / 1000
+  }
+  return value
+}
+
+export const guessDurationValueFromString = (inputValue) => {
   const tokens = inputValue.split(':').reverse()
 
-  const hasSeconds = durationFormat.includes(':ss')
+  const hasSeconds = tokens.length > 2
   const multipliers = hasSeconds ? [1, 60, 3600] : [60, 3600]
 
   const duration = tokens.reduce((acc, token, index) => {
