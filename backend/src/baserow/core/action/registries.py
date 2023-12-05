@@ -347,20 +347,6 @@ class UndoableActionTypeMixin:
         session = get_untrusted_client_session_id(user)
         action_group = get_client_undo_redo_action_group_id(user)
 
-        # TODO: fix this:
-        from datetime import timedelta
-
-        if getattr(params, "row_values", None):
-            for k, v in params.row_values[0].items():
-                if isinstance(v, timedelta):
-                    params.row_values[0][k] = str(v)
-
-        if getattr(params, "original_rows_values_by_id", None):
-            for k, v in params.original_rows_values_by_id.items():
-                for x, y in v.items():
-                    if isinstance(y, timedelta):
-                        params.original_rows_values_by_id[k][x] = str(y)
-
         action = Action.objects.create(
             user=user,
             workspace=workspace,

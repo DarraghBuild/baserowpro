@@ -134,37 +134,6 @@ export const isNumeric = (value) => {
   return /^-?\d+$/.test(value)
 }
 
-export const isDuration = (value, durationFormat) => {
-  const formattedValue = guessDurationValue(value, durationFormat)
-
-  if (!formattedValue) {
-    return false
-  }
-
-  return true
-}
-
-export const guessDurationValue = (value, durationFormat) => {
-  const numberPattern = /^(\d+)(?::(\d+)(?::(\d+(?:\.\d{1,3})?)?)?)?(.*?)$/
-
-  const match = value.match(numberPattern)
-
-  // Value couldn't be guessed:
-  if (!match) {
-    return null
-  }
-
-  const [, hours, minutes, seconds] = match
-
-  // Always use the most granular format ("h:mm:ss.sss") from user input:
-  const formattedMilliseconds = seconds
-    ? seconds.includes('.')
-      ? Number(seconds).toFixed(3)
-      : `${seconds}.000`
-    : '00.000'
-  return `${hours || 0}:${minutes || '00'}:${formattedMilliseconds}`
-}
-
 /**
  * Allow to find the next unused name excluding a list of names.
  * This is the frontend equivalent of backend ".find_unused_name()" method.

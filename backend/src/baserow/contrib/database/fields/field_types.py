@@ -1438,31 +1438,11 @@ class LastModifiedByFieldType(ReadOnlyFieldType):
         )
 
 
-class DurationFieldType(CharFieldMatchingRegexFieldType):
+class DurationFieldType(FieldType):
     type = "duration"
     model_class = DurationField
     allowed_fields = ["duration_format"]
     serializer_field_names = ["duration_format"]
-
-    MAX_DURATION_LENGTH = 100
-
-    @property
-    def max_length(self):
-        # TODO: fix this:
-        """ """
-
-        return self.MAX_DURATION_LENGTH
-
-    @property
-    def regex(self):
-        """
-        A regex for only allowing certain characters and extracting the duration
-        parts from a string.
-        Duplicated in the frontend code at, please keep in sync:
-        web-frontend/modules/core/utils/string.js#guessDurationValue
-        """
-
-        return "/^(\d+)(?::(\d+)(?::(\d+(?:\.\d{1,3})?)?)?)?(.*?)$/"  # NOQA: W605
 
     def get_model_field(self, instance, **kwargs):
         return models.DurationField(
@@ -1474,9 +1454,10 @@ class DurationFieldType(CharFieldMatchingRegexFieldType):
     def get_serializer_field(self, instance, **kwargs):
         return DurationSerializer(
             **{
-                "duration_format": instance.duration_format,
                 "required": False,
                 "allow_null": True,
+                "max_digits": 20,
+                "decimal_places": 3,
                 **kwargs,
             }
         )
@@ -1500,43 +1481,23 @@ class DurationFieldType(CharFieldMatchingRegexFieldType):
         - makes sure there is no rounding done by the database
         """
 
-        if from_field.duration_format == "h:mm":
-            return """
-                p_in = EXTRACT(EPOCH FROM CAST(p_in AS INTERVAL))::INTEGER / 3600 || ':' ||
-                       TO_CHAR(EXTRACT(MINUTE FROM CAST(p_in AS INTERVAL)), 'FM00');
-            """
+        alter_functions_format_map = {
+            "h": "EXTRACT(EPOCH FROM CAST(p_in AS INTERVAL))::INTEGER / 3600",
+            "mm": "TO_CHAR(EXTRACT(MINUTE FROM CAST(p_in AS INTERVAL)), 'FM00')",
+            "ss": "TO_CHAR(TRUNC(EXTRACT(SECOND FROM CAST(p_in AS INTERVAL))::NUMERIC, 0), 'FM00')",
+            "ss.s": "TO_CHAR(TRUNC(EXTRACT(SECOND FROM CAST(p_in AS INTERVAL))::NUMERIC, 1), 'FM00.0')",
+            "ss.ss": "TO_CHAR(TRUNC(EXTRACT(SECOND FROM CAST(p_in AS INTERVAL))::NUMERIC, 2), 'FM00.00')",
+            "ss.sss": "TO_CHAR(TRUNC(EXTRACT(SECOND FROM CAST(p_in AS INTERVAL))::NUMERIC, 3), 'FM00.000')",
+        }
 
-        elif from_field.duration_format == "h:mm:ss":
-            return """
-                p_in = EXTRACT(EPOCH FROM CAST(p_in AS INTERVAL))::INTEGER / 3600 || ':' ||
-                       TO_CHAR(EXTRACT(MINUTE FROM CAST(p_in AS INTERVAL)), 'FM00') || ':' ||
-                       TO_CHAR(TRUNC(EXTRACT(SECOND FROM CAST(p_in AS INTERVAL))::NUMERIC, 0), 'FM00');
-            """
-
-        elif from_field.duration_format == "h:mm:ss.s":
-            return """
-                p_in = EXTRACT(EPOCH FROM CAST(p_in AS INTERVAL))::INTEGER / 3600 || ':' ||
-                       TO_CHAR(EXTRACT(MINUTE FROM CAST(p_in AS INTERVAL)), 'FM00') || ':' ||
-                       TO_CHAR(TRUNC(EXTRACT(SECOND FROM CAST(p_in AS INTERVAL))::NUMERIC, 1), 'FM00.0');
-            """
-
-        elif from_field.duration_format == "h:mm:ss.ss":
-            return """
-                p_in = EXTRACT(EPOCH FROM CAST(p_in AS INTERVAL))::INTEGER / 3600 || ':' ||
-                       TO_CHAR(EXTRACT(MINUTE FROM CAST(p_in AS INTERVAL)), 'FM00') || ':' ||
-                       TO_CHAR(TRUNC(EXTRACT(SECOND FROM CAST(p_in AS INTERVAL))::NUMERIC, 2), 'FM00.00');
-            """
-
-        elif from_field.duration_format == "h:mm:ss.sss":
-            return """
-                p_in = EXTRACT(EPOCH FROM CAST(p_in AS INTERVAL))::INTEGER / 3600 || ':' ||
-                       TO_CHAR(EXTRACT(MINUTE FROM CAST(p_in AS INTERVAL)), 'FM00') || ':' ||
-                       TO_CHAR(TRUNC(EXTRACT(SECOND FROM CAST(p_in AS INTERVAL))::NUMERIC, 3), 'FM00.000');
-            """
-
-        return super().get_alter_column_prepare_old_value(
-            connection, from_field, to_field
+        format_func = " || ':' || ".join(
+            [
+                alter_functions_format_map[format_token]
+                for format_token in from_field.duration_format.split(":")
+            ]
         )
+
+        return f"p_in = {format_func};"
 
     def get_alter_column_prepare_new_value(self, connection, from_field, to_field):
         """

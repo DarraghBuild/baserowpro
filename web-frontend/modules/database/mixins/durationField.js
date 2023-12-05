@@ -1,4 +1,7 @@
-import { guessDurationValue } from '@baserow/modules/core/utils/string'
+import {
+  formatDuration,
+  guessDurationValue,
+} from '@baserow/modules/core/utils/duration'
 
 /**
  * This mixin contains some method overrides for validating and formatting the
@@ -7,6 +10,9 @@ import { guessDurationValue } from '@baserow/modules/core/utils/string'
  */
 export default {
   methods: {
+    formatValue(value, format) {
+      return formatDuration(value, format)
+    },
     beforeSave(value) {
       return guessDurationValue(value, this.field.duration_format)
     },

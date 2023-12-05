@@ -1,5 +1,6 @@
+import json
 from copy import deepcopy
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from django.conf import settings
 from django.db.models.base import ModelBase
@@ -12,6 +13,7 @@ from baserow.api.utils import get_serializer_class
 from baserow.contrib.database.fields.registries import field_type_registry
 from baserow.contrib.database.rows.models import RowHistory
 from baserow.contrib.database.rows.registries import row_metadata_registry
+from baserow.core.encoders import JSONEncoderSupportingDataClasses
 
 
 class RowSerializer(serializers.ModelSerializer):
@@ -412,6 +414,18 @@ class RowHistoryUserSerializer(serializers.Serializer):
     )
 
 
+class JSONFieldWithCustomEncoder(serializers.JSONField):
+    """
+    serializers.JSONField use the provided encoder in `to_representation` only
+    if binary=True, but we want to use it always to support timedelta.
+    """
+
+    def to_representation(self, value) -> str:
+        if self.encoder:
+            return json.dumps(value, cls=self.encoder)
+        return super().to_representation(value)
+
+
 class RowHistorySerializer(serializers.ModelSerializer):
     timestamp = serializers.DateTimeField(
         source="action_timestamp",
@@ -420,13 +434,15 @@ class RowHistorySerializer(serializers.ModelSerializer):
     user = RowHistoryUserSerializer(
         source="*", help_text="The user that performed the action."
     )
-    before = serializers.JSONField(
+    before = JSONFieldWithCustomEncoder(
         source="before_values",
         help_text="The mapping between field_ids and values for the row before the action was performed.",
+        encoder=JSONEncoderSupportingDataClasses,
     )
-    after = serializers.JSONField(
+    after = JSONFieldWithCustomEncoder(
         source="after_values",
         help_text="The mapping between field_ids and values for the row after the action was performed.",
+        encoder=JSONEncoderSupportingDataClasses,
     )
 
     class Meta:

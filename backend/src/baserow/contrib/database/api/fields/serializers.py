@@ -1,3 +1,7 @@
+from datetime import timedelta
+from decimal import Decimal
+from typing import Union
+
 from django.core.exceptions import ValidationError
 from django.utils.functional import lazy
 
@@ -253,36 +257,9 @@ class IntegerOrStringField(serializers.Field):
         return value
 
 
-class DurationSerializer(serializers.DurationField):
-    def __init__(self, duration_format=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.duration_format = duration_format
+class DurationSerializer(serializers.DecimalField):
+    def to_internal_value(self, data: Union[int, float, str, Decimal]) -> timedelta:
+        return timedelta(seconds=float(super().to_internal_value(data)))
 
-    def format_timedelta(self, td, format_str):
-        """Makes sure that 25 hours are displayed as 25 instead of 1 day 1 hour."""
-
-        total_seconds = int(td.total_seconds())
-        hours, remainder = divmod(total_seconds, 3600)
-        minutes, seconds = divmod(remainder, 60)
-        milliseconds = int(td.microseconds / 1000)
-        centiseconds = milliseconds // 10
-        deciseconds = milliseconds // 100
-
-        format_info = DURATION_FORMAT.get(format_str)
-
-        formatted_str = format_info["format"].format(
-            hours=hours,
-            minutes=minutes,
-            seconds=seconds,
-            milliseconds=milliseconds,
-            centiseconds=centiseconds,
-            deciseconds=deciseconds,
-        )
-        return formatted_str
-
-    def to_representation(self, instance):
-        super().to_representation(instance)
-
-        formatted_str = self.format_timedelta(instance, self.duration_format)
-
-        return formatted_str
+    def to_representation(self, value: Decimal) -> float:
+        return value.total_seconds()

@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-
+import { isDuration } from '@baserow/modules/core/utils/duration'
 import {
   collatedStringCompare,
   getFilenameFromUrl,
@@ -7,7 +7,6 @@ import {
   isSimplePhoneNumber,
   isValidEmail,
   isValidURL,
-  isDuration,
 } from '@baserow/modules/core/utils/string'
 
 import moment from '@baserow/modules/core/moment'
