@@ -1,6 +1,7 @@
 import pytest
 
 from baserow.contrib.database.api.views.serializers import serialize_group_by_meta_data
+from baserow.contrib.database.fields.models import Field
 from baserow.contrib.database.fields.registries import field_type_registry
 from baserow.contrib.database.views.handler import ViewHandler
 from baserow.test_utils.helpers import setup_interesting_test_table
@@ -76,6 +77,11 @@ def test_serialize_group_by_meta_data_on_all_fields_in_interesting_table(
         for field in all_fields
         if field_type_registry.get_by_model(field).check_can_group_by(field)
     ]
+
+    select_select_options = Field.objects.get(name="single_select").select_options.all()
+    multiple_select_options = Field.objects.get(
+        name="multiple_select"
+    ).select_options.all()
 
     actual_result_per_field_name = {}
 
@@ -182,12 +188,17 @@ def test_serialize_group_by_meta_data_on_all_fields_in_interesting_table(
             {"count": 2, "field_created_on_datetime_eu_tzone": "2021-01-02T12:00:00Z"}
         ],
         "single_select": [
-            {"count": 1, "field_single_select": 1},
+            {"count": 1, "field_single_select": select_select_options[0].id},
             {"count": 1, "field_single_select": None},
         ],
         "multiple_select": [
             {"count": 1, "field_multiple_select": ""},
-            {"count": 1, "field_multiple_select": "4,3,5"},
+            {
+                "count": 1,
+                "field_multiple_select": f"{multiple_select_options[1].id},"
+                f"{multiple_select_options[0].id},"
+                f"{multiple_select_options[2].id}",
+            },
         ],
         "phone_number": [
             {"count": 1, "field_phone_number": ""},

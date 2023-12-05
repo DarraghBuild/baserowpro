@@ -49,7 +49,7 @@ describe('Table Component Tests', () => {
 
     // Wait a moment until the row is added. This is needed because the store
     // actions have an await.
-    await new Promise((r) => setTimeout(r, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     expect(tableComponent.html()).toContain('gridView.rowCount - 2')
   })
