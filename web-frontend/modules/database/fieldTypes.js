@@ -1,5 +1,8 @@
 import BigNumber from 'bignumber.js'
-import { isValidDuration } from '@baserow/modules/core/utils/duration'
+import {
+  isValidDuration,
+  formatDuration,
+} from '@baserow/modules/core/utils/duration'
 import {
   collatedStringCompare,
   getFilenameFromUrl,
@@ -97,6 +100,7 @@ import RowCardFieldLastModifiedBy from '@baserow/modules/database/components/car
 import RowHistoryFieldText from '@baserow/modules/database/components/row/RowHistoryFieldText'
 import RowHistoryFieldDate from '@baserow/modules/database/components/row/RowHistoryFieldDate'
 import RowHistoryFieldNumber from '@baserow/modules/database/components/row/RowHistoryFieldNumber'
+import RowHistoryFieldDuration from '@baserow/modules/database/components/row/RowHistoryFieldDuration'
 import RowHistoryFieldMultipleCollaborators from '@baserow/modules/database/components/row/RowHistoryFieldMultipleCollaborators'
 import RowHistoryFieldFile from '@baserow/modules/database/components/row/RowHistoryFieldFile'
 import RowHistoryFieldMultipleSelect from '@baserow/modules/database/components/row/RowHistoryFieldMultipleSelect'
@@ -2073,6 +2077,14 @@ export class DurationFieldType extends FieldType {
       })
     }
     return null
+  }
+
+  getRowHistoryEntryComponent() {
+    return RowHistoryFieldDuration
+  }
+
+  static formatDuration(metadata, value) {
+    return formatDuration(value, metadata.duration_format)
   }
 }
 

@@ -574,7 +574,7 @@ class NumberFieldType(FieldType):
         field: Field,
         row: "GeneratedTableModel",
         metadata,
-    ) -> Dict[str, Any]:
+    ) -> SerializedRowHistoryFieldMetadata:
         base = super().serialize_metadata_for_row_history(field, row, metadata)
 
         return {
@@ -1126,9 +1126,12 @@ class DateFieldType(FieldType):
         return old_field.date_include_time and not new_date_include_time
 
     def serialize_metadata_for_row_history(
-        self, field: Field, new_value: Any, old_value: Any
-    ) -> Dict[str, Any]:
-        base = super().serialize_metadata_for_row_history(field, new_value, old_value)
+        self,
+        field: Field,
+        row: "GeneratedTableModel",
+        metadata: Optional[SerializedRowHistoryFieldMetadata] = None,
+    ) -> SerializedRowHistoryFieldMetadata:
+        base = super().serialize_metadata_for_row_history(field, row, metadata)
 
         return {
             **base,
@@ -1502,9 +1505,20 @@ class DurationFieldType(FieldType):
         """
         Prepares value when casting value from Text field to Duration field
         """
+
         return """
             p_in = p_in::INTERVAL;
         """
+
+    def serialize_metadata_for_row_history(
+        self,
+        field: Field,
+        row: "GeneratedTableModel",
+        metadata: Optional[SerializedRowHistoryFieldMetadata] = None,
+    ) -> SerializedRowHistoryFieldMetadata:
+        base = super().serialize_metadata_for_row_history(field, row, metadata)
+
+        return {**base, "duration_format": field.duration_format}
 
 
 class LinkRowFieldType(FieldType):

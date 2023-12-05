@@ -414,18 +414,6 @@ class RowHistoryUserSerializer(serializers.Serializer):
     )
 
 
-class JSONFieldWithCustomEncoder(serializers.JSONField):
-    """
-    serializers.JSONField use the provided encoder in `to_representation` only
-    if binary=True, but we want to use it always to support timedelta.
-    """
-
-    def to_representation(self, value) -> str:
-        if self.encoder:
-            return json.dumps(value, cls=self.encoder)
-        return super().to_representation(value)
-
-
 class RowHistorySerializer(serializers.ModelSerializer):
     timestamp = serializers.DateTimeField(
         source="action_timestamp",
@@ -434,15 +422,13 @@ class RowHistorySerializer(serializers.ModelSerializer):
     user = RowHistoryUserSerializer(
         source="*", help_text="The user that performed the action."
     )
-    before = JSONFieldWithCustomEncoder(
+    before = serializers.JSONField(
         source="before_values",
         help_text="The mapping between field_ids and values for the row before the action was performed.",
-        encoder=JSONEncoderSupportingDataClasses,
     )
-    after = JSONFieldWithCustomEncoder(
+    after = serializers.JSONField(
         source="after_values",
         help_text="The mapping between field_ids and values for the row after the action was performed.",
-        encoder=JSONEncoderSupportingDataClasses,
     )
 
     class Meta:
