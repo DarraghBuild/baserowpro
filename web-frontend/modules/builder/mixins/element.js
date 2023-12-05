@@ -51,11 +51,15 @@ export default {
   },
   methods: {
     resolveFormula(formula) {
-      return resolveFormula(
-        formula,
-        this.formulaFunctions,
-        this.runtimeFormulaContext
-      )
+      try {
+        return resolveFormula(
+          formula,
+          this.formulaFunctions,
+          this.runtimeFormulaContext
+        )
+      } catch (e) {
+        return ''
+      }
     },
     fireEvent(EventType) {
       if (this.mode !== 'editing') {

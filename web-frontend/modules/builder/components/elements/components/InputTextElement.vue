@@ -1,15 +1,15 @@
 <template>
   <div>
     <label v-if="element.label" class="control__label">
-      {{ resolvedLabelValue }}
+      {{ resolveFormula(element.label) }}
     </label>
     <input
       type="text"
       class="input-element"
       :readonly="isEditable"
-      :value="resolvedDefaultValue"
+      :value="resolveFormula(element.default_value)"
       :required="element.required"
-      :placeholder="resolvedPlaceholder"
+      :placeholder="resolveFormula(element.placeholder)"
       @input="setFormData($event.target.value)"
     />
   </div>
@@ -33,32 +33,9 @@ export default {
       required: true,
     },
   },
-  computed: {
-    resolvedLabelValue() {
-      try {
-        return this.resolveFormula(this.element.label)
-      } catch (e) {
-        return ''
-      }
-    },
-    resolvedDefaultValue() {
-      try {
-        return this.resolveFormula(this.element.default_value)
-      } catch (e) {
-        return ''
-      }
-    },
-    resolvedPlaceholder() {
-      try {
-        return this.resolveFormula(this.element.placeholder)
-      } catch (e) {
-        return ''
-      }
-    },
-  },
   watch: {
-    resolvedDefaultValue(value) {
-      this.setFormData(value)
+    'element.default_value'(value) {
+      this.setFormData(this.resolveFormula(value))
     },
   },
 }
