@@ -7,7 +7,7 @@
     }"
     @contextmenu="stopContextIfEditing($event)"
   >
-    <div v-show="!editing" class="grid-field-text">
+    <div v-show="!editing" class="grid-field-duration">
       {{ formattedValue }}
     </div>
     <template v-if="editing">
@@ -15,7 +15,7 @@
         ref="input"
         v-model="copy"
         type="text"
-        class="grid-field-text__input"
+        class="grid-field-duration__input"
       />
       <div v-show="!isValid()" class="grid-view__cell--error align-right">
         {{ getError() }}

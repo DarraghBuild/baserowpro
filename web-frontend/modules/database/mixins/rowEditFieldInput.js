@@ -18,12 +18,12 @@ export default {
   watch: {
     value(value) {
       if (!this.editing) {
-        this.copy = value
+        this.copy = this.prepareCopy(value)
       }
     },
   },
   mounted() {
-    this.copy = this.value
+    this.copy = this.prepareCopy(this.value)
   },
   methods: {
     /**
@@ -89,6 +89,13 @@ export default {
      */
     getError() {
       return this.getValidationError(this.editing ? this.copy : this.value)
+    },
+    /**
+     * Prepare the value for the copy used by the input. By default we just return
+     * the value itself, but this is the place to format the value if necessary.
+     */
+    prepareCopy(value) {
+      return value
     },
   },
 }
