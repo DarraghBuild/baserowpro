@@ -245,6 +245,7 @@ def test_get_row_serializer_with_user_field_names(data_fixture):
                     {"id": 2, "value": "-123.456"},
                     {"id": 3, "value": ""},
                 ],
+                "duration": None,
                 "email": "test@example.com",
                 "file": [
                     {
