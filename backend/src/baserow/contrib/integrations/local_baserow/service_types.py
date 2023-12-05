@@ -20,6 +20,7 @@ from rest_framework.fields import (
 )
 from rest_framework.serializers import ListSerializer, Serializer
 
+from baserow.contrib.builder.formula_importer import import_formula
 from baserow.contrib.database.api.fields.serializers import FieldSerializer
 from baserow.contrib.database.api.rows.serializers import (
     RowSerializer,
@@ -48,6 +49,7 @@ from baserow.contrib.integrations.local_baserow.mixins import (
 from baserow.contrib.integrations.local_baserow.models import (
     LocalBaserowGetRow,
     LocalBaserowListRows,
+    LocalBaserowTableServiceFieldMapping,
     LocalBaserowTableServiceFilter,
     LocalBaserowTableServiceSort,
     LocalBaserowUpsertRow,
@@ -173,7 +175,7 @@ class LocalBaserowTableServiceType(LocalBaserowServiceType):
 
         return super().resolve_service_formulas(service, dispatch_context)
 
-    def serialize_property(self, service: LocalBaserowListRows, prop_name: str):
+    def serialize_property(self, service: ServiceSubClass, prop_name: str):
         """
         Responsible for serializing the `filters` and `sortings` properties.
 
@@ -888,6 +890,73 @@ class LocalBaserowUpsertRowServiceType(LocalBaserowTableServiceType):
     class SerializedDict(ServiceDict):
         row_id: str
         table_id: int
+        field_mappings: List[Dict]
+
+    def serialize_property(self, service: LocalBaserowUpsertRow, prop_name: str):
+        """
+        You can customize the behavior of the serialization of a property with this
+        hook.
+        """
+
+        if prop_name == "field_mappings":
+            return [
+                {
+                    "field_id": m.field_id,
+                    "value": m.value,
+                }
+                for m in service.field_mappings.all()
+            ]
+
+        return super().serialize_property(service, prop_name)
+
+    def deserialize_property(
+        self, prop_name: str, value: Any, id_mapping: Dict[str, Any], **kwargs
+    ):
+        """
+        Responsible for deserializing the `field_mappings`, if they're present.
+
+        :param prop_name: the name of the property being transformed.
+        :param value: the value of this property.
+        :param id_mapping: the id mapping dict.
+        :return: the deserialized version for this property.
+        """
+
+        if prop_name == "field_mappings":
+            return [
+                {
+                    "value": import_formula(item["value"], id_mapping),
+                    "field_id": item["field_id"],
+                }
+                for item in value
+            ]
+
+        return super().deserialize_property(prop_name, value, id_mapping, **kwargs)
+
+    def create_instance_from_serialized(self, serialized_values):
+        """
+        Responsible for creating the service, and then if `field_mappings`
+        are present, creating them in bulk.
+
+        :param serialized_values: The serialized service data.
+        :return: The newly created service instance.
+        """
+
+        field_mappings = serialized_values.pop("field_mappings", [])
+
+        service = super().create_instance_from_serialized(serialized_values)
+
+        # Create the field mappings
+        LocalBaserowTableServiceFieldMapping.objects.bulk_create(
+            [
+                LocalBaserowTableServiceFieldMapping(
+                    **field_mapping,
+                    service=service,
+                )
+                for field_mapping in field_mappings
+            ]
+        )
+
+        return service
 
     def enhance_queryset(self, queryset):
         return queryset.select_related("table").prefetch_related("field_mappings")

@@ -34,9 +34,19 @@ class WorkflowActionType(Instance, ModelInstanceMixin, EasyImportExportMixin, AB
     @abstractmethod
     def get_pytest_params(self, pytest_data_fixture) -> Dict[str, Any]:
         """
-        Returns a sample of params for this type. This can be used to tests the element
-        for instance.
+        Returns a sample of params for this type. This can be used to create
+        workflow actions.
 
         :param pytest_data_fixture: A Pytest data fixture which can be used to
             create related objects when the import / export functionality is tested.
         """
+
+    def get_pytest_params_serialized(
+        self, pytest_params: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Responsible for returning the pytest params in a serialized format.
+        :param pytest_params: The result of `get_pytest_params`.
+        """
+
+        return pytest_params

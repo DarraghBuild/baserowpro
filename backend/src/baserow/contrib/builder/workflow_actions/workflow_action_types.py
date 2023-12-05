@@ -9,6 +9,7 @@ from baserow.contrib.builder.api.workflow_actions.serializers import (
 )
 from baserow.contrib.builder.formula_importer import import_formula
 from baserow.contrib.builder.workflow_actions.models import (
+    BuilderWorkflowServiceAction,
     LocalBaserowCreateRowWorkflowAction,
     LocalBaserowUpdateRowWorkflowAction,
     NotificationWorkflowAction,
@@ -125,7 +126,7 @@ class BuilderWorkflowServiceActionType(BuilderWorkflowActionType):
     }
 
     class SerializedDict(BuilderWorkflowActionDict):
-        service_id: int
+        service: Dict
 
     @property
     def allowed_fields(self):
@@ -133,7 +134,13 @@ class BuilderWorkflowServiceActionType(BuilderWorkflowActionType):
 
     def get_pytest_params(self, pytest_data_fixture) -> Dict[str, int]:
         service = pytest_data_fixture.create_local_baserow_upsert_row_service()
-        return {"service_id": service.id}
+        return {"service": service}
+
+    def get_pytest_params_serialized(
+        self, pytest_params: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        service_type = service_type_registry.get_by_model(pytest_params["service"])
+        return {"service": service_type.export_serialized(pytest_params["service"])}
 
 
 class UpsertRowWorkflowActionType(BuilderWorkflowServiceActionType):
@@ -168,6 +175,40 @@ class UpsertRowWorkflowActionType(BuilderWorkflowServiceActionType):
     @property
     def allowed_fields(self):
         return super().allowed_fields + ["table_id", "integration_id"]
+
+    def serialize_property(
+        self, workflow_action: BuilderWorkflowServiceAction, prop_name: str
+    ):
+        """
+        You can customize the behavior of the serialization of a property with this
+        hook.
+        """
+
+        if prop_name == "service":
+            specific_service = workflow_action.service.specific
+            service_type = service_type_registry.get_by_model(specific_service)
+            return service_type.export_serialized(specific_service)
+        return super().serialize_property(workflow_action, prop_name)
+
+    def deserialize_property(
+        self, prop_name: str, value: Any, id_mapping: Dict[str, Any]
+    ) -> Any:
+        """
+        This hooks allow to customize the deserialization of a property.
+
+        :param prop_name: the name of the property being transformed.
+        :param value: the value of this property.
+        :param id_mapping: the id mapping dict.
+        :return: the deserialized version for this property.
+        """
+
+        if prop_name == "service":
+            service_type = service_type_registry.get(value["type"])
+            parent = IntegrationHandler().get_integration(value["integration_id"])
+            return service_type.import_serialized(
+                parent, value, id_mapping, import_formula=import_formula
+            )
+        return super().deserialize_property(prop_name, value, id_mapping)
 
     def prepare_value_for_db(
         self,
