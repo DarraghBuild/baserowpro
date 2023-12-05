@@ -26,6 +26,11 @@
         <Checkbox v-model="values.required"></Checkbox>
       </div>
     </FormElement>
+    <DropdownOptionsSelector
+      :options="values.options"
+      @update="optionUpdated"
+      @create="createOption"
+    />
   </form>
 </template>
 
@@ -33,10 +38,11 @@
 import ApplicationBuilderFormulaInputGroup from '@baserow/modules/builder/components/ApplicationBuilderFormulaInputGroup.vue'
 import { DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS } from '@baserow/modules/builder/enums'
 import form from '@baserow/modules/core/mixins/form'
+import DropdownOptionsSelector from '@baserow/modules/builder/components/elements/components/forms/general/dropdown/DropdownOptionsSelector.vue'
 
 export default {
   name: 'DropdownElementForm',
-  components: { ApplicationBuilderFormulaInputGroup },
+  components: { DropdownOptionsSelector, ApplicationBuilderFormulaInputGroup },
   mixins: [form],
   data() {
     return {
@@ -45,12 +51,25 @@ export default {
         default_value: '',
         required: false,
         placeholder: '',
+        options: [],
       },
     }
   },
   computed: {
     DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS: () =>
       DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS,
+  },
+  methods: {
+    optionUpdated({ id }, changes) {
+      const index = this.values.options.findIndex((option) => option.id === id)
+      this.$set(this.values.options, index, {
+        ...this.values.options[index],
+        ...changes,
+      })
+    },
+    createOption() {
+      this.values.options.push({ name: null, value: null })
+    },
   },
 }
 </script>

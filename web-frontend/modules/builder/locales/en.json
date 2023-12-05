@@ -380,5 +380,11 @@
     },
     "linkField": {
       "details": "Details"
+    },
+    "dropdownOptionSelector": {
+        "label": "Options",
+        "value": "Value",
+        "name": "Name",
+        "addOption": "add option"
     }
 }
