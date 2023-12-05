@@ -1456,8 +1456,7 @@ class DurationFieldType(FieldType):
             **{
                 "required": False,
                 "allow_null": True,
-                "max_digits": 20,
-                "decimal_places": 3,
+                "duration_format": instance.duration_format,
                 **kwargs,
             }
         )

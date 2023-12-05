@@ -74,22 +74,27 @@ DURATION_FORMAT = {
     "h:mm": {
         "name": "hours:minutes",
         "format": "{hours}:{minutes:02d}",
+        "round_func": lambda value: round(value / 60, 0) * 60,
     },
     "h:mm:ss": {
         "name": "hours:minutes:seconds",
         "format": "{hours}:{minutes:02d}:{seconds:02d}",
+        "round_func": lambda value: round(value, 0),
     },
     "h:mm:ss.s": {
         "name": "hours:minutes:seconds:deciseconds",
         "format": "{hours}:{minutes:02d}:{seconds:02d}.{deciseconds:01d}",
+        "round_func": lambda value: round(value * 10, 0) / 10,
     },
     "h:mm:ss.ss": {
         "name": "hours:minutes:seconds:centiseconds",
         "format": "{hours}:{minutes:02d}:{seconds:02d}.{centiseconds:02d}",
+        "round_func": lambda value: round(value * 100, 0) / 100,
     },
     "h:mm:ss.sss": {
         "name": "hours:minutes:seconds:milliseconds",
         "format": "{hours}:{minutes:02d}:{seconds:02d}.{milliseconds:03d}",
+        "round_func": lambda value: round(value * 1000, 0) / 1000,
     },
 }
 DURATION_FORMAT_CHOICES = [(k, v["name"]) for k, v in DURATION_FORMAT.items()]

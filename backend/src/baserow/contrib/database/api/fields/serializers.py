@@ -257,9 +257,15 @@ class IntegerOrStringField(serializers.Field):
         return value
 
 
-class DurationSerializer(serializers.DecimalField):
-    def to_internal_value(self, data: Union[int, float, str, Decimal]) -> timedelta:
-        return timedelta(seconds=float(super().to_internal_value(data)))
+class DurationSerializer(serializers.FloatField):
+    def __init__(self, duration_format, **kwargs):
+        self.duration_format = duration_format
+        super().__init__(**kwargs)
 
-    def to_representation(self, value: Decimal) -> float:
+    def to_internal_value(self, data: float) -> timedelta:
+        total_seconds = super().to_internal_value(data)
+        round_func = DURATION_FORMAT[self.duration_format]["round_func"]
+        return timedelta(seconds=round_func(total_seconds))
+
+    def to_representation(self, value: timedelta) -> float:
         return value.total_seconds()
