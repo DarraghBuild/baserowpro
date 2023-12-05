@@ -35,6 +35,7 @@ from baserow.contrib.builder.pages.handler import PageHandler
 from baserow.contrib.builder.pages.models import Page
 from baserow.contrib.builder.types import ElementDict
 from baserow.core.formula.types import BaserowFormula
+from baserow.core.registry import T
 
 from .registries import collection_field_type_registry
 
@@ -838,6 +839,56 @@ class TableElementType(CollectionElementType):
 class DropdownElementType(ElementType):
     type = "dropdown"
     model_class = DropdownElement
+    allowed_fields = ["label", "default_value", "required", "placeholder"]
+    serializer_field_names = ["label", "default_value", "required", "placeholder"]
+
+    class SerilizedDict(ElementDict):
+        label: BaserowFormula
+        required: bool
+        placeholder: BaserowFormula
+        default_value: BaserowFormula
+
+    @property
+    def serializer_field_overrides(self):
+        from baserow.core.formula.serializers import FormulaSerializerField
+
+        overrides = {
+            "label": FormulaSerializerField(
+                help_text=DropdownElement._meta.get_field("label").help_text,
+                required=False,
+                allow_blank=True,
+                default="",
+            ),
+            "default_value": FormulaSerializerField(
+                help_text=DropdownElement._meta.get_field("default_value").help_text,
+                required=False,
+                allow_blank=True,
+                default="",
+            ),
+            "required": serializers.BooleanField(
+                help_text=DropdownElement._meta.get_field("required").help_text,
+                default=False,
+                required=False,
+            ),
+            "placeholder": serializers.CharField(
+                help_text=DropdownElement._meta.get_field("placeholder").help_text,
+                required=False,
+                allow_blank=True,
+                default="",
+            ),
+        }
+
+        return overrides
+
+    def import_serialized(
+        self,
+        parent: Any,
+        serialized_values: Dict[str, Any],
+        id_mapping: Dict[str, Dict[int, int]],
+        **kwargs,
+    ) -> T:
+        # TODO implement
+        return super().import_serialized(parent, serialized_values, id_mapping)
 
     def get_sample_params(self) -> Dict[str, Any]:
         return {}  # TODO

@@ -1,9 +1,56 @@
 <template>
-  <form @submit.prevent @keydown.enter.prevent>Hello :)</form>
+  <form @submit.prevent @keydown.enter.prevent>
+    <ApplicationBuilderFormulaInputGroup
+      v-model="values.label"
+      :label="$t('generalForm.labelTitle')"
+      :placeholder="$t('generalForm.labelPlaceholder')"
+      :data-providers-allowed="DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS"
+    ></ApplicationBuilderFormulaInputGroup>
+    <ApplicationBuilderFormulaInputGroup
+      v-model="values.default_value"
+      :label="$t('generalForm.valueTitle')"
+      :placeholder="$t('generalForm.valuePlaceholder')"
+      :data-providers-allowed="DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS"
+    ></ApplicationBuilderFormulaInputGroup>
+    <ApplicationBuilderFormulaInputGroup
+      v-model="values.placeholder"
+      :label="$t('generalForm.placeholderTitle')"
+      :placeholder="$t('generalForm.placeholderPlaceholder')"
+      :data-providers-allowed="DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS"
+    ></ApplicationBuilderFormulaInputGroup>
+    <FormElement class="control">
+      <label class="control__label">
+        {{ $t('generalForm.requiredTitle') }}
+      </label>
+      <div class="control__elements">
+        <Checkbox v-model="values.required"></Checkbox>
+      </div>
+    </FormElement>
+  </form>
 </template>
 
 <script>
+import ApplicationBuilderFormulaInputGroup from '@baserow/modules/builder/components/ApplicationBuilderFormulaInputGroup.vue'
+import { DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS } from '@baserow/modules/builder/enums'
+import form from '@baserow/modules/core/mixins/form'
+
 export default {
   name: 'DropdownElementForm',
+  components: { ApplicationBuilderFormulaInputGroup },
+  mixins: [form],
+  data() {
+    return {
+      values: {
+        label: '',
+        default_value: '',
+        required: false,
+        placeholder: '',
+      },
+    }
+  },
+  computed: {
+    DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS: () =>
+      DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS,
+  },
 }
 </script>
