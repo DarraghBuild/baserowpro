@@ -1538,6 +1538,14 @@ class DurationFieldType(CharFieldMatchingRegexFieldType):
             connection, from_field, to_field
         )
 
+    def get_alter_column_prepare_new_value(self, connection, from_field, to_field):
+        """
+        Prepares value when casting value from Text field to Duration field
+        """
+        return """
+            p_in = p_in::INTERVAL;
+        """
+
 
 class LinkRowFieldType(FieldType):
     """
