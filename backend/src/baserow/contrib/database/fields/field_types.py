@@ -1503,6 +1503,7 @@ class DurationFieldType(FieldType):
         """
         Prepares value when casting value from Text field to Duration field
         """
+
         return """
             p_in = p_in::INTERVAL;
         """

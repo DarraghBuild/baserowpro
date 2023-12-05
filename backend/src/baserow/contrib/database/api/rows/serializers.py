@@ -1,6 +1,6 @@
 import json
 from copy import deepcopy
-from typing import Any, Dict, List
+from typing import Dict, List
 
 from django.conf import settings
 from django.db.models.base import ModelBase
