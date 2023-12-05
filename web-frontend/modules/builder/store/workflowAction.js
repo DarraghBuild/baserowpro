@@ -159,7 +159,10 @@ const actions = {
     })
   },
   async dispatchAction({ dispatch }, { workflowActionId, data }) {
-    await WorkflowActionService(this.$client).dispatch(workflowActionId, data)
+    return await WorkflowActionService(this.$client).dispatch(
+      workflowActionId,
+      data
+    )
   },
   async order({ commit, getters }, { page, order, element = null }) {
     const workflowActions =

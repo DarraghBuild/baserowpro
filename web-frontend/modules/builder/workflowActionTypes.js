@@ -83,13 +83,21 @@ export class WorkflowActionServiceType extends WorkflowActionType {
   }
 
   execute({ workflowAction: { id }, applicationContext, resolveFormula }) {
-    return this.app.store.dispatch('workflowAction/dispatchAction', {
-      workflowActionId: id,
-      data: DataProviderType.getAllDispatchContext(
-        this.app.$registry.getAll('builderDataProvider'),
-        applicationContext
-      ),
-    })
+    return this.app.store
+      .dispatch('workflowAction/dispatchAction', {
+        workflowActionId: id,
+        data: DataProviderType.getAllDispatchContext(
+          this.app.$registry.getAll('builderDataProvider'),
+          applicationContext
+        ),
+      })
+      .catch(() => {
+        const { i18n } = this.app
+        return this.app.store.dispatch('toast/error', {
+          title: i18n.t('dispatchWorkflowActionError.defaultTitle'),
+          message: i18n.t('dispatchWorkflowActionError.defaultMessage'),
+        })
+      })
   }
 }
 

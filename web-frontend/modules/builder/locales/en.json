@@ -396,6 +396,10 @@
       "nameFieldPlaceholder": "Enter a name...",
       "integrationFieldLabel": "Integration"
     },
+    "dispatchWorkflowActionError": {
+        "defaultTitle": "Event error",
+        "defaultMessage": "An error occurred triggering this event."
+    },
     "upsertRowWorkflowActionForm": {
         "integrationDropdownLabel": "Integration",
         "rowIdLabel": "Row ID",
