@@ -82,6 +82,7 @@ import RowEditFieldLastModifiedBy from '@baserow/modules/database/components/row
 
 import RowCardFieldBoolean from '@baserow/modules/database/components/card/RowCardFieldBoolean'
 import RowCardFieldDate from '@baserow/modules/database/components/card/RowCardFieldDate'
+import RowCardFieldDuration from '@baserow/modules/database/components/card/RowCardFieldDuration'
 import RowCardFieldEmail from '@baserow/modules/database/components/card/RowCardFieldEmail'
 import RowCardFieldFile from '@baserow/modules/database/components/card/RowCardFieldFile'
 import RowCardFieldFormula from '@baserow/modules/database/components/card/RowCardFieldFormula'
@@ -2034,6 +2035,10 @@ export class DurationFieldType extends FieldType {
     return 'duration'
   }
 
+  getCardComponent() {
+    return RowCardFieldDuration
+  }
+
   getIconClass() {
     return 'iconoir-clock-rotate-right'
   }
@@ -2084,7 +2089,7 @@ export class DurationFieldType extends FieldType {
   }
 
   static formatDuration(metadata, value) {
-    return formatDuration(value, metadata.duration_format)
+    return formatDuration(metadata, value)
   }
 }
 

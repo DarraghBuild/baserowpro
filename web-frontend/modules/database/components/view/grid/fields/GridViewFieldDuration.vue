@@ -33,9 +33,7 @@ export default {
   mixins: [gridField, gridFieldInput, durationField],
   computed: {
     formattedValue() {
-      return this.value !== null
-        ? this.formatValue(this.value, this.field.duration_format)
-        : ''
+      return this.formatValue(this.field, this.value)
     },
   },
   methods: {

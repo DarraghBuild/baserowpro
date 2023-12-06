@@ -45,7 +45,7 @@ export default {
   },
   methods: {
     prepareCopy() {
-      return formatDuration(this.value, this.field.duration_format)
+      return formatDuration(this.field, this.value)
     },
   },
 }

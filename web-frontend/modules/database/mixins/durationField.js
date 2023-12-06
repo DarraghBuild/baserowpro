@@ -11,13 +11,13 @@ import {
  */
 export default {
   methods: {
-    formatValue(value, format) {
-      return formatDuration(value, format)
+    formatValue(field, value) {
+      return formatDuration(field, value)
     },
     beforeSave(inputValue) {
       let value = guessDurationValueFromString(inputValue)
       if (value !== null) {
-        value = roundDurationValueToFormat(value, this.field.duration_format)
+        value = roundDurationValueToFormat(this.field, value)
       }
       return value
     },
