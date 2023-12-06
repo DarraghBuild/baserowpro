@@ -7,7 +7,8 @@ export const isValidDuration = (inputValue) => {
   return guessDurationValueFromString(inputValue) !== null
 }
 
-export const roundDurationValueToFormat = (value, format) => {
+export const roundDurationValueToFormat = (field, value) => {
+  const format = field.duration_format
   if (format === 'h:mm') {
     return Math.round(value / 60) * 60
   } else if (format === 'h:mm:ss') {
@@ -62,6 +63,8 @@ export const DURATION_FORMATS_OPTIONS = {
         .toString()
         .padStart(2, '0')}`
     },
+    roundFunction(value) {
+    }, 
   },
   'h:mm:ss.s': {
     toString(hours, minutes, seconds) {
@@ -86,7 +89,7 @@ export const DURATION_FORMATS_OPTIONS = {
   },
 }
 
-export const formatDuration = (value, durationFormat) => {
+export const formatDuration = (field, value) => {
   if (value === null) {
     return ''
   }
@@ -94,5 +97,6 @@ export const formatDuration = (value, durationFormat) => {
   const hours = Math.floor(value / 3600)
   const mins = Math.floor((value - hours * 3600) / 60)
   const secs = value - hours * 3600 - mins * 60
-  return DURATION_FORMATS_OPTIONS[durationFormat].toString(hours, mins, secs)
+  const formatFunc = DURATION_FORMATS_OPTIONS[field.duration_format].toString
+  return formatFunc(hours, mins, secs)
 }

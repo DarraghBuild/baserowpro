@@ -1,12 +1,7 @@
 <template functional>
   <div ref="cell" class="grid-view__cell" :class="data.staticClass || ''">
     <div v-if="props.value" class="grid-field-duration">
-      {{
-        $options.methods.formatDurationValue(
-          props.value,
-          props.field.duration_format
-        )
-      }}
+      {{ $options.methods.formatDurationValue(props.field, props.value) }}
     </div>
     <div v-else class="grid-field-duration-placeholder">
       {{ props.field.duration_format }}
@@ -32,8 +27,8 @@ export default {
     },
   },
   methods: {
-    formatDurationValue(value, format) {
-      return formatDuration(value, format)
+    formatDurationValue(field, value) {
+      return formatDuration(field, value)
     },
   },
 }

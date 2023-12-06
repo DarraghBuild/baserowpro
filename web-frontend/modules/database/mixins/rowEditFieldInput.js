@@ -65,7 +65,7 @@ export default {
 
       // If the value hasn't changed we don't want to do anything.
       if (newValue === this.value) {
-        this.copy = this.value
+        this.copy = this.prepareCopy(this.value)
       } else {
         this.$emit('update', newValue, this.value)
         this.afterSave()
