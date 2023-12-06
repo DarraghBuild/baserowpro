@@ -1,4 +1,3 @@
-import json
 from copy import deepcopy
 from typing import Dict, List
 
@@ -13,7 +12,6 @@ from baserow.api.utils import get_serializer_class
 from baserow.contrib.database.fields.registries import field_type_registry
 from baserow.contrib.database.rows.models import RowHistory
 from baserow.contrib.database.rows.registries import row_metadata_registry
-from baserow.core.encoders import JSONEncoderSupportingDataClasses
 
 
 class RowSerializer(serializers.ModelSerializer):

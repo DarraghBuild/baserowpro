@@ -63,8 +63,7 @@ export const DURATION_FORMATS_OPTIONS = {
         .toString()
         .padStart(2, '0')}`
     },
-    roundFunction(value) {
-    }, 
+    roundFunction(value) {},
   },
   'h:mm:ss.s': {
     toString(hours, minutes, seconds) {
