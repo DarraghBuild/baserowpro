@@ -1,8 +1,5 @@
 <template functional>
-  <div
-    class="grid-field-many-to-many__list"
-    :class="[data.staticClass, data.class]"
-  >
+  <div :class="[data.staticClass, data.class]">
     <component
       :is="$options.methods.getComponent(props.field, parent.$registry)"
       v-for="(item, index) in props.value || []"

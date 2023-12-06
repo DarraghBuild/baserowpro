@@ -1,7 +1,5 @@
 <template functional>
-  <div
-    class="grid-field-many-to-many__item grid-field-many-to-many__item--multiple-select"
-  >
+  <div class="array-field__multiple-select-item">
     <div
       v-for="item in props.value"
       :key="item.id"

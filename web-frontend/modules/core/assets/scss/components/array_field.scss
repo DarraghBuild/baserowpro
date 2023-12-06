@@ -46,9 +46,14 @@
   @include select-option-style(flex, true);
 }
 
+.array-field__multiple-select-item {
+  display: flex;
+}
+
 .array-field__multiple-select-option {
   white-space: nowrap;
-  margin: 1px 4px 4px 4px;
+  margin: auto 0;
+  margin-right: 5px;
   overflow: unset;
 
   @include select-option-style(flex, true);
