@@ -24,12 +24,28 @@
 import rowEditField from '@baserow/modules/database/mixins/rowEditField'
 import rowEditFieldInput from '@baserow/modules/database/mixins/rowEditFieldInput'
 import durationField from '@baserow/modules/database/mixins/durationField'
+import {
+  isValidDuration,
+  formatDuration,
+} from '@baserow/modules/core/utils/duration'
 
 export default {
   mixins: [rowEditField, rowEditFieldInput, durationField],
   computed: {
-    isInvalidNumber() {
-      return this.copy === 'NaN'
+    isInvalidDuration() {
+      return isValidDuration(this.copy) === false
+    },
+  },
+  watch: {
+    'field.duration_format': {
+      handler(value) {
+        this.copy = this.prepareCopy(value)
+      },
+    },
+  },
+  methods: {
+    prepareCopy() {
+      return formatDuration(this.value, this.field.duration_format)
     },
   },
 }

@@ -87,6 +87,10 @@ export const DURATION_FORMATS_OPTIONS = {
 }
 
 export const formatDuration = (value, durationFormat) => {
+  if (value === null) {
+    return ''
+  }
+
   const hours = Math.floor(value / 3600)
   const mins = Math.floor((value - hours * 3600) / 60)
   const secs = value - hours * 3600 - mins * 60

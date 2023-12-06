@@ -5,6 +5,7 @@
 
   padding: 0 10px;
   user-select: none;
+  text-align: right;
 }
 
 .grid-field-duration-placeholder {
@@ -24,6 +25,7 @@
   vertical-align: middle;
   background: none;
   white-space: normal;
+  text-align: right;
 
   &:focus {
     outline: 0;
