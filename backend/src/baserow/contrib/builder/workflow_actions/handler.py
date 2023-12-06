@@ -1,14 +1,14 @@
-from typing import Dict, Iterable, List, Optional, Any
+from typing import Any, Dict, Iterable, List, Optional
 from zipfile import ZipFile
 
 from django.core.files.storage import Storage
 from django.db.models import QuerySet
 
-from baserow.contrib.builder.elements.handler import ElementHandler
-from baserow.contrib.builder.elements.models import Element
 from baserow.contrib.builder.data_sources.builder_dispatch_context import (
     BuilderDispatchContext,
 )
+from baserow.contrib.builder.elements.handler import ElementHandler
+from baserow.contrib.builder.elements.models import Element
 from baserow.contrib.builder.pages.models import Page
 from baserow.contrib.builder.workflow_actions.exceptions import (
     WorkflowActionNotInElement,

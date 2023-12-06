@@ -2,10 +2,10 @@ from typing import Any, List
 
 from django.contrib.auth.models import AbstractUser
 
-from baserow.contrib.builder.elements.models import Element
 from baserow.contrib.builder.data_sources.builder_dispatch_context import (
     BuilderDispatchContext,
 )
+from baserow.contrib.builder.elements.models import Element
 from baserow.contrib.builder.pages.models import Page
 from baserow.contrib.builder.workflow_actions.exceptions import (
     BuilderWorkflowActionCannotBeDispatched,

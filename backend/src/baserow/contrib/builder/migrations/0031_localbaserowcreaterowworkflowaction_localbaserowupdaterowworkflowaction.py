@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     dependencies = [
         ("core", "0077_blacklistedtoken"),
-        ("builder", "0029_inputtextelement_label"),
+        ("builder", "0030_builderworkflowaction_order"),
     ]
 
     operations = [

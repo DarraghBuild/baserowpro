@@ -23,8 +23,8 @@ from baserow.contrib.builder.api.workflow_actions.errors import (
     ERROR_DATA_DOES_NOT_EXIST,
     ERROR_WORKFLOW_ACTION_CANNOT_BE_DISPATCHED,
     ERROR_WORKFLOW_ACTION_DOES_NOT_EXIST,
-    ERROR_WORKFLOW_ACTION_NOT_IN_ELEMENT,
     ERROR_WORKFLOW_ACTION_IMPROPERLY_CONFIGURED,
+    ERROR_WORKFLOW_ACTION_NOT_IN_ELEMENT,
 )
 from baserow.contrib.builder.api.workflow_actions.serializers import (
     BuilderWorkflowActionSerializer,
@@ -40,11 +40,9 @@ from baserow.contrib.builder.elements.handler import ElementHandler
 from baserow.contrib.builder.pages.exceptions import PageDoesNotExist
 from baserow.contrib.builder.pages.handler import PageHandler
 from baserow.contrib.builder.workflow_actions.exceptions import (
-    WorkflowActionNotInElement,
-)
-from baserow.contrib.builder.workflow_actions.exceptions import (
     BuilderWorkflowActionCannotBeDispatched,
     BuilderWorkflowActionImproperlyConfigured,
+    WorkflowActionNotInElement,
 )
 from baserow.contrib.builder.workflow_actions.handler import (
     BuilderWorkflowActionHandler,

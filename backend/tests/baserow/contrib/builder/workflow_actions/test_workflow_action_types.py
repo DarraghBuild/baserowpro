@@ -233,6 +233,7 @@ def test_export_import_upsert_row_workflow_action_type(data_fixture):
 
     assert exported == {
         "id": workflow_action.id,
+        "order": workflow_action.order,
         "type": workflow_action_type.type,
         "page_id": page.id,
         "element_id": element.id,

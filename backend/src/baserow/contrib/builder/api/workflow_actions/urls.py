@@ -3,8 +3,8 @@ from django.urls import re_path
 from baserow.contrib.builder.api.workflow_actions.views import (
     BuilderWorkflowActionsView,
     BuilderWorkflowActionView,
-    OrderBuilderWorkflowActionsView,
     DispatchBuilderWorkflowActionView,
+    OrderBuilderWorkflowActionsView,
 )
 
 app_name = "baserow.contrib.builder.api.workflow_actions"
