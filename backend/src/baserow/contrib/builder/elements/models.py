@@ -548,4 +548,4 @@ class FormContainerElement(ContainerElement):
     A form element
     """
 
-    submit_button_label = FormulaField(default="'Submit'")
+    submit_button_label = FormulaField(default="")
