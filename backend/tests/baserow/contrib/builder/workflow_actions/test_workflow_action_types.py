@@ -275,7 +275,7 @@ def test_export_import_upsert_row_workflow_action_type(data_fixture):
 
 
 @pytest.mark.django_db
-def test_import_upsert_row_workflow_action_migrates_field_mapping_formulas(
+def test_import_upsert_row_workflow_action_migrates_formulas(
     data_fixture,
 ):
     user, token = data_fixture.create_user_and_token()
@@ -297,7 +297,9 @@ def test_import_upsert_row_workflow_action_migrates_field_mapping_formulas(
     field = table.field_set.get(name="Animal")
     element = data_fixture.create_builder_button_element(page=page)
     service = data_fixture.create_local_baserow_upsert_row_service(
-        integration=integration, table=table
+        integration=integration,
+        table=table,
+        row_id=f"get('data_source.{data_source.id}.{field.db_column}')",
     )
     service.field_mappings.create(
         field=field, value=f"get('data_source.{data_source.id}.{field.db_column}')"
@@ -317,6 +319,10 @@ def test_import_upsert_row_workflow_action_migrates_field_mapping_formulas(
     )
 
     imported_service = imported_workflow_action.service
+    assert (
+        imported_service.row_id
+        == f"get('data_source.{data_source2.id}.{field.db_column}')"
+    )
     field_mapping_clone = imported_service.field_mappings.get()
     assert (
         field_mapping_clone.value

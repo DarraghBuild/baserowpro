@@ -921,6 +921,10 @@ class LocalBaserowUpsertRowServiceType(LocalBaserowTableServiceType):
         :return: the deserialized version for this property.
         """
 
+        # Migrate row id
+        if prop_name == "row_id":
+            return import_formula(value, id_mapping)
+
         if prop_name == "field_mappings":
             return [
                 {
