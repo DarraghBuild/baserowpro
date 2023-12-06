@@ -14,14 +14,6 @@ export class NotificationWorkflowActionType extends WorkflowActionType {
     return NotificationWorkflowActionForm
   }
 
-  /**
-   * Responsible for returning the default-values which the `form` component
-   * will receive. By default, it'll just be the `workflowAction` object.
-   */
-  formDefaultValues(workflowAction) {
-    return workflowAction
-  }
-
   get label() {
     return this.app.i18n.t('workflowActionTypes.notificationLabel')
   }
