@@ -648,12 +648,12 @@
             </p>
             <template #actions>
               <button
-                class="alert__actions-button alert__actions-button--normal"
+                class="alert__actions-button-text alert__actions-button-text--normal"
               >
                 Cancel
               </button>
               <button
-                class="alert__actions-button alert__actions-button--loading"
+                class="alert__actions-button-text alert__actions-button-text--loading"
               >
                 Accept
               </button>
@@ -670,12 +670,12 @@
             </p>
             <template #actions>
               <button
-                class="alert__actions-button alert__actions-button--normal"
+                class="alert__actions-button-text alert__actions-button-text--normal"
               >
                 Cancel
               </button>
               <button
-                class="alert__actions-button alert__actions-button--loading"
+                class="alert__actions-button-text alert__actions-button-text--loading"
               >
                 Accept
               </button>
@@ -691,15 +691,11 @@
               viverra urna. Praesent.
             </p>
             <template #actions>
+              <Button type="primary" size="small"> Accept </Button>
               <button
-                class="alert__actions-button alert__actions-button--normal"
+                class="alert__actions-button-text alert__actions-button-text--normal"
               >
                 Cancel
-              </button>
-              <button
-                class="alert__actions-button alert__actions-button--loading"
-              >
-                Accept
               </button>
             </template>
           </Alert>
@@ -714,12 +710,12 @@
             </p>
             <template #actions>
               <button
-                class="alert__actions-button alert__actions-button--normal"
+                class="alert__actions-button-text alert__actions-button-text--normal"
               >
                 Cancel
               </button>
               <button
-                class="alert__actions-button alert__actions-button--loading"
+                class="alert__actions-button-text alert__actions-button-text--loading"
               >
                 Accept
               </button>
@@ -730,7 +726,7 @@
             <template #title>Alert title</template>
             <template #actions>
               <button
-                class="alert__actions-button alert__actions-button--normal alert__actions-button--loading"
+                class="alert__actions-button-text alert__actions-button-text--normal alert__actions-button-text--loading"
               >
                 Cancel
               </button>
