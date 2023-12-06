@@ -161,25 +161,44 @@ def test_upsert_row_workflow_action_type_prepare_value_for_db_with_instance(
     integration = data_fixture.create_local_baserow_integration(
         application=page.builder
     )
+    table = data_fixture.create_database_table()
     workflow_action = data_fixture.create_local_baserow_create_row_workflow_action(
         page=page, element=element, event=EventTypes.CLICK, user=user
     )
-    table2 = data_fixture.create_database_table()
-    field2 = data_fixture.create_text_field(table=table2)
-    model2 = table2.get_model()
-    row2 = model2.objects.create(**{f"field_{field2.id}": "Cheese"})
+    service = workflow_action.service.specific
+    service.table = table
+    service.save()
+    field = data_fixture.create_text_field(table=table)
+    model = table.get_model()
+    row2 = model.objects.create(**{f"field_{field.id}": "Cheese"})
     values = UpsertRowWorkflowActionType().prepare_value_for_db(
         {
             "row_id": row2.id,
-            "table_id": table2.id,
+            "table_id": table.id,
             "integration_id": integration.id,
+            "field_mappings": [{"field_id": field.id, "value": "'Horse'"}],
         },
         instance=workflow_action,
     )
     service = Service.objects.get(pk=values["service_id"]).specific
     assert service.row_id == str(row2.id)
-    assert service.table_id == table2.id
+    assert service.table_id == table.id
     assert service.integration_id == integration.id
+    assert service.field_mappings.count() == 1
+
+    # Changing the table results in the `field_mapping` getting reset.
+    table2 = data_fixture.create_database_table()
+    values = UpsertRowWorkflowActionType().prepare_value_for_db(
+        {
+            "table_id": table2.id,
+            "field_mappings": [{"field_id": field.id, "value": "'Pony'"}],
+        },
+        instance=workflow_action,
+    )
+    service.refresh_from_db()
+    assert service.table_id == table2.id
+    assert values["field_mappings"] == []
+    assert service.field_mappings.count() == 0
 
 
 @pytest.mark.django_db
@@ -256,7 +275,9 @@ def test_export_import_upsert_row_workflow_action_type(data_fixture):
 
 
 @pytest.mark.django_db
-def test_duplicating_page_migrates_field_mapping_formulas(data_fixture):
+def test_import_upsert_row_workflow_action_migrates_field_mapping_formulas(
+    data_fixture,
+):
     user, token = data_fixture.create_user_and_token()
     page = data_fixture.create_builder_page(user=user)
     table, fields, rows = data_fixture.build_table(
