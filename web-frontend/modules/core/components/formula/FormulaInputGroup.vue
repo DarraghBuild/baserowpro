@@ -1,12 +1,7 @@
 <template>
   <FormElement class="control" :class="{ 'control--horizontal': horizontal }">
-    <label
-      v-if="label"
-      class="control__label formula-input-group__label"
-      :class="{ 'control__label--small': smallLabel }"
-    >
+    <label v-if="label" :class="{ 'control__label--small': smallLabel }">
       {{ label }}
-      <i v-if="labelIcon" :class="`iconoir-${labelIcon}`"></i>
     </label>
     <div class="control__elements">
       <FormulaInputField
@@ -63,11 +58,6 @@ export default {
     applicationContext: {
       type: Object,
       required: true,
-    },
-    labelIcon: {
-      type: String,
-      required: false,
-      default: () => null,
     },
   },
 }

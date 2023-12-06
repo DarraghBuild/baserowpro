@@ -2,7 +2,6 @@
   <form @submit.prevent @keydown.enter.prevent>
     <ApplicationBuilderFormulaInputGroup
       v-model="values.submit_button_label"
-      label-icon="submit-document"
       :data-providers-allowed="DATA_PROVIDERS_ALLOWED_ELEMENTS"
       :label="$t('formContainerElementForm.submitButtonLabel')"
       :placeholder="$t('formContainerElementForm.submitButtonPlaceholder')"
