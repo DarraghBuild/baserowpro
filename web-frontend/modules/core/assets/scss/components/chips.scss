@@ -18,7 +18,7 @@
 
   &:hover:not(.chips--disabled) {
     border: 1px solid $palette-blue-300;
-    background: $palette-blue-50;
+    background: rgba($palette-blue-1000, 0.06);
 
     &.chips--active {
       border-width: 1.5px;
@@ -27,13 +27,13 @@
 
   &:active:not(.chips--disabled) {
     border: 1px solid $palette-blue-500;
-    background: $palette-blue-50;
+    background: rgba($palette-blue-1000, 0.1);
   }
 }
 
 .chips--active:not(.chips--disabled) {
-  background: rgba(78, 92, 254, 0.06);
   border: 1.5px solid $palette-blue-600;
+  background: rgba($palette-blue-1000, 0.08);
 }
 
 .chips__icon {
