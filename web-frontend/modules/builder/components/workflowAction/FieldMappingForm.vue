@@ -36,8 +36,7 @@ export default {
     updateFieldMapping(newValue, fieldId) {
       const event = { field_id: fieldId, value: newValue }
       const existingMapping = this.value.some(
-        // eslint-disable-next-line camelcase
-        ({ field_id }) => field_id === fieldId
+        ({ field_id: existingId }) => existingId === fieldId
       )
       if (existingMapping) {
         const newMapping = this.value.map((fieldMapping) => {
