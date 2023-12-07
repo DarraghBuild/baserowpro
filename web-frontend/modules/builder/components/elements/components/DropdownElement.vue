@@ -9,7 +9,12 @@
       :show-search="false"
       :disabled="mode === 'editing'"
     >
-      <DropdownItem name="test" value="test"></DropdownItem>
+      <DropdownItem
+        v-for="option in element.options"
+        :key="option.id"
+        :name="option.name"
+        :value="option.value"
+      ></DropdownItem>
     </Dropdown>
   </div>
 </template>
@@ -27,6 +32,7 @@ export default {
      * @property {string} default_value - The default value selected
      * @property {string} placeholder - The placeholder value of the dropdown
      * @property {boolean} required - If the element is required for form submission
+     * @property {Array} options - The options of the dropdown
      */
     element: {
       type: Object,
