@@ -158,11 +158,8 @@ const actions = {
       updateContext.promiseResolve = resolve
     })
   },
-  async dispatchAction({ dispatch }, { workflowActionId, data }) {
-    return await WorkflowActionService(this.$client).dispatch(
-      workflowActionId,
-      data
-    )
+  dispatchAction({ dispatch }, { workflowActionId, data }) {
+    return WorkflowActionService(this.$client).dispatch(workflowActionId, data)
   },
   async order({ commit, getters }, { page, order, element = null }) {
     const workflowActions =
