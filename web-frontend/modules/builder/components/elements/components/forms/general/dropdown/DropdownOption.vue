@@ -4,6 +4,7 @@
       <input
         type="text"
         class="input"
+        :value="option.value"
         @input="$emit('update', { value: $event.target.value })"
       />
     </div>
@@ -11,6 +12,7 @@
       <input
         type="text"
         class="input"
+        :value="option.name"
         @input="$emit('update', { name: $event.target.value })"
       />
     </div>
