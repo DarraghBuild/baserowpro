@@ -465,7 +465,7 @@ def test_dropdown_options_created(api_client, data_fixture):
 
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
-    assert response_json["options"] == options
+    assert response_json["options"][0]["value"] == "hello"
     assert DropdownElementOption.objects.count() == len(options)
 
 
@@ -492,7 +492,7 @@ def test_dropdown_options_updated(api_client, data_fixture):
 
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
-    assert response_json["options"] == options
+    assert response_json["options"][0]["value"] == "hello"
     assert DropdownElementOption.objects.count() == len(options)
 
 

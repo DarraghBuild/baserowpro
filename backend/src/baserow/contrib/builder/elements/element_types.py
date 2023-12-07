@@ -862,11 +862,12 @@ class DropdownElementType(ElementType):
     ]
     serializer_mixins = [DropdownOptionSerializerMixin]
 
-    class SerilizedDict(ElementDict):
+    class SerializedDict(ElementDict):
         label: BaserowFormula
         required: bool
         placeholder: BaserowFormula
         default_value: BaserowFormula
+        options: List
 
     @property
     def serializer_field_overrides(self):
@@ -933,6 +934,15 @@ class DropdownElementType(ElementType):
 
         return overrides
 
+    def serialize_property(self, element: DropdownElement, prop_name: str):
+        if prop_name == "options":
+            return [
+                self.serialize_option(option)
+                for option in element.dropdownelementoption_set.all()
+            ]
+
+        return super().serialize_property(element, prop_name)
+
     def import_serialized(
         self,
         parent: Any,
@@ -940,11 +950,41 @@ class DropdownElementType(ElementType):
         id_mapping: Dict[str, Dict[int, int]],
         **kwargs,
     ) -> T:
-        # TODO implement
-        return super().import_serialized(parent, serialized_values, id_mapping)
+        dropdown_element = super().import_serialized(
+            parent, serialized_values, id_mapping
+        )
+
+        options = []
+        for option in serialized_values.get("options", []):
+            option["dropdown_id"] = dropdown_element.id
+            option_deserialized = self.deserialize_option(option)
+            options.append(option_deserialized)
+
+        DropdownElementOption.objects.bulk_create(options)
+
+        return dropdown_element
+
+    def create_instance_from_serialized(self, serialized_values: Dict[str, Any]) -> T:
+        serialized_values.pop("options", None)
+        return super().create_instance_from_serialized(serialized_values)
+
+    def serialize_option(self, option: DropdownElementOption) -> Dict:
+        return {
+            "value": option.value,
+            "name": option.name,
+            "dropdown_id": option.dropdown_id,
+        }
+
+    def deserialize_option(self, value: Dict):
+        return DropdownElementOption(**value)
 
     def get_sample_params(self) -> Dict[str, Any]:
-        return {}  # TODO
+        return {
+            "label": "'test'",
+            "default_value": "'option 1'",
+            "required": False,
+            "placeholder": "'some placeholder'",
+        }
 
     def after_create(self, instance: DropdownElement, values: Dict):
         options = values.get("options", [])
