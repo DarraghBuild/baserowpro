@@ -927,7 +927,7 @@ class DropdownElementType(ElementType):
                 allow_blank=True,
                 default="",
             ),
-            "options": DropdownOptionSerializer(many=True),
+            "options": DropdownOptionSerializer(many=True, required=False),
         }
 
         return overrides
