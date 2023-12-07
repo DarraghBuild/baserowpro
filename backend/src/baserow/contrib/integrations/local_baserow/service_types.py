@@ -907,7 +907,9 @@ class LocalBaserowUpsertRowServiceType(LocalBaserowTableServiceType):
             help_text="A formula for defining the intended row.",
         ),
         "field_mappings": LocalBaserowTableServiceFieldMappingSerializer(
-            many=True, help_text="The field mapping associated with this service."
+            many=True,
+            required=False,
+            help_text="The field mapping associated with this service.",
         ),
     }
 
@@ -985,11 +987,15 @@ class LocalBaserowUpsertRowServiceType(LocalBaserowTableServiceType):
                 service.integration = integration
                 service.save()
 
-        field_mappings = values.pop("field_mappings", [])
-        if field_mappings and service.table_id:
+        if "field_mappings" in values and service.table_id:
             bulk_field_mappings = []
+            # Bulk delete the existing field mappings on the service.
+            # We'll bulk create the mappings in the values `field_mappings`.
             service.field_mappings.all().delete()
+            # The queryset we'll use to narrow down the `get_field` query,
+            # this ensures we find the field within the service's table.
             base_field_qs = service.table.field_set.all()
+            field_mappings = values.pop("field_mappings", [])
             for field_mapping in field_mappings:
                 try:
                     field = FieldHandler().get_field(
