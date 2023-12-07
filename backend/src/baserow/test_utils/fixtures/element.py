@@ -8,7 +8,7 @@ from baserow.contrib.builder.elements.models import (
     ImageElement,
     LinkElement,
     ParagraphElement,
-    TableElement,
+    TableElement, DropdownElement,
 )
 
 
@@ -77,6 +77,10 @@ class ElementFixtures:
 
     def create_builder_button_element(self, user=None, page=None, **kwargs):
         element = self.create_builder_element(ButtonElement, user, page, **kwargs)
+        return element
+
+    def create_builder_dropdown_element(self, user=None, page=None, **kwargs):
+        element = self.create_builder_element(DropdownElement, user, page, **kwargs)
         return element
 
     def create_builder_element(self, model_class, user=None, page=None, **kwargs):

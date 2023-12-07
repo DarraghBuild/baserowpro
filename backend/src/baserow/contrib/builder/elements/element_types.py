@@ -31,6 +31,7 @@ from baserow.contrib.builder.elements.models import (
     ParagraphElement,
     TableElement,
     VerticalAlignments,
+    DropdownElementOption,
 )
 from baserow.contrib.builder.elements.registries import ElementType
 from baserow.contrib.builder.elements.signals import elements_moved
@@ -946,10 +947,20 @@ class DropdownElementType(ElementType):
         return {}  # TODO
 
     def after_create(self, instance: DropdownElement, values: Dict):
-        pass  # TODO
+        options = values.get("options", [])
+
+        DropdownElementOption.objects.bulk_create(
+            [DropdownElementOption(dropdown=instance, **option) for option in options]
+        )
 
     def after_update(self, instance: DropdownElement, values: Dict):
-        pass  # TODO
+        options = values.get("options", None)
 
-    def before_delete(self, instance: ElementSubClass):
-        pass  # TODO
+        if options is not None:
+            DropdownElementOption.objects.filter(dropdown=instance).delete()
+            DropdownElementOption.objects.bulk_create(
+                [
+                    DropdownElementOption(dropdown=instance, **option)
+                    for option in options
+                ]
+            )
