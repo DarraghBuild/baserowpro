@@ -247,7 +247,7 @@ class BuilderWorkflowActionService:
 
         if not issubclass(workflow_action.__class__, BuilderWorkflowServiceAction):
             raise BuilderWorkflowActionCannotBeDispatched(
-                f"WorkflowAction {workflow_action.id} has no Service to dispatch."
+                f"WorkflowAction {workflow_action.id} is not meant to be dispatched."
             )
 
         CoreHandler().check_permissions(
