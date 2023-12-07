@@ -4,10 +4,10 @@
       {{ $t('dropdownOptionSelector.label') }}
     </label>
     <div class="row margin-bottom-1">
-      <div class="col col-6">
+      <div class="col col-5">
         {{ $t('dropdownOptionSelector.value') }}
       </div>
-      <div class="col col-6">
+      <div class="col col-5">
         {{ $t('dropdownOptionSelector.name') }}
       </div>
     </div>
@@ -17,6 +17,7 @@
       class="margin-bottom-1"
       :option="option"
       @update="$emit('update', option, $event)"
+      @delete="$emit('delete', option)"
     />
     <Button
       class="margin-top-1"

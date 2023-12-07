@@ -30,6 +30,7 @@
       :options="values.options"
       @update="optionUpdated"
       @create="createOption"
+      @delete="deleteOption"
     />
   </form>
 </template>
@@ -69,6 +70,11 @@ export default {
     },
     createOption() {
       this.values.options.push({ name: '', value: '' })
+    },
+    deleteOption({ id }) {
+      this.values.options = this.values.options.filter(
+        (option) => option.id !== id
+      )
     },
   },
 }

@@ -1,6 +1,6 @@
 <template>
   <div class="row">
-    <div class="col col-6">
+    <div class="col col-5">
       <input
         type="text"
         class="input"
@@ -8,13 +8,21 @@
         @input="$emit('update', { value: $event.target.value })"
       />
     </div>
-    <div class="col col-6">
+    <div class="col col-5">
       <input
         type="text"
         class="input"
         :value="option.name"
         @input="$emit('update', { name: $event.target.value })"
       />
+    </div>
+    <div class="dropdown-option__delete col col-1">
+      <Button
+        tag="a"
+        icon="iconoir-trash"
+        type="ghost"
+        @click="$emit('delete')"
+      ></Button>
     </div>
   </div>
 </template>

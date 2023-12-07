@@ -283,7 +283,7 @@ class UpdateCollectionFieldSerializer(serializers.ModelSerializer):
 class DropdownOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = DropdownElementOption
-        fields = ["value", "name"]
+        fields = ["id", "value", "name"]
 
 
 class DropdownOptionSerializerMixin(serializers.Serializer):
