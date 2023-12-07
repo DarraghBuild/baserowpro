@@ -1,10 +1,10 @@
 from typing import Any, Dict, Union
 
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError as DRFValidationError
 
 from baserow.contrib.builder.api.workflow_actions.serializers import (
-    UpsertRowWorkflowActionTypeSerializer,
+    PolymorphicServiceRequestSerializer,
+    PolymorphicServiceSerializer,
 )
 from baserow.contrib.builder.formula_importer import import_formula
 from baserow.contrib.builder.workflow_actions.models import (
@@ -18,21 +18,9 @@ from baserow.contrib.builder.workflow_actions.registries import (
     BuilderWorkflowActionType,
 )
 from baserow.contrib.builder.workflow_actions.types import BuilderWorkflowActionDict
-from baserow.contrib.database.fields.exceptions import FieldDoesNotExist
-from baserow.contrib.database.fields.handler import FieldHandler
-from baserow.contrib.database.table.exceptions import TableDoesNotExist
-from baserow.contrib.database.table.handler import TableHandler
-from baserow.contrib.integrations.local_baserow.api.serializers import (
-    LocalBaserowTableServiceFieldMappingSerializer,
-)
-from baserow.contrib.integrations.local_baserow.models import (
-    LocalBaserowTableServiceFieldMapping,
-)
 from baserow.core.formula.serializers import FormulaSerializerField
 from baserow.core.formula.types import BaserowFormula
-from baserow.core.integrations.exceptions import IntegrationDoesNotExist
 from baserow.core.integrations.handler import IntegrationHandler
-from baserow.core.services.handler import ServiceHandler
 from baserow.core.services.registries import service_type_registry
 
 
@@ -131,7 +119,7 @@ class BuilderWorkflowServiceActionType(BuilderWorkflowActionType):
 
     @property
     def allowed_fields(self):
-        return super().allowed_fields + ["service_id"]
+        return super().allowed_fields + ["service"]
 
     def get_pytest_params(self, pytest_data_fixture) -> Dict[str, int]:
         service = pytest_data_fixture.create_local_baserow_upsert_row_service()
@@ -146,36 +134,23 @@ class BuilderWorkflowServiceActionType(BuilderWorkflowActionType):
 
 class UpsertRowWorkflowActionType(BuilderWorkflowServiceActionType):
     type = "upsert_row"
-    serializer_mixins = [UpsertRowWorkflowActionTypeSerializer]
     request_serializer_field_overrides = {
-        "table_id": serializers.IntegerField(
+        "service": PolymorphicServiceRequestSerializer(
+            default=None,
             required=False,
-            allow_null=True,
-            help_text="The Baserow table which we should use "
-            "when inserting or updating rows.",
-        ),
-        "integration_id": serializers.IntegerField(
-            required=False,
-            allow_null=True,
-            help_text="The Baserow integration we should use.",
-        ),
-        "field_mappings": LocalBaserowTableServiceFieldMappingSerializer(
-            required=False, many=True, source="service.field_mappings"
-        ),
+            help_text="The service which this workflow action is associated with.",
+        )
     }
-    request_serializer_field_names = ["table_id", "integration_id", "field_mappings"]
-
-    @property
-    def serializer_field_names(self):
-        return super().serializer_field_names + [
-            "table_id",
-            "integration_id",
-            "field_mappings",
-        ]
+    serializer_field_overrides = {
+        "service": PolymorphicServiceSerializer(
+            help_text="The service which this workflow action is associated with."
+        )
+    }
+    request_serializer_field_names = ["service"]
 
     @property
     def allowed_fields(self):
-        return super().allowed_fields + ["table_id", "integration_id"]
+        return super().allowed_fields + ["service"]
 
     def serialize_property(
         self, workflow_action: BuilderWorkflowServiceAction, prop_name: str
@@ -218,80 +193,22 @@ class UpsertRowWorkflowActionType(BuilderWorkflowServiceActionType):
             LocalBaserowCreateRowWorkflowAction, LocalBaserowUpdateRowWorkflowAction
         ] = None,
     ):
-        integration = None
-        integration_id = values.pop("integration_id", None)
-        if integration_id:
-            try:
-                integration = IntegrationHandler().get_integration(integration_id)
-            except IntegrationDoesNotExist:
-                raise DRFValidationError(
-                    f"The integration with ID {integration_id} does not exist."
-                )
+        """
+        Responsible for preparing the upsert row workflow action. By default, the
+        only step is to pass any `service` data into the upsert row service.
 
-        table = None
-        table_id = values.pop("table_id", None)
-        if table_id:
-            try:
-                table = TableHandler().get_table(table_id)
-            except TableDoesNotExist:
-                raise DRFValidationError(
-                    f"The table with ID {table_id} does not exist."
-                )
+        :param values: The full workflow action values to prepare.
+        :param instance: A create or update row workflow action instance.
+        :return: The modified workflow action values, prepared.
+        """
 
-        row_id = values.pop("row_id", "")
-        if instance is None:
-            service = ServiceHandler().create_service(
-                service_type_registry.get("local_baserow_upsert_row"),
-                table=table,
-                row_id=row_id,
-                integration=integration,
-            )
-            values["service_id"] = service.pk
-        else:
-            service = instance.service.specific
-
-            # Did the table change? If it did, we need to nuke the field
-            # mappings that are present. An enhancement in the future would
-            # be to check if they relate to the new table, or the old one.
-            if service.table_id and service.table_id != table_id:
-                values["field_mappings"] = []
-
-            # On a PATCH if no `service_id` value is provided, then `service_id`
-            # is given a `None` value by DRF, so here we set it properly.
-            values["service_id"] = service.id
-
-            if service.table_id != table_id or service.row_id != row_id:
-                service.table = table
-                service.row_id = row_id
-                service.save()
-
-            if service.integration_id != integration_id:
-                service.integration = integration
-                service.save()
-
-        if "field_mappings" in values and service.table_id:
-            bulk_field_mappings = []
-            service.field_mappings.all().delete()
-            base_field_qs = service.table.field_set.all()
-            for field_mapping in values["field_mappings"]:
-                try:
-                    field = FieldHandler().get_field(
-                        field_mapping["field_id"], base_queryset=base_field_qs
-                    )
-                except KeyError:
-                    raise DRFValidationError("A field mapping must have a `field_id`.")
-                except FieldDoesNotExist as exc:
-                    raise DRFValidationError(str(exc))
-
-                bulk_field_mappings.append(
-                    LocalBaserowTableServiceFieldMapping(
-                        field=field, service=service, value=field_mapping["value"]
-                    )
-                )
-            LocalBaserowTableServiceFieldMapping.objects.bulk_create(
-                bulk_field_mappings
-            )
-
+        service_values = values.pop("service") or {}  # todo: why is service=None
+        service = instance.service.specific if instance else None
+        service_type = service_type_registry.get("local_baserow_upsert_row")
+        prepared_service_values = service_type.prepare_value_for_db(
+            service_values, service
+        )
+        values.update(prepared_service_values)
         return super().prepare_value_for_db(values, instance=instance)
 
 
@@ -299,33 +216,7 @@ class CreateRowWorkflowActionType(UpsertRowWorkflowActionType):
     type = "create_row"
     model_class = LocalBaserowCreateRowWorkflowAction
 
-    @property
-    def allowed_fields(self):
-        return super().allowed_fields + ["field_mappings"]
-
 
 class UpdateRowWorkflowActionType(UpsertRowWorkflowActionType):
     type = "update_row"
     model_class = LocalBaserowUpdateRowWorkflowAction
-
-    @property
-    def allowed_fields(self):
-        return super().allowed_fields + ["row_id", "field_mappings"]
-
-    @property
-    def serializer_field_names(self):
-        return super().serializer_field_names + ["row_id"]
-
-    @property
-    def request_serializer_field_names(self):
-        return super().request_serializer_field_names + ["row_id"]
-
-    @property
-    def request_serializer_field_overrides(self):
-        return super().request_serializer_field_overrides | {
-            "row_id": FormulaSerializerField(
-                required=False,
-                allow_blank=True,
-                help_text="A formula for defining the intended row.",
-            )
-        }

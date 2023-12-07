@@ -26,15 +26,18 @@ from baserow.contrib.database.api.rows.serializers import (
     RowSerializer,
     get_row_serializer_class,
 )
+from baserow.contrib.database.fields.exceptions import FieldDoesNotExist
 from baserow.contrib.database.fields.handler import FieldHandler
 from baserow.contrib.database.fields.registries import field_type_registry
 from baserow.contrib.database.rows.handler import RowHandler
 from baserow.contrib.database.rows.operations import ReadDatabaseRowOperationType
 from baserow.contrib.database.search.handler import SearchHandler
+from baserow.contrib.database.table.exceptions import TableDoesNotExist
 from baserow.contrib.database.table.handler import TableHandler
 from baserow.contrib.database.table.operations import ListRowsDatabaseTableOperationType
 from baserow.contrib.database.views.handler import ViewHandler
 from baserow.contrib.integrations.local_baserow.api.serializers import (
+    LocalBaserowTableServiceFieldMappingSerializer,
     LocalBaserowTableServiceFilterSerializer,
     LocalBaserowTableServiceSortSerializer,
 )
@@ -59,9 +62,16 @@ from baserow.core.formula.registries import formula_runtime_function_registry
 from baserow.core.formula.serializers import FormulaSerializerField
 from baserow.core.formula.validator import ensure_integer
 from baserow.core.handler import CoreHandler
+from baserow.core.integrations.exceptions import IntegrationDoesNotExist
+from baserow.core.integrations.handler import IntegrationHandler
 from baserow.core.services.dispatch_context import DispatchContext
 from baserow.core.services.exceptions import DoesNotExist, ServiceImproperlyConfigured
-from baserow.core.services.registries import DispatchTypes, ServiceType
+from baserow.core.services.handler import ServiceHandler
+from baserow.core.services.registries import (
+    DispatchTypes,
+    ServiceType,
+    service_type_registry,
+)
 from baserow.core.services.types import (
     ServiceDict,
     ServiceFilterDictSubClass,
@@ -877,13 +887,27 @@ class LocalBaserowUpsertRowServiceType(LocalBaserowTableServiceType):
     model_class = LocalBaserowUpsertRow
     dispatch_type = DispatchTypes.DISPATCH_WORKFLOW_ACTION
 
-    allowed_fields = ["table", "row_id"]
-    serializer_field_names = ["table_id"]
-    request_serializer_field_overrides = {
+    allowed_fields = ["table", "row_id", "integration", "field_mappings"]
+    serializer_field_names = ["table_id", "row_id", "integration_id", "field_mappings"]
+
+    serializer_field_overrides = {
         "table_id": serializers.IntegerField(
             required=False,
             allow_null=True,
             help_text="The id of the Baserow table we want the data for.",
+        ),
+        "integration_id": serializers.IntegerField(
+            required=False,
+            allow_null=True,
+            help_text="The id of the Baserow integration we want the data for.",
+        ),
+        "row_id": FormulaSerializerField(
+            required=False,
+            allow_blank=True,
+            help_text="A formula for defining the intended row.",
+        ),
+        "field_mappings": LocalBaserowTableServiceFieldMappingSerializer(
+            many=True, help_text="The field mapping associated with this service."
         ),
     }
 
@@ -891,6 +915,101 @@ class LocalBaserowUpsertRowServiceType(LocalBaserowTableServiceType):
         row_id: str
         table_id: int
         field_mappings: List[Dict]
+
+    def prepare_value_for_db(
+        self,
+        values: Dict,
+        instance: LocalBaserowUpsertRow = None,
+    ):
+        """
+        Responsible for preparing this upsert row service. If no `instance` is provided,
+        then an upsert row service is created. Whether an instance is created or not,
+        we will ensure that the service's `integration_id`, `table_id`, `row_id` and
+        `field_mappings` are kept in sync.
+
+        :param values: The values given to us by the upsert row workflow action type
+            `prepare_value_for_db`. If it's a blank dictionary, then we are creating
+            a new upsert row workflow action, otherwise we're updating an existing one.
+        :param instance: An upsert row service instance. It will be `None` if we are
+            creating a new upsert row workflow action, otherwise it will be the specific
+            service instance.
+        :return: A dictionary of values which will get returned to the upsert row
+            workflow action `prepare_value_for_db`. The values will be merged with
+            the workflow action values.
+        """
+
+        integration = None
+        integration_id = values.pop("integration_id", None)
+        if integration_id:
+            try:
+                integration = IntegrationHandler().get_integration(integration_id)
+            except IntegrationDoesNotExist:
+                raise DRFValidationError(
+                    f"The integration with ID {integration_id} does not exist."
+                )
+
+        table = None
+        table_id = values.pop("table_id", None)
+        if table_id:
+            try:
+                table = TableHandler().get_table(table_id)
+            except TableDoesNotExist:
+                raise DRFValidationError(
+                    f"The table with ID {table_id} does not exist."
+                )
+
+        row_id = values.pop("row_id", "")
+        if instance is None:
+            service = ServiceHandler().create_service(
+                service_type_registry.get(self.type),
+                table=table,
+                row_id=row_id,
+                integration=integration,
+            )
+            values["service_id"] = service.pk
+        else:
+            service = instance.specific
+
+            # Did the table change? If it did, we need to nuke the field
+            # mappings that are present. An enhancement in the future would
+            # be to check if they relate to the new table, or the old one.
+            if service.table_id and service.table_id != table_id:
+                values["field_mappings"] = []
+
+            if service.table_id != table_id or service.row_id != row_id:
+                service.table = table
+                service.row_id = row_id
+                service.save()
+
+            if service.integration_id != integration_id:
+                service.integration = integration
+                service.save()
+
+        field_mappings = values.pop("field_mappings", [])
+        if field_mappings and service.table_id:
+            bulk_field_mappings = []
+            service.field_mappings.all().delete()
+            base_field_qs = service.table.field_set.all()
+            for field_mapping in field_mappings:
+                try:
+                    field = FieldHandler().get_field(
+                        field_mapping["field_id"], base_queryset=base_field_qs
+                    )
+                except KeyError:
+                    raise DRFValidationError("A field mapping must have a `field_id`.")
+                except FieldDoesNotExist as exc:
+                    raise DRFValidationError(str(exc))
+
+                bulk_field_mappings.append(
+                    LocalBaserowTableServiceFieldMapping(
+                        field=field, service=service, value=field_mapping["value"]
+                    )
+                )
+            LocalBaserowTableServiceFieldMapping.objects.bulk_create(
+                bulk_field_mappings
+            )
+
+        return values
 
     def serialize_property(self, service: LocalBaserowUpsertRow, prop_name: str):
         """

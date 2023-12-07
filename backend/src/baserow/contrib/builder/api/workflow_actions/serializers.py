@@ -4,14 +4,12 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from baserow.api.polymorphic import PolymorphicSerializer
 from baserow.api.services.serializers import ServiceSerializer
 from baserow.api.workflow_actions.serializers import WorkflowActionSerializer
 from baserow.contrib.builder.workflow_actions.models import BuilderWorkflowAction
 from baserow.contrib.builder.workflow_actions.registries import (
     builder_workflow_action_type_registry,
-)
-from baserow.contrib.integrations.local_baserow.api.serializers import (
-    LocalBaserowTableServiceFieldMappingSerializer,
 )
 from baserow.core.services.registries import service_type_registry
 
@@ -66,35 +64,14 @@ class UpdateBuilderWorkflowActionsSerializer(serializers.ModelSerializer):
         fields = ("type",)
 
 
-class UpsertRowWorkflowActionTypeSerializer(serializers.Serializer):
-    service = serializers.SerializerMethodField()
-    row_id = serializers.SerializerMethodField(
-        help_text="The Baserow row ID which we should use when updating rows.",
-    )
-    table_id = serializers.SerializerMethodField(
-        help_text="The Baserow table which we should use "
-        "when inserting or updating rows.",
-    )
-    integration_id = serializers.SerializerMethodField(
-        help_text="The Baserow integration we should use.",
-    )
-    field_mappings = LocalBaserowTableServiceFieldMappingSerializer(
-        required=False, many=True, source="service.field_mappings"
-    )
+class PolymorphicServiceSerializer(PolymorphicSerializer):
+    base_class = ServiceSerializer
+    registry = service_type_registry
 
-    def get_service(self, workflow_action):
-        return service_type_registry.get_serializer(
-            workflow_action.service, ServiceSerializer
-        ).data
 
-    def get_row_id(self, workflow_action):
-        return workflow_action.service.specific.row_id
-
-    def get_integration_id(self, workflow_action):
-        return workflow_action.service.specific.integration_id
-
-    def get_table_id(self, workflow_action):
-        return workflow_action.service.specific.table_id
+class PolymorphicServiceRequestSerializer(PolymorphicSerializer):
+    base_class = serializers.Serializer
+    registry = service_type_registry
 
 
 class OrderWorkflowActionsSerializer(serializers.Serializer):

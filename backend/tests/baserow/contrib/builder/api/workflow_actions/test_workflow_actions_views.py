@@ -336,9 +336,6 @@ def test_create_create_row_workflow_action(api_client, data_fixture):
     assert response.status_code == HTTP_200_OK
     assert response_json["type"] == workflow_action_type
     assert response_json["element_id"] == element.id
-    assert response_json["table_id"] is None
-    assert response_json["integration_id"] is None
-    assert response_json["field_mappings"] == []
 
     workflow_action = CreateRowWorkflowActionType.model_class.objects.get(
         pk=response_json["id"]
@@ -346,9 +343,11 @@ def test_create_create_row_workflow_action(api_client, data_fixture):
     assert response_json["service"] == {
         "id": workflow_action.service_id,
         "integration_id": None,
+        "row_id": "",
         "type": LocalBaserowUpsertRowServiceType.type,
         "schema": None,
         "table_id": None,
+        "field_mappings": [],
     }
 
 
@@ -370,6 +369,7 @@ def test_update_create_row_workflow_action(api_client, data_fixture):
         page=page, element=element, event=EventTypes.CLICK, user=user
     )
     service = workflow_action.service
+    service_type = service.get_type()
 
     url = reverse(
         "api:builder:workflow_action:item",
@@ -378,9 +378,12 @@ def test_update_create_row_workflow_action(api_client, data_fixture):
     response = api_client.patch(
         url,
         {
-            "table_id": table.id,
-            "integration_id": workflow_action.service.integration_id,
-            "field_mappings": [{"field_id": field.id, "value": "'Pony'"}],
+            "service": {
+                "table_id": table.id,
+                "type": service_type.type,
+                "integration_id": workflow_action.service.integration_id,
+                "field_mappings": [{"field_id": field.id, "value": "'Pony'"}],
+            }
         },
         format="json",
         HTTP_AUTHORIZATION=f"JWT {token}",
@@ -392,9 +395,9 @@ def test_update_create_row_workflow_action(api_client, data_fixture):
     assert response.status_code == HTTP_200_OK
     assert response_json["id"] == workflow_action.id
     assert response_json["element_id"] == workflow_action.element_id
-    assert response_json["table_id"] == service.table_id
-    assert response_json["integration_id"] == service.integration_id
-    assert response_json["field_mappings"] == [
+    assert response_json["service"]["table_id"] == service.table_id
+    assert response_json["service"]["integration_id"] == service.integration_id
+    assert response_json["service"]["field_mappings"] == [
         {"field_id": field.id, "value": "'Pony'"}
     ]
 
@@ -420,12 +423,8 @@ def test_create_update_row_workflow_action(api_client, data_fixture):
 
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
-    assert response_json["row_id"] == ""
     assert response_json["type"] == workflow_action_type
     assert response_json["element_id"] == element.id
-    assert response_json["table_id"] is None
-    assert response_json["integration_id"] is None
-    assert response_json["field_mappings"] == []
 
     workflow_action = UpdateRowWorkflowActionType.model_class.objects.get(
         pk=response_json["id"]
@@ -435,7 +434,9 @@ def test_create_update_row_workflow_action(api_client, data_fixture):
         "integration_id": None,
         "type": LocalBaserowUpsertRowServiceType.type,
         "schema": None,
+        "row_id": "",
         "table_id": None,
+        "field_mappings": [],
     }
 
 
@@ -461,6 +462,7 @@ def test_update_update_row_workflow_action(api_client, data_fixture):
         page=page, element=element, event=EventTypes.CLICK, user=user
     )
     service = workflow_action.service
+    service_type = service.get_type()
 
     url = reverse(
         "api:builder:workflow_action:item",
@@ -469,10 +471,14 @@ def test_update_update_row_workflow_action(api_client, data_fixture):
     response = api_client.patch(
         url,
         {
-            "table_id": table.id,
-            "row_id": first_row.id,
-            "integration_id": workflow_action.service.integration_id,
-            "field_mappings": [{"field_id": field.id, "value": "'Pony'"}],
+            "service": {
+                "id": workflow_action.service_id,
+                "table_id": table.id,
+                "row_id": first_row.id,
+                "type": service_type.type,
+                "integration_id": workflow_action.service.integration_id,
+                "field_mappings": [{"field_id": field.id, "value": "'Pony'"}],
+            },
         },
         format="json",
         HTTP_AUTHORIZATION=f"JWT {token}",
@@ -483,11 +489,15 @@ def test_update_update_row_workflow_action(api_client, data_fixture):
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
     assert response_json["id"] == workflow_action.id
-    assert response_json["row_id"] == str(first_row.id)
     assert response_json["element_id"] == workflow_action.element_id
-    assert response_json["table_id"] == service.table_id
-    assert response_json["integration_id"] == service.integration_id
-    assert response_json["field_mappings"] == [
+
+    assert response_json["service"]["table_id"] == table.id
+    assert response_json["service"]["row_id"] == str(first_row.id)
+    assert (
+        response_json["service"]["integration_id"]
+        == workflow_action.service.integration_id
+    )
+    assert response_json["service"]["field_mappings"] == [
         {"field_id": field.id, "value": "'Pony'"}
     ]
 
