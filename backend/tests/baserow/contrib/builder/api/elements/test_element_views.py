@@ -10,9 +10,9 @@ from rest_framework.status import (
 )
 
 from baserow.contrib.builder.elements.models import (
+    DropdownElementOption,
     Element,
     LinkElement,
-    DropdownElementOption,
 )
 
 

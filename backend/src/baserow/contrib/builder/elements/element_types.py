@@ -22,6 +22,7 @@ from baserow.contrib.builder.elements.models import (
     ColumnElement,
     ContainerElement,
     DropdownElement,
+    DropdownElementOption,
     Element,
     HeadingElement,
     HorizontalAlignments,
@@ -31,7 +32,6 @@ from baserow.contrib.builder.elements.models import (
     ParagraphElement,
     TableElement,
     VerticalAlignments,
-    DropdownElementOption,
 )
 from baserow.contrib.builder.elements.registries import ElementType
 from baserow.contrib.builder.elements.signals import elements_moved
@@ -43,7 +43,6 @@ from baserow.core.formula.types import BaserowFormula
 from baserow.core.registry import T
 
 from .registries import collection_field_type_registry
-from .types import ElementSubClass
 
 
 class ContainerElementType(ElementType, ABC):

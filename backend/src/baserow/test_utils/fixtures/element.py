@@ -4,11 +4,12 @@ from baserow.contrib.builder.elements.models import (
     ButtonElement,
     CollectionField,
     ColumnElement,
+    DropdownElement,
     HeadingElement,
     ImageElement,
     LinkElement,
     ParagraphElement,
-    TableElement, DropdownElement,
+    TableElement,
 )
 
 
