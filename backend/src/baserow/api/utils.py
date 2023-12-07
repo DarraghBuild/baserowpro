@@ -317,7 +317,7 @@ def get_serializer_class(
     base_class=None,
     meta_ref_name=None,
     required_fields=None,
-    base_mixins=None,
+    base_mixins: Iterable[serializers.Serializer] = None,
     meta_extra_kwargs=None,
 ):
     """
@@ -338,8 +338,9 @@ def get_serializer_class(
     :param required_fields: List of field names that should be present even when
         performing partial validation.
     :type required_fields: list[str]
-    :param mixins: An optional list of mixins that must be added to the serializer.
-    :type base_mixins: list[serializers.Serializer]
+    :param base_mixins: An optional iterable containing a DRF Serializer which we
+        should use as a base for the dynamic serializer we'll generate.
+    :type base_mixins: List[serializers.Serializer]
     :param meta_extra_kwargs: An optional dict containing extra kwargs for the Meta
         class.
     :type meta_extra_kwargs: dict or None
@@ -351,12 +352,6 @@ def get_serializer_class(
 
     if not field_overrides:
         field_overrides = {}
-
-    # Verify that `base_mixins` is an iterable.
-    if base_mixins is not None and not isinstance(base_mixins, Iterable):
-        raise ValueError(
-            f"`base_mixins` is expected to be an iterable, received: {base_mixins}"
-        )
 
     if meta_ref_name is None:
         meta_ref_name = generate_meta_ref_name_based_on_model(model_, base_class)
