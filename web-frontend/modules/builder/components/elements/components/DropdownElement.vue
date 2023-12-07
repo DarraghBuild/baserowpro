@@ -45,6 +45,9 @@ export default {
     }
   },
   watch: {
+    itemSelected(value) {
+      this.setFormData(value)
+    },
     'element.default_value': {
       handler(value) {
         this.itemSelected = this.resolveFormula(value)
