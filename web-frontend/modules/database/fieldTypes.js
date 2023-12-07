@@ -2889,7 +2889,18 @@ export class MultipleSelectFieldType extends FieldType {
   }
 
   getGroupByValue(field, value) {
-    return value.map((relation) => relation.id.toString()).join(',')
+    return value
+      .slice()
+      .sort((optA, optB) => optA.id - optB.id)
+      .map((option) => option.id.toString())
+      .join(',')
+  }
+
+  isEqual(field, value1, value2) {
+    return (
+      this.getGroupByValue(field, value1) ===
+      this.getGroupByValue(field, value2)
+    )
   }
 }
 

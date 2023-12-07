@@ -1759,6 +1759,7 @@ class ManyToManyGroupByMixin:
                                 output_field=CharField(),
                             ),
                             ",",
+                            ordering=f"{field_name}__id",
                         ),
                         Value(""),
                     )

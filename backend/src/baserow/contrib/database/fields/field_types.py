@@ -3641,7 +3641,10 @@ class MultipleSelectFieldType(ManyToManyGroupByMixin, SelectOptionBaseFieldType)
         """
 
         sort_column_name = f"{field_name}_agg_sort"
-        query = Coalesce(StringAgg(f"{field_name}__value", ","), Value(""))
+        query = Coalesce(
+            StringAgg(f"{field_name}__value", ",", ordering=f"{field_name}__id"),
+            Value(""),
+        )
         annotation = {sort_column_name: query}
         order = collate_expression(F(sort_column_name))
 
