@@ -45,8 +45,16 @@ export default {
   name: 'DropdownElementForm',
   components: { DropdownOptionsSelector, ApplicationBuilderFormulaInputGroup },
   mixins: [form],
+  inject: ['page'],
   data() {
     return {
+      allowedValues: [
+        'label',
+        'default_value',
+        'required',
+        'placeholder',
+        'options',
+      ],
       values: {
         label: '',
         default_value: '',
@@ -59,6 +67,17 @@ export default {
   computed: {
     DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS: () =>
       DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS,
+    element() {
+      return this.$store.getters['element/getElementById'](
+        this.page,
+        this.values.id
+      )
+    },
+  },
+  watch: {
+    'element.options'(options) {
+      this.values.options = options.map((o) => o)
+    },
   },
   methods: {
     optionUpdated({ id }, changes) {

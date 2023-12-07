@@ -185,10 +185,13 @@ const actions = {
     return new Promise((resolve, reject) => {
       const fire = async () => {
         try {
-          await ElementService(this.$client).update(
-            element.id,
-            elementType.prepareValuesForRequest(values)
-          )
+          const elementUpdated = (
+            await ElementService(this.$client).update(
+              element.id,
+              elementType.prepareValuesForRequest(values)
+            )
+          ).data
+          dispatch('forceUpdate', { page, element, values: elementUpdated })
           resolve()
         } catch (error) {
           // Revert to old values on error
