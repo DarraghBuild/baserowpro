@@ -3,6 +3,7 @@ from typing import Any
 from unittest.mock import Mock
 
 import pytest
+from rest_framework.exceptions import ValidationError
 from rest_framework.fields import (
     BooleanField,
     CharField,
@@ -17,6 +18,7 @@ from rest_framework.serializers import ListSerializer, Serializer
 from baserow.contrib.builder.data_sources.builder_dispatch_context import (
     BuilderDispatchContext,
 )
+from baserow.contrib.builder.workflow_actions.models import EventTypes
 from baserow.contrib.database.rows.handler import RowHandler
 from baserow.contrib.database.table.handler import TableHandler
 from baserow.contrib.database.views.models import SORT_ORDER_ASC, SORT_ORDER_DESC
@@ -35,6 +37,7 @@ from baserow.core.exceptions import PermissionException
 from baserow.core.services.dispatch_context import DispatchContext
 from baserow.core.services.exceptions import DoesNotExist, ServiceImproperlyConfigured
 from baserow.core.services.handler import ServiceHandler
+from baserow.core.services.models import Service
 from baserow.core.services.registries import service_type_registry
 from baserow.core.utils import MirrorDict
 from baserow.test_utils.helpers import setup_interesting_test_table
@@ -1829,3 +1832,121 @@ def test_local_baserow_upsert_row_service_resolve_service_formulas(
         service_type.resolve_service_formulas(service, dispatch_context)
 
     assert exc.value.args[0].startswith("The `row_id` formula can't be resolved")
+
+
+@pytest.mark.django_db
+def test_local_baserow_upsert_row_service_prepare_value_for_db(data_fixture):
+    with pytest.raises(ValidationError) as exc:
+        LocalBaserowUpsertRowServiceType().prepare_value_for_db(
+            {"table_id": 9999999999999999}
+        )
+    assert exc.value.args[0] == f"The table with ID 9999999999999999 does not exist."
+    with pytest.raises(ValidationError) as exc:
+        LocalBaserowUpsertRowServiceType().prepare_value_for_db(
+            {"integration_id": 9999999999999999}
+        )
+    assert (
+        exc.value.args[0] == f"The integration with ID 9999999999999999 does not exist."
+    )
+
+    table = data_fixture.create_database_table()
+    field = data_fixture.create_text_field(table=table)
+    values = LocalBaserowUpsertRowServiceType().prepare_value_for_db(
+        {
+            "table_id": table.id,
+            "field_mappings": [{"field_id": field.id, "value": "'Bread'"}],
+        }
+    )
+    service = Service.objects.get(pk=values["service_id"]).specific
+    mapping = service.field_mappings.get()
+    assert mapping.field_id == field.id
+    assert mapping.value == "'Bread'"
+
+    # Set a new table with `table2`, but use `field` from `table`
+    table2 = data_fixture.create_database_table()
+    with pytest.raises(ValidationError) as exc:
+        LocalBaserowUpsertRowServiceType().prepare_value_for_db(
+            {
+                "table_id": table2.id,
+                "field_mappings": [{"field_id": field.id, "value": "'Bread'"}],
+            }
+        )
+    assert exc.value.args[0] == f"The field with id {field.id} does not exist."
+
+    with pytest.raises(ValidationError) as exc:
+        LocalBaserowUpsertRowServiceType().prepare_value_for_db(
+            {
+                "table_id": table.id,
+                "field_mappings": [{"value": "'Bread'"}],
+            }
+        )
+    assert exc.value.args[0] == "A field mapping must have a `field_id`."
+
+
+@pytest.mark.django_db
+def test_local_baserow_upsert_row_service_prepare_value_for_db_without_instance(
+    data_fixture,
+):
+    page = data_fixture.create_builder_page()
+    integration = data_fixture.create_local_baserow_integration(
+        application=page.builder
+    )
+    table = data_fixture.create_database_table()
+    field = data_fixture.create_text_field(table=table)
+    model = table.get_model()
+    row = model.objects.create(**{f"field_{field.id}": "Cheese"})
+    values = LocalBaserowUpsertRowServiceType().prepare_value_for_db(
+        {"row_id": row.id, "table_id": table.id, "integration_id": integration.id}
+    )
+    service = Service.objects.get(pk=values["service_id"]).specific
+    assert service.row_id == str(row.id)
+    assert service.table_id == table.id
+    assert service.integration_id == integration.id
+
+
+@pytest.mark.django_db
+def test_local_baserow_upsert_row_service_prepare_value_for_db_with_instance(
+    data_fixture,
+):
+    user, token = data_fixture.create_user_and_token()
+    page = data_fixture.create_builder_page(user=user)
+    element = data_fixture.create_builder_button_element(page=page)
+    integration = data_fixture.create_local_baserow_integration(
+        application=page.builder
+    )
+    table = data_fixture.create_database_table()
+    workflow_action = data_fixture.create_local_baserow_create_row_workflow_action(
+        page=page, element=element, event=EventTypes.CLICK, user=user
+    )
+    service = workflow_action.service.specific
+    service.table = table
+    service.save()
+    field = data_fixture.create_text_field(table=table)
+    model = table.get_model()
+    row2 = model.objects.create(**{f"field_{field.id}": "Cheese"})
+    LocalBaserowUpsertRowServiceType().prepare_value_for_db(
+        {
+            "row_id": row2.id,
+            "table_id": table.id,
+            "integration_id": integration.id,
+            "field_mappings": [{"field_id": field.id, "value": "'Horse'"}],
+        },
+        instance=service,
+    )
+    assert service.row_id == row2.id
+    assert service.table_id == table.id
+    assert service.integration_id == integration.id
+    assert service.field_mappings.count() == 1
+
+    # Changing the table results in the `field_mapping` getting reset.
+    table2 = data_fixture.create_database_table()
+    values = LocalBaserowUpsertRowServiceType().prepare_value_for_db(
+        {
+            "table_id": table2.id,
+            "field_mappings": [{"field_id": field.id, "value": "'Pony'"}],
+        },
+        instance=service,
+    )
+    service.refresh_from_db()
+    assert service.table_id == table2.id
+    assert service.field_mappings.count() == 0
