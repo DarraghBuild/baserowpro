@@ -6,6 +6,7 @@
       :show-search="false"
       @input="$emit('input', $event)"
     >
+      <DropdownItem :name="$t('action.makeChoice')" :value="null" />
       <DropdownItem
         v-for="option in options"
         :key="option.id"
