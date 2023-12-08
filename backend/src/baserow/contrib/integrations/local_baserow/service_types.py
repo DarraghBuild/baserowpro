@@ -972,12 +972,6 @@ class LocalBaserowUpsertRowServiceType(LocalBaserowTableServiceType):
         else:
             service = instance.specific
 
-            # Did the table change? If it did, we need to nuke the field
-            # mappings that are present. An enhancement in the future would
-            # be to check if they relate to the new table, or the old one.
-            if service.table_id and service.table_id != table_id:
-                values["field_mappings"] = []
-
             if service.table_id != table_id or service.row_id != row_id:
                 service.table = table
                 service.row_id = row_id

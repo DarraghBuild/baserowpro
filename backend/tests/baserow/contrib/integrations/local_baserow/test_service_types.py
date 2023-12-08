@@ -1940,13 +1940,14 @@ def test_local_baserow_upsert_row_service_prepare_value_for_db_with_instance(
 
     # Changing the table results in the `field_mapping` getting reset.
     table2 = data_fixture.create_database_table()
-    values = LocalBaserowUpsertRowServiceType().prepare_value_for_db(
-        {
-            "table_id": table2.id,
-            "field_mappings": [{"field_id": field.id, "value": "'Pony'"}],
-        },
-        instance=service,
-    )
+    with pytest.raises(ValidationError):
+        LocalBaserowUpsertRowServiceType().prepare_value_for_db(
+            {
+                "table_id": table2.id,
+                "field_mappings": [{"field_id": field.id, "value": "'Pony'"}],
+            },
+            instance=service,
+        )
     service.refresh_from_db()
     assert service.table_id == table2.id
     assert service.field_mappings.count() == 0
