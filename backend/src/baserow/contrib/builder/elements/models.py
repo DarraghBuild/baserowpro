@@ -548,8 +548,11 @@ class DropdownElement(Element):
         default="",
         help_text="The text label for this dropdown",
     )
-    default_value = FormulaField(
-        default="", help_text="This dropdowns input's default value."
+    default_value = models.ForeignKey(
+        "DropdownElementOption",
+        help_text="This dropdowns input's default value.",
+        null=True,
+        on_delete=SET_NULL,
     )
     required = models.BooleanField(
         default=False, help_text="Whether this drodpown is a required field."

@@ -6,12 +6,10 @@
       :placeholder="$t('generalForm.labelPlaceholder')"
       :data-providers-allowed="DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS"
     ></ApplicationBuilderFormulaInputGroup>
-    <ApplicationBuilderFormulaInputGroup
+    <DropdownDefaultValueSelector
       v-model="values.default_value"
-      :label="$t('generalForm.valueTitle')"
-      :placeholder="$t('generalForm.valuePlaceholder')"
-      :data-providers-allowed="DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS"
-    ></ApplicationBuilderFormulaInputGroup>
+      :options="values.options"
+    ></DropdownDefaultValueSelector>
     <ApplicationBuilderFormulaInputGroup
       v-model="values.placeholder"
       :label="$t('generalForm.placeholderTitle')"
@@ -40,10 +38,15 @@ import ApplicationBuilderFormulaInputGroup from '@baserow/modules/builder/compon
 import { DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS } from '@baserow/modules/builder/enums'
 import form from '@baserow/modules/core/mixins/form'
 import DropdownOptionsSelector from '@baserow/modules/builder/components/elements/components/forms/general/dropdown/DropdownOptionsSelector.vue'
+import DropdownDefaultValueSelector from '@baserow/modules/builder/components/elements/components/forms/general/dropdown/DropdownDefaultValueSelector.vue'
 
 export default {
   name: 'DropdownElementForm',
-  components: { DropdownOptionsSelector, ApplicationBuilderFormulaInputGroup },
+  components: {
+    DropdownDefaultValueSelector,
+    DropdownOptionsSelector,
+    ApplicationBuilderFormulaInputGroup,
+  },
   mixins: [form],
   inject: ['page'],
   data() {
@@ -57,7 +60,7 @@ export default {
       ],
       values: {
         label: '',
-        default_value: '',
+        default_value: null,
         required: false,
         placeholder: '',
         options: [],
@@ -70,7 +73,7 @@ export default {
     element() {
       return this.$store.getters['element/getElementById'](
         this.page,
-        this.values.id
+        this.defaultValues.id
       )
     },
   },

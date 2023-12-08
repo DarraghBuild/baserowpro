@@ -12,6 +12,7 @@ from rest_framework.exceptions import ValidationError
 from baserow.contrib.builder.api.elements.serializers import (
     DropdownOptionSerializer,
     DropdownOptionSerializerMixin,
+    DropdownDefaultValueSerializerMixin,
 )
 from baserow.contrib.builder.data_sources.handler import DataSourceHandler
 from baserow.contrib.builder.elements.handler import ElementHandler
@@ -859,13 +860,16 @@ class DropdownElementType(ElementType):
         "placeholder",
         "options",
     ]
-    serializer_mixins = [DropdownOptionSerializerMixin]
+    serializer_mixins = [
+        DropdownOptionSerializerMixin,
+        DropdownDefaultValueSerializerMixin,
+    ]
 
     class SerializedDict(ElementDict):
         label: BaserowFormula
         required: bool
         placeholder: BaserowFormula
-        default_value: BaserowFormula
+        default_value: int
         options: List
 
     @property
@@ -875,12 +879,6 @@ class DropdownElementType(ElementType):
         overrides = {
             "label": FormulaSerializerField(
                 help_text=DropdownElement._meta.get_field("label").help_text,
-                required=False,
-                allow_blank=True,
-                default="",
-            ),
-            "default_value": FormulaSerializerField(
-                help_text=DropdownElement._meta.get_field("default_value").help_text,
                 required=False,
                 allow_blank=True,
                 default="",
@@ -911,11 +909,11 @@ class DropdownElementType(ElementType):
                 allow_blank=True,
                 default="",
             ),
-            "default_value": FormulaSerializerField(
+            "default_value": serializers.IntegerField(
+                allow_null=True,
+                default=None,
                 help_text=DropdownElement._meta.get_field("default_value").help_text,
                 required=False,
-                allow_blank=True,
-                default="",
             ),
             "required": serializers.BooleanField(
                 help_text=DropdownElement._meta.get_field("required").help_text,
@@ -932,6 +930,24 @@ class DropdownElementType(ElementType):
         }
 
         return overrides
+
+    def prepare_value_for_db(self, values: Dict, instance: Optional[Element] = None):
+        default_value = values.pop("default_value", None)
+
+        if default_value is not None:
+            try:
+                option = DropdownElementOption.objects.get(id=default_value)
+            except DropdownElementOption.DoesNotExist:
+                raise ValidationError(f"Option {default_value} does not exist")
+
+            if instance is not None and option.dropdown_id != instance.id:
+                raise ValidationError(
+                    f"Option {default_value} does not belong to dropdown"
+                )
+
+            values["default_value"] = option
+
+        return super().prepare_value_for_db(values, instance)
 
     def serialize_property(self, element: DropdownElement, prop_name: str):
         if prop_name == "options":
@@ -996,10 +1012,47 @@ class DropdownElementType(ElementType):
         options = values.get("options", None)
 
         if options is not None:
-            DropdownElementOption.objects.filter(dropdown=instance).delete()
+            options_in_db = list(
+                DropdownElementOption.objects.filter(dropdown=instance)
+            )
+
+            options_existing = []
+            options_new = []
+            for option in options:
+                if "id" in option and option["id"] is not None:
+                    options_existing.append(option)
+                else:
+                    options_new.append(option)
+
+            # Create all the new options
             DropdownElementOption.objects.bulk_create(
                 [
                     DropdownElementOption(dropdown=instance, **option)
-                    for option in options
+                    for option in options_new
                 ]
             )
+
+            # Delete all the removed options
+            options_existing_ids = [option["id"] for option in options_existing]
+            for option in options_in_db:
+                if option.id not in options_existing_ids:
+                    option.delete()
+
+            # Update all the existing options
+            keys_to_update = set()
+            for option in options_in_db:
+                for update_values in options_existing:
+                    if option.id == update_values["id"]:
+                        for key, value in update_values.items():
+                            if key != "id" and getattr(option, key) != value:
+                                setattr(option, key, value)
+                                keys_to_update.add(key)
+
+            keys_to_update = list(keys_to_update)
+
+            print()
+
+            if len(keys_to_update):
+                DropdownElementOption.objects.bulk_update(
+                    options_in_db, list(keys_to_update)
+                )

@@ -1,8 +1,8 @@
-import RuntimeFormulaContext from '@baserow/modules/core/runtimeFormulaContext'
-import { resolveFormula } from '@baserow/modules/core/formula'
 import { ClickEvent } from '@baserow/modules/builder/eventTypes'
+import ResolveFormulaMixin from '@baserow/modules/builder/mixins/resolveFormula'
 
 export default {
+  mixins: [ResolveFormulaMixin],
   inject: ['builder', 'page', 'mode'],
   props: {
     element: {
@@ -25,42 +25,8 @@ export default {
         element: this.element,
       }
     },
-    runtimeFormulaContext() {
-      /**
-       * This proxy allow the RuntimeFormulaContextClass to act like a regular object.
-       */
-      return new Proxy(
-        new RuntimeFormulaContext(
-          this.$registry.getAll('builderDataProvider'),
-          this.applicationContext
-        ),
-        {
-          get(target, prop) {
-            return target.get(prop)
-          },
-        }
-      )
-    },
-    formulaFunctions() {
-      return {
-        get: (name) => {
-          return this.$registry.get('runtimeFormulaFunction', name)
-        },
-      }
-    },
   },
   methods: {
-    resolveFormula(formula) {
-      try {
-        return resolveFormula(
-          formula,
-          this.formulaFunctions,
-          this.runtimeFormulaContext
-        )
-      } catch (e) {
-        return ''
-      }
-    },
     fireEvent(EventType) {
       if (this.mode !== 'editing') {
         const workflowActions = this.$store.getters[

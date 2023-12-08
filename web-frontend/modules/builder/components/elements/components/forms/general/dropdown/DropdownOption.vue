@@ -1,19 +1,17 @@
 <template>
   <div class="row">
     <div class="col col-5">
-      <input
-        type="text"
-        class="input"
+      <ApplicationBuilderFormulaInputGroup
         :value="option.value"
-        @input="$emit('update', { value: $event.target.value })"
+        :data-providers-allowed="DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS"
+        @input="$emit('update', { value: $event })"
       />
     </div>
     <div class="col col-5">
-      <input
-        type="text"
-        class="input"
+      <ApplicationBuilderFormulaInputGroup
         :value="option.name"
-        @input="$emit('update', { name: $event.target.value })"
+        :data-providers-allowed="DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS"
+        @input="$emit('update', { name: $event })"
       />
     </div>
     <div class="dropdown-option__delete col col-1">
@@ -28,13 +26,21 @@
 </template>
 
 <script>
+import ApplicationBuilderFormulaInputGroup from '@baserow/modules/builder/components/ApplicationBuilderFormulaInputGroup.vue'
+import { DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS } from '@baserow/modules/builder/enums'
+
 export default {
   name: 'DropdownOption',
+  components: { ApplicationBuilderFormulaInputGroup },
   props: {
     option: {
       type: Object,
       required: true,
     },
+  },
+  computed: {
+    DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS: () =>
+      DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS,
   },
 }
 </script>

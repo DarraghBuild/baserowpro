@@ -12,7 +12,7 @@
       </div>
     </div>
     <DropdownOption
-      v-for="option in options"
+      v-for="option in optionsSorted"
       :key="option.id"
       class="margin-bottom-1"
       :option="option"
@@ -34,6 +34,7 @@
 
 <script>
 import DropdownOption from '@baserow/modules/builder/components/elements/components/forms/general/dropdown/DropdownOption.vue'
+import _ from 'lodash'
 export default {
   name: 'DropdownOptionsSelector',
   components: { DropdownOption },
@@ -46,6 +47,11 @@ export default {
       type: Boolean,
       required: false,
       default: false,
+    },
+  },
+  computed: {
+    optionsSorted() {
+      return _.clone(this.options).sort((a, b) => a.id - b.id)
     },
   },
 }

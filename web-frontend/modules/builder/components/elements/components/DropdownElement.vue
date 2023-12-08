@@ -12,7 +12,7 @@
       <DropdownItem
         v-for="option in element.options"
         :key="option.id"
-        :name="option.name"
+        :name="resolveFormula(option.name)"
         :value="option.value"
       ></DropdownItem>
     </Dropdown>
@@ -29,7 +29,7 @@ export default {
     /**
      * @type {Object}
      * @property {string} label - The label displayed above the dropdown
-     * @property {string} default_value - The default value selected
+     * @property {number} default_value - The default value selected
      * @property {string} placeholder - The placeholder value of the dropdown
      * @property {boolean} required - If the element is required for form submission
      * @property {Array} options - The options of the dropdown
@@ -46,13 +46,26 @@ export default {
   },
   watch: {
     itemSelected(value) {
-      this.setFormData(value)
+      this.setFormData(this.resolveFormula(value))
     },
     'element.default_value': {
-      handler(value) {
-        this.itemSelected = this.resolveFormula(value)
+      handler() {
+        this.setItemSelected()
       },
       immediate: true,
+    },
+    'element.options': {
+      handler() {
+        this.setItemSelected()
+      },
+      deep: true,
+    },
+  },
+  methods: {
+    setItemSelected() {
+      this.itemSelected = this.element.options.find(
+        (option) => option.id === this.element.default_value
+      )?.value
     },
   },
 }

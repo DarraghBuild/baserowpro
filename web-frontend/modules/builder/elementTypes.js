@@ -613,7 +613,10 @@ export class DropdownElementType extends FormElementType {
   }
 
   getInitialFormDataValue(element, applicationContext) {
-    return this.resolveFormula(element.default_value, {
+    const option = element.options.find(
+      (option) => option.id === element.default_value
+    )
+    return this.resolveFormula(option?.value, {
       element,
       ...applicationContext,
     })

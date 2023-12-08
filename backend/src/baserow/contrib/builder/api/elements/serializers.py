@@ -281,6 +281,10 @@ class UpdateCollectionFieldSerializer(serializers.ModelSerializer):
 
 
 class DropdownOptionSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    value = FormulaSerializerField(default="", allow_blank=True)
+    name = FormulaSerializerField(default="", allow_blank=True)
+
     class Meta:
         model = DropdownElementOption
         fields = ["id", "value", "name"]
@@ -296,3 +300,13 @@ class DropdownOptionSerializerMixin(serializers.Serializer):
         return DropdownOptionSerializer(
             obj.dropdownelementoption_set.all(), many=True
         ).data
+
+
+class DropdownDefaultValueSerializerMixin(serializers.Serializer):
+    default_value = serializers.SerializerMethodField(
+        help_text="The option selected as the default value"
+    )
+
+    @extend_schema_field(serializers.IntegerField)
+    def get_default_value(self, obj: DropdownElement):
+        return obj.default_value_id
