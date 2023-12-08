@@ -763,6 +763,28 @@
           class="margin-bottom-3 style-guide__buttons"
           :style="{ backgroundColor: 'white', padding: '5px' }"
         >
+          <h3>Small size</h3>
+          <Button size="small">button</Button>
+          <Button size="small" disabled>button[disabled]</Button>
+          <Button size="small" type="primary">button.button-success</Button>
+          <Button size="small" type="success">button.button-success</Button>
+          <Button size="small" type="warning">button.button-warning</Button>
+          <Button size="small" type="error">button.button-error</Button>
+          <Button size="small" append-icon="baserow-icon-lock-open"
+            >button</Button
+          >
+          <Button size="small" type="ghost">button.button-ghost</Button>
+          <Button size="small" icon="iconoir-verified-user"></Button>
+          <Button
+            size="small"
+            icon="iconoir-verified-user"
+            type="ghost"
+          ></Button>
+        </div>
+        <div
+          class="margin-bottom-3 style-guide__buttons"
+          :style="{ backgroundColor: 'white', padding: '5px' }"
+        >
           <h3>Normal link</h3>
           <Button tag="a" href="#">a.button</Button>
           <Button tag="a" disabled href="#">a.button[disabled]</Button>
