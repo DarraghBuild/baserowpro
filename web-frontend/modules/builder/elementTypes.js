@@ -151,6 +151,18 @@ export class ElementType extends Registerable {
    * @param page - The page the element belong to
    */
   afterUpdate(element, page) {}
+
+  /**
+   * A hook that is triggered after a update response has been sent.
+   *
+   * This is different to afterUpdate since this will only be triggered when an actual
+   * request was made to the backend, not just when a force update happens.
+   *
+   * @param element - The updated element
+   * @param page - The page the element belong to
+   * @param response - The backend respone
+   */
+  afterUpdateRequest(element, page, response) {}
 }
 
 export class ContainerElementType extends ElementType {
@@ -620,5 +632,17 @@ export class DropdownElementType extends FormElementType {
       element,
       ...applicationContext,
     })
+  }
+
+  afterUpdateRequest(element, page, { data }) {
+    const hasOptionBeenAdded = element.options.some((option) => !option.id)
+
+    if (hasOptionBeenAdded) {
+      this.app.store.dispatch('element/forceUpdate', {
+        page,
+        element,
+        values: { options: data.options },
+      })
+    }
   }
 }
