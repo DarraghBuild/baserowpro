@@ -932,20 +932,21 @@ class DropdownElementType(ElementType):
         return overrides
 
     def prepare_value_for_db(self, values: Dict, instance: Optional[Element] = None):
-        default_value = values.pop("default_value", None)
+        if "default_value" in values:
+            default_value = values.get("default_value", None)
 
-        if default_value is not None:
-            try:
-                option = DropdownElementOption.objects.get(id=default_value)
-            except DropdownElementOption.DoesNotExist:
-                raise ValidationError(f"Option {default_value} does not exist")
+            if default_value is not None:
+                try:
+                    option = DropdownElementOption.objects.get(id=default_value)
+                except DropdownElementOption.DoesNotExist:
+                    raise ValidationError(f"Option {default_value} does not exist")
 
-            if instance is not None and option.dropdown_id != instance.id:
-                raise ValidationError(
-                    f"Option {default_value} does not belong to dropdown"
-                )
+                if instance is not None and option.dropdown_id != instance.id:
+                    raise ValidationError(
+                        f"Option {default_value} does not belong to dropdown"
+                    )
 
-            values["default_value"] = option
+                values["default_value"] = option
 
         return super().prepare_value_for_db(values, instance)
 
