@@ -8,12 +8,12 @@
 </template>
 
 <script>
-import UpsertRowWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/UpsertRowWorkflowActionForm'
+import UpsertRowWorkflowActionForm from '@baserow/modules/integrations/localBaserow/components/services/LocalBaserowUpsertRowServiceForm.vue'
 import form from '@baserow/modules/core/mixins/form'
 import _ from 'lodash'
 
 export default {
-  name: 'CreateRowWorkflowActionForm',
+  name: 'CreateRowWorkflowAction',
   components: { UpsertRowWorkflowActionForm },
   mixins: [form],
   props: {

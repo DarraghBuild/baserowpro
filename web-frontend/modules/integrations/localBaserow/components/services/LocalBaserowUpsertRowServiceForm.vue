@@ -59,7 +59,7 @@
 
 <script>
 import workflowActionForm from '@baserow/modules/builder/mixins/workflowActionForm'
-import LocalBaserowTableSelector from '@baserow/modules/integrations/localBaserow/components/services/LocalBaserowTableSelector'
+import LocalBaserowTableSelector from '@baserow/modules/integrations/localBaserow/components/services/LocalBaserowTableSelector.vue'
 import IntegrationCreateEditModal from '@baserow/modules/core/components/integrations/IntegrationCreateEditModal.vue'
 import { mapActions, mapGetters } from 'vuex'
 import { LocalBaserowIntegrationType } from '@baserow/modules/integrations/integrationTypes'
@@ -68,7 +68,7 @@ import ApplicationBuilderFormulaInputGroup from '@baserow/modules/builder/compon
 import FieldMappingForm from '@baserow/modules/builder/components/workflowAction/FieldMappingForm.vue'
 
 export default {
-  name: 'UpsertRowWorkflowActionForm',
+  name: 'LocalBaserowUpsertRowServiceForm',
   components: {
     FieldMappingForm,
     ApplicationBuilderFormulaInputGroup,

@@ -1,8 +1,8 @@
 import { WorkflowActionType } from '@baserow/modules/core/workflowActionTypes'
 import NotificationWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/NotificationWorkflowActionForm.vue'
 import OpenPageWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/OpenPageWorkflowActionForm'
-import CreateRowWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/CreateRowWorkflowActionForm'
-import UpdateRowWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/UpdateRowWorkflowActionForm'
+import CreateRowWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/CreateRowWorkflowAction.vue'
+import UpdateRowWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/UpdateRowWorkflowAction.vue'
 import { DataProviderType } from '@baserow/modules/core/dataProviderTypes'
 
 export class NotificationWorkflowActionType extends WorkflowActionType {
