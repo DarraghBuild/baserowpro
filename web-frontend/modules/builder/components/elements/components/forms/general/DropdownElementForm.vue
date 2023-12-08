@@ -8,7 +8,7 @@
     ></ApplicationBuilderFormulaInputGroup>
     <DropdownDefaultValueSelector
       v-model="values.default_value"
-      :options="values.options"
+      :options="options"
     ></DropdownDefaultValueSelector>
     <ApplicationBuilderFormulaInputGroup
       v-model="values.placeholder"
@@ -25,7 +25,8 @@
       </div>
     </FormElement>
     <DropdownOptionsSelector
-      :options="values.options"
+      :options="options"
+      :loading="creatingOption"
       @update="optionUpdated"
       @create="createOption"
       @delete="deleteOption"
@@ -39,6 +40,8 @@ import { DATA_PROVIDERS_ALLOWED_FORM_ELEMENTS } from '@baserow/modules/builder/e
 import form from '@baserow/modules/core/mixins/form'
 import DropdownOptionsSelector from '@baserow/modules/builder/components/elements/components/forms/general/dropdown/DropdownOptionsSelector.vue'
 import DropdownDefaultValueSelector from '@baserow/modules/builder/components/elements/components/forms/general/dropdown/DropdownDefaultValueSelector.vue'
+import { mapActions } from 'vuex'
+import _ from 'lodash'
 
 export default {
   name: 'DropdownElementForm',
@@ -51,20 +54,15 @@ export default {
   inject: ['page'],
   data() {
     return {
-      allowedValues: [
-        'label',
-        'default_value',
-        'required',
-        'placeholder',
-        'options',
-      ],
+      allowedValues: ['label', 'default_value', 'required', 'placeholder'],
       values: {
         label: '',
         default_value: null,
         required: false,
         placeholder: '',
-        options: [],
       },
+      options: [],
+      creatingOption: false,
     }
   },
   computed: {
@@ -77,26 +75,43 @@ export default {
       )
     },
   },
-  watch: {
-    'element.options'(options) {
-      this.values.options = options.map((o) => o)
-    },
+  mounted() {
+    this.options = _.clone(this.element.options)
   },
   methods: {
+    ...mapActions({
+      actionDebouncedUpdateSelected: 'element/debouncedUpdateSelected',
+    }),
     optionUpdated({ id }, changes) {
-      const index = this.values.options.findIndex((option) => option.id === id)
-      this.$set(this.values.options, index, {
-        ...this.values.options[index],
+      const optionIndex = this.options.findIndex((option) => option.id === id)
+      this.$set(this.options, optionIndex, {
+        ...this.options[optionIndex],
         ...changes,
       })
+
+      this.actionDebouncedUpdateSelected({
+        page: this.page,
+        values: { options: _.clone(this.options) },
+      })
     },
-    createOption() {
-      this.values.options.push({ name: '', value: '' })
+    async createOption() {
+      this.creatingOption = true
+      const newOption = { name: '', value: '' }
+
+      await this.actionDebouncedUpdateSelected({
+        page: this.page,
+        values: { options: [...this.options, newOption] },
+      })
+
+      this.options = _.clone(this.element.options)
+      this.creatingOption = false
     },
     deleteOption({ id }) {
-      this.values.options = this.values.options.filter(
-        (option) => option.id !== id
-      )
+      this.options = this.options.filter((option) => option.id !== id)
+      this.actionDebouncedUpdateSelected({
+        page: this.page,
+        values: { options: _.clone(this.options) },
+      })
     },
   },
 }
