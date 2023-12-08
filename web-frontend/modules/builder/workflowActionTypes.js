@@ -62,18 +62,6 @@ export class OpenPageWorkflowActionType extends WorkflowActionType {
 }
 
 export class WorkflowActionServiceType extends WorkflowActionType {
-  /**
-   * Workflow actions which are triggered by a backend service need to
-   * be precise about the default-values passed to their `form` component.
-   */
-  formDefaultValues(workflowAction) {
-    return {
-      table_id: workflowAction.table_id,
-      integration_id: workflowAction.integration_id,
-      field_mappings: workflowAction.field_mappings,
-    }
-  }
-
   execute({ workflowAction: { id }, applicationContext, resolveFormula }) {
     return this.app.store
       .dispatch('workflowAction/dispatchAction', {

@@ -25,10 +25,12 @@ const mutations = {
     }
   },
   UPDATE_ITEM(state, { page, workflowAction: workflowActionToUpdate, values }) {
-    page.workflowActions.forEach((workflowAction) => {
-      if (workflowAction.id === workflowActionToUpdate.id) {
-        Object.assign(workflowAction, values)
-      }
+    const index = page.workflowActions.findIndex(
+      (wa) => wa.id === workflowActionToUpdate.id
+    )
+    page.workflowActions.splice(index, 1, {
+      ...page.workflowActions[index],
+      ...values,
     })
   },
   SET_ITEM(state, { page, workflowAction: workflowActionToSet, values }) {

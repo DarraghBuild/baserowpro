@@ -4,10 +4,8 @@
       $t('upsertRowWorkflowActionForm.integrationDropdownLabel')
     }}</label>
     <Dropdown
-      v-if="state === 'loaded'"
       v-model="values.integration_id"
-      fixed-items
-      class="data-source-form__integration-dropdown"
+      :disabled="$fetchState.pending"
       :placeholder="$t('dataSourceForm.integrationPlaceholder')"
       show-footer
     >
@@ -18,7 +16,7 @@
         :value="integrationItem.id"
       />
       <template #emptyState>
-        {{ $t('dataSourceForm.noIntegrations') }}
+        {{ $t('integrationDropdown.noIntegrations') }}
       </template>
       <template #footer>
         <a
@@ -26,7 +24,7 @@
           @click="$refs.IntegrationCreateEditModal.show()"
         >
           <i class="iconoir-plus"></i>
-          {{ $t('dataSourceForm.addIntegration') }}
+          {{ $t('integrationDropdown.addIntegration') }}
         </a>
         <IntegrationCreateEditModal
           ref="IntegrationCreateEditModal"
@@ -61,7 +59,7 @@
 
 <script>
 import workflowActionForm from '@baserow/modules/builder/mixins/workflowActionForm'
-import LocalBaserowTableSelector from '@baserow/modules/integrations/components/services/LocalBaserowTableSelector.vue'
+import LocalBaserowTableSelector from '@baserow/modules/integrations/localBaserow/components/services/LocalBaserowTableSelector'
 import IntegrationCreateEditModal from '@baserow/modules/core/components/integrations/IntegrationCreateEditModal.vue'
 import { mapActions, mapGetters } from 'vuex'
 import { LocalBaserowIntegrationType } from '@baserow/modules/integrations/integrationTypes'
@@ -93,6 +91,7 @@ export default {
   },
   data() {
     return {
+      allowedValues: ['row_id', 'table_id', 'integration_id', 'field_mappings'],
       values: {
         row_id: '',
         table_id: null,
@@ -100,7 +99,17 @@ export default {
         integration_id: null,
       },
       state: null,
-      selectedIntegration: null,
+    }
+  },
+  async fetch() {
+    try {
+      await Promise.all([
+        this.actionFetchIntegrations({
+          applicationId: this.builder.id,
+        }),
+      ])
+    } catch (error) {
+      notifyIf(error)
     }
   },
   computed: {
@@ -111,6 +120,11 @@ export default {
       return this.$registry.get(
         'integration',
         LocalBaserowIntegrationType.getType()
+      )
+    },
+    selectedIntegration() {
+      return this.$store.getters['integration/getIntegrationById'](
+        this.values.integration_id
       )
     },
     databases() {
@@ -131,34 +145,10 @@ export default {
         .map((prop) => prop.metadata)
     },
   },
-  watch: {
-    'values.integration_id'(newVal, oldValue) {
-      this.refreshIntegration()
-    },
-  },
-  async created() {
-    this.state = 'loading'
-    try {
-      await Promise.all([
-        this.actionFetchIntegrations({
-          applicationId: this.builder.id,
-        }),
-      ])
-    } catch (error) {
-      notifyIf(error)
-    }
-    this.refreshIntegration()
-    this.state = 'loaded'
-  },
   methods: {
     ...mapActions({
       actionFetchIntegrations: 'integration/fetch',
     }),
-    refreshIntegration() {
-      this.selectedIntegration = this.$store.getters[
-        'integration/getIntegrationById'
-      ](this.values.integration_id)
-    },
   },
 }
 </script>

@@ -5,14 +5,6 @@ export class WorkflowActionType extends Registerable {
     return null
   }
 
-  /**
-   * Responsible for returning the default-values which the `form` component
-   * will receive. By default, it'll just be the `workflowAction` object.
-   */
-  formDefaultValues(workflowAction) {
-    return workflowAction
-  }
-
   get label() {
     return null
   }

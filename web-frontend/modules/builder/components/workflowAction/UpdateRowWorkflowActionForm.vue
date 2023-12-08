@@ -1,18 +1,17 @@
 <template>
-  <form @submit.prevent="submit">
-    <UpsertRowWorkflowActionForm
-      enable-row-id
-      :workflow-action="workflowAction"
-      :default-values="defaultValues"
-      @values-changed="$emit('values-changed', $event)"
-    >
-    </UpsertRowWorkflowActionForm>
-  </form>
+  <UpsertRowWorkflowActionForm
+    enable-row-id
+    :workflow-action="workflowAction"
+    :default-values="defaultValues.service"
+    @values-changed="mutateService($event)"
+  >
+  </UpsertRowWorkflowActionForm>
 </template>
 
 <script>
 import UpsertRowWorkflowActionForm from '@baserow/modules/builder/components/workflowAction/UpsertRowWorkflowActionForm'
 import form from '@baserow/modules/core/mixins/form'
+import _ from 'lodash'
 
 export default {
   name: 'UpdateRowWorkflowActionForm',
@@ -27,8 +26,18 @@ export default {
   },
   data() {
     return {
-      values: {},
+      allowedValues: ['service'],
+      values: {
+        service: {},
+      },
     }
+  },
+  methods: {
+    mutateService(newValues) {
+      if (!_.isMatch(this.workflowAction.service, newValues)) {
+        this.values.service = { ...this.workflowAction.service, ...newValues }
+      }
+    },
   },
 }
 </script>
