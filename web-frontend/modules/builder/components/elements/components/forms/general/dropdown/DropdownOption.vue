@@ -16,6 +16,7 @@
     </div>
     <div class="dropdown-option__delete col col-1">
       <Button
+        class="control"
         tag="a"
         icon="iconoir-trash"
         type="ghost"

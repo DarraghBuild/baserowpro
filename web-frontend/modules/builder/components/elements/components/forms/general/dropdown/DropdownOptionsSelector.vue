@@ -14,7 +14,6 @@
     <DropdownOption
       v-for="option in optionsSorted"
       :key="option.id"
-      class="margin-bottom-1"
       :option="option"
       @update="$emit('update', option, $event)"
       @delete="$emit('delete', option)"
